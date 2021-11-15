@@ -1,0 +1,152 @@
+---
+# Instructions: https://esphome.io/guides/getting_started_hassio.html
+esphome:
+  name: airgradient
+  platform: ESP8266
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  # https://esphome.io/components/wifi.html
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  # Defaults to device name with no password
+  ap: {}
+captive_portal:
+
+# Configuration for AirGradient DIY v2 device
+# https://www.esphome-devices.com/devices/AirGradient-DIY/
+
+uart:
+  # https://esphome.io/components/uart.html#uart
+  - rx_pin: D4
+    tx_pin: D3
+    baud_rate: 9600
+    id: senseair_s8_uart
+
+  - rx_pin: D5
+    baud_rate: 9600
+    id: pms5003_uart
+
+i2c:
+  sda: D2
+  scl: D1
+
+sensor:
+  - platform: pmsx003
+    # https://esphome.io/components/sensor/pmsx003.html?highlight=pms5003
+    type: PMSX003
+    pm_1_0:
+      name: "Particulate Matter <1.0µm Concentration"
+      id: pm1
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_2_5:
+      name: "Particulate Matter <2.5µm Concentration"
+      id: pm2
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_10_0:
+      name: "Particulate Matter <10.0µm Concentration"
+      id: pm10
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    uart_id: pms5003_uart
+
+
+  - platform: senseair
+    # https://esphome.io/components/sensor/senseair.html
+    co2:
+      name: "SenseAir S8 CO2 Value"
+      id: co2
+    update_interval: 30s
+    uart_id: senseair_s8_uart
+
+
+  - platform: sht3xd
+    # https://esphome.io/components/sensor/sht3xd.html?highlight=sht31
+    temperature:
+      name: Temperature
+      id: temp
+    humidity:
+      name: Humidity
+      id: humidity
+    address: 0x44
+    update_interval: 30s
+
+
+
+font:
+    # Font to use on the display
+    # Open Source font Liberation Sans by Red Hat
+    # https://www.dafont.com/liberation-sans.font
+  - file: './fonts/liberation_sans/LiberationSans-Regular.ttf'
+    id: font1
+    size: 24
+
+display:
+  - platform: ssd1306_i2c
+    # https://esphome.io/components/display/ssd1306.html?highlight=display
+    model: "SSD1306 64x48"
+    id: oled_display
+    reset_pin: D0
+    address: 0x3C
+    pages:
+      - id: display_pm2
+        lambda: |-
+          it.print(0, 0, id(font1), "PM2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(pm2).state);
+      - id: display_co2
+        lambda: |-
+          it.print(0, 0, id(font1), "CO2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
+      - id: display_temp
+        lambda: |-
+          it.print(0, 0, id(font1), "°C");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(temp).state);
+      - id: display_humidity
+        lambda: |-
+          it.print(0, 0, id(font1), "HUM");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
+
+http_request:
+  # https://esphome.io/components/http_request.html
+
+
+interval:
+  - interval: 3s
+    # Cycle through page on display
+    then:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
+
+  - interval: 60s
+    # Send data to AirGradient API server
+    then:
+      - http_request.post:
+          # AirGradient URL with the last 3 bytes of the MAC address in Hex format all lower case
+          url: !lambda |-
+            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+          headers:
+              Content-Type: application/json
+          # Convert sensor output from double to string
+          json:
+            pm02: !lambda return to_string(id(pm2).state);
+            rco2: !lambda return to_string(id(co2).state);
+          verify_ssl: false
