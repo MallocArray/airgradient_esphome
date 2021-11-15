@@ -113,6 +113,7 @@ display:
     id: oled_display
     reset_pin: D0
     address: 0x3C
+    # rotation: 180 # Enable to 180 to flip screen around
     pages:
       - id: display_pm2
         lambda: |-
