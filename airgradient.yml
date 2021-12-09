@@ -93,8 +93,22 @@ sensor:
 
   - platform: wifi_signal
     name: "WiFi Signal"
-    update_interval: 60s
+    update_interval: 30s
     id: airgradient_wifi_signal
+
+
+  # - platform: sgp30
+  # # https://esphome.io/components/sensor/sgp30.html
+  # # Unable to get to work when OLED shield is connected
+  #   eco2:
+  #     name: "eCO2"
+  #     id: eco2
+  #     accuracy_decimals: 1
+  #   tvoc:
+  #     name: "TVOC"
+  #     id: tvoc
+  #     accuracy_decimals: 1
+  #   update_interval: 30s
 
 
 
@@ -123,14 +137,26 @@ display:
         lambda: |-
           it.print(0, 0, id(font1), "CO2");
           it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
-      - id: display_temp
+      # - id: display_temp
+      #   lambda: |-
+      #     it.print(0, 0, id(font1), "°C");
+      #     it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state);
+      - id: display_tempf
         lambda: |-
-          it.print(0, 0, id(font1), "°C");
-          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(temp).state);
+          it.print(0, 0, id(font1), "°F");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state*9/5+32);
       - id: display_humidity
         lambda: |-
           it.print(0, 0, id(font1), "HUM");
           it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
+      # - id: display_eco2
+      #   lambda: |-
+      #     it.print(0, 0, id(font1), "eCO2");
+      #     it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(eco2).state);
+      # - id: display_tvoc
+      #   lambda: |-
+      #     it.print(0, 0, id(font1), "TVOC");
+      #     it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(tvoc).state);
 
 
 http_request:
@@ -156,9 +182,10 @@ interval:
               Content-Type: application/json
           # "!lambda return to_string(id(pm2).state);" Converts sensor output from double to string
           json:
+            wifi: id(airgradient_wifi_signal).state
             pm02: !lambda return to_string(id(pm2).state);
             rco2: !lambda return to_string(id(co2).state);
             atmp: !lambda return to_string(id(temp).state);
             rhum: !lambda return to_string(id(humidity).state);
-            wifi: id(airgradient_wifi_signal).state
+            # tvoc: !lambda return to_string(id(tvoc).state);
           verify_ssl: false
