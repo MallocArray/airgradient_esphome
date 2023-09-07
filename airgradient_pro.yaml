@@ -1,0 +1,238 @@
+# Tested on Version 3.3
+# https://www.airgradient.com/open-airgradient/instructions/overview/
+
+# Reference for substitutions: https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-pro-diy.yaml
+substitutions:
+    id: "1"
+    devicename: "ag-pro"
+    upper_devicename: "AirGradient Pro"
+
+  esphome:
+    name: "${devicename}-${id}"
+    friendly_name: "${upper_devicename} ${id}"
+
+  esp8266:
+    board: d1_mini
+
+  # Enable logging
+  # https://esphome.io/components/logger.html
+  logger:
+
+  # Enable Home Assistant API
+  api:
+    encryption:
+      key: ""
+
+  ota:
+    password: ""
+
+  wifi:
+    ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    # output_power: 15  # https://github.com/esphome/issues/issues/3944
+    manual_ip:
+      static_ip: 192.168.2.140
+      gateway: 192.168.2.1
+      subnet: 255.255.255.0
+      dns1: 192.168.2.1
+      dns2: 4.2.2.2
+    # Enable fallback hotspot (captive portal) in case wifi connection fails
+    ap:
+      ssid: "${upper_devicename} Fallback Hotspot"
+      password: "zxxOZe3LRSpS"
+
+  # The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
+  # https://esphome.io/components/captive_portal.html
+  captive_portal:
+
+  # Create a switch for safe_mode in order to flash the device
+  # Solution from this thread:
+  # https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
+  switch:
+    - platform: safe_mode
+      name: "Flash Mode (Safe Mode)"
+      icon: "mdi:cellphone-arrow-down"
+
+  # https://www.esphome-devices.com/devices/AirGradient-DIY/
+  # https://github.com/JacobMillward/airgradient_diy_pro_esphome/blob/main/airgradient_diy_pro.yaml
+
+  uart:
+    # https://esphome.io/components/uart.html#uart
+    - rx_pin: D4
+      tx_pin: D3
+      baud_rate: 9600
+      id: senseair_s8_uart
+
+    - rx_pin: D5
+      tx_pin: D6
+      baud_rate: 9600
+      id: pms5003_uart
+
+  i2c:
+    # https://esphome.io/components/i2c.html
+    sda: D2
+    scl: D1
+    # frequency: 400kHz  # Proposed fix for "Component took a long time for an operation" messages https://github.com/esphome/issues/issues/4717
+    # setup_priority: -100  # Attempt to fix the wifi 'auth expired' message https://github.com/esphome/issues/issues/3782
+
+  sensor:
+    - platform: pmsx003
+      # PMS5003 https://esphome.io/components/sensor/pmsx003.html
+      type: PMSX003
+      pm_2_5:
+        name: "${upper_devicename} Particulate Matter <2.5µm Concentration"
+        id: pm2
+        on_value:
+          lambda: |-
+            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+            if (id(pm2).state < 12.0) {
+              // good
+              id(pm_2_5_aqi).publish_state((50.0 - 0.0) / (12.0 - 0.0) * (id(pm2).state - 0.0) + 0.0);
+            } else if (id(pm2).state < 35.4) {
+              // moderate
+              id(pm_2_5_aqi).publish_state((100.0 - 51.0) / (35.4 - 12.1) * (id(pm2).state - 12.1) + 51.0);
+            } else if (id(pm2).state < 55.4) {
+              // usg
+              id(pm_2_5_aqi).publish_state((150.0 - 101.0) / (55.4 - 35.5) * (id(pm2).state - 35.5) + 101.0);
+            } else if (id(pm2).state < 150.4) {
+              // unhealthy
+              id(pm_2_5_aqi).publish_state((200.0 - 151.0) / (150.4 - 55.5) * (id(pm2).state - 55.5) + 151.0);
+            } else if (id(pm2).state < 250.4) {
+              // very unhealthy
+              id(pm_2_5_aqi).publish_state((300.0 - 201.0) / (250.4 - 150.5) * (id(pm2).state - 150.5) + 201.0);
+            } else if (id(pm2).state < 350.4) {
+              // hazardous
+              id(pm_2_5_aqi).publish_state((400.0 - 301.0) / (350.4 - 250.5) * (id(pm2).state - 250.5) + 301.0);
+            } else if (id(pm2).state < 500.4) {
+              // hazardous 2
+              id(pm_2_5_aqi).publish_state((500.0 - 401.0) / (500.4 - 350.5) * (id(pm2).state - 350.5) + 401.0);
+            }
+      update_interval: 120s
+      uart_id: pms5003_uart
+
+    - platform: senseair
+      # SenseAir S8 https://esphome.io/components/sensor/senseair.html
+      co2:
+        name: "${upper_devicename} SenseAir S8 CO2 Value"
+        id: co2
+      id: senseair_s8
+      uart_id: senseair_s8_uart
+
+    - platform: sht3xd  # Change to sht4x for SHT40
+      # SHT30 https://esphome.io/components/sensor/sht3xd.html
+      temperature:
+        name: "${upper_devicename} Temperature"
+        id: temp
+      humidity:
+        name: "${upper_devicename} Humidity"
+        id: humidity
+      address: 0x44
+      update_interval: 30s
+
+    - platform: wifi_signal
+      name: "${upper_devicename} WiFi Signal"
+      id: wifi_dbm
+      update_interval: 60s
+
+    - platform: uptime
+      name: ${upper_devicename} Uptime Sensor
+      id: device_uptime
+      update_interval: 60s
+
+    - platform: sgp4x
+      # SGP41 https://esphome.io/components/sensor/sgp4x.html
+      voc:
+        name: "${upper_devicename} VOC Index"
+        id: voc
+      nox:
+        name: "${upper_devicename} NOx Index"
+        id: nox
+      compensation:  # Remove this block if no temp/humidity sensor present for compensation
+        temperature_source: temp
+        humidity_source: humidity
+
+    - platform: template
+      name: "${upper_devicename} PM <2.5 AQI"
+      unit_of_measurement: "AQI"
+      icon: "mdi:air-filter"
+      accuracy_decimals: 0
+      id: pm_2_5_aqi
+
+
+  font:
+      # Font to use on the display
+      # Open Source font Liberation Sans by Red Hat
+      # https://www.dafont.com/liberation-sans.font
+    - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
+      id: opensans_14
+      size: 14
+    # - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
+    #   id: opensans_16
+    #   size: 16
+
+
+  display:
+    # https://esphome.io/components/display/ssd1306.html
+    # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
+    - platform: ssd1306_i2c
+      model: "SH1106 128x64"
+      id: oled_display
+      reset_pin: D0
+      address: 0x3C
+      # update_interval: 2s
+      # setup_priority: -100  # Attempt to fix the wifi 'auth expired' message https://github.com/esphome/issues/issues/3782
+      pages:
+        - id: page1
+          lambda: |-
+            it.printf(0, 0, id(opensans_14), "Temp: %.1f F", id(temp).state*9/5+32);
+            it.printf(0, 15, id(opensans_14), "Humidity: %.1f%%", id(humidity).state);
+            it.printf(0, 32, id(opensans_14), "CO2: %.0f ppm", id(co2).state);
+            it.printf(0, 47, id(opensans_14), "PM2.5: %.0f ug/m3", id(pm2).state);
+        - id: page2
+          lambda: |-
+            it.printf(0, 0, id(opensans_14), "VOC: %.0f", id(voc).state);
+            it.printf(0, 26, id(opensans_14), "NOx: %.0f", id(nox).state);
+
+  button:
+    # https://github.com/esphome/issues/issues/2444
+    - platform: template
+      name: ${upper_devicename} SenseAir S8 Calibration
+      id: senseair_s8_calibrate_button
+      on_press:
+        then:
+          - senseair.background_calibration: senseair_s8
+          - delay: 70s
+          - senseair.background_calibration_result: senseair_s8
+
+  http_request:
+    # Used to support POST request to send data to AirGradient
+    # https://esphome.io/components/http_request.html
+
+
+  interval:
+    - interval: 5s
+      # Automatically switch to the next page every five seconds
+      then:
+        - display.page.show_next: oled_display
+        - component.update: oled_display
+
+    - interval: 300s  # 5 minutes
+      # Send data to AirGradient API server
+      then:
+        - http_request.post:
+            # https://api.airgradient.com/public/docs/api/v1/
+            # AirGradient URL with the last 3 bytes of the MAC address in Hex format all lower case
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+            headers:
+                Content-Type: application/json
+            # "!lambda return to_string(id(pm2).state);" Converts sensor output from double to string
+            json:
+              wifi: !lambda return to_string(id(wifi_dbm).state);
+              pm02: !lambda return to_string(id(pm2).state);
+              rco2: !lambda return to_string(id(co2).state);
+              atmp: !lambda return to_string(id(temp).state);
+              rhum: !lambda return to_string(id(humidity).state);
+              tvoc_index: !lambda return to_string(id(voc).state);
+              nox_index: !lambda return to_string(id(nox).state);
+            verify_ssl: false
