@@ -3,229 +3,306 @@
 
 # Reference for substitutions: https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-pro-diy.yaml
 substitutions:
-    id: "1"
-    devicename: "ag-pro"
-    upper_devicename: "AirGradient Pro"
+  devicename: "airgradient-pro"
+  upper_devicename: "AirGradient Pro"
 
-  esphome:
-    name: "${devicename}-${id}"
-    friendly_name: "${upper_devicename} ${id}"
+esphome:
+  name: "${devicename}"
+  friendly_name: "${upper_devicename}"
+  name_add_mac_suffix: true  # Set to false if you don't want part of the MAC address in the name
 
-  esp8266:
-    board: d1_mini
+esp8266:
+  board: d1_mini
 
-  # Enable logging
-  # https://esphome.io/components/logger.html
-  logger:
+# Enable logging
+# https://esphome.io/components/logger.html
+logger:
+  # logs:
+  #   pmsx003: INFO  # PMS5003 is very chatty at default update interval and was causing reboots
 
-  # Enable Home Assistant API
-  api:
-    encryption:
-      key: ""
+# Enable Home Assistant API
+api:
 
-  ota:
-    password: ""
-
-  wifi:
-    ssid: !secret wifi_ssid
-    password: !secret wifi_password
-    # Enable fallback hotspot (captive portal) in case wifi connection fails
-    ap:
-      ssid: "${upper_devicename} Fallback Hotspot"
-      password: "zxxOZe3LRSpS"
-
-  # The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
-  # https://esphome.io/components/captive_portal.html
-  captive_portal:
-
-  # Create a switch for safe_mode in order to flash the device
-  # Solution from this thread:
-  # https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
-  switch:
-    - platform: safe_mode
-      name: "Flash Mode (Safe Mode)"
-      icon: "mdi:cellphone-arrow-down"
-
-  # https://www.esphome-devices.com/devices/AirGradient-DIY/
-  # https://github.com/JacobMillward/airgradient_diy_pro_esphome/blob/main/airgradient_diy_pro.yaml
-
-  uart:
-    # https://esphome.io/components/uart.html#uart
-    - rx_pin: D4
-      tx_pin: D3
-      baud_rate: 9600
-      id: senseair_s8_uart
-
-    - rx_pin: D5
-      tx_pin: D6
-      baud_rate: 9600
-      id: pms5003_uart
-
-  i2c:
-    # https://esphome.io/components/i2c.html
-    sda: D2
-    scl: D1
-    # frequency: 400kHz  # Proposed fix for "Component took a long time for an operation" messages https://github.com/esphome/issues/issues/4717
-    # setup_priority: -100  # Attempt to fix the wifi 'auth expired' message https://github.com/esphome/issues/issues/3782
-
-  sensor:
-    - platform: pmsx003
-      # PMS5003 https://esphome.io/components/sensor/pmsx003.html
-      type: PMSX003
-      pm_2_5:
-        name: "${upper_devicename} Particulate Matter <2.5µm Concentration"
-        id: pm2
-        on_value:
-          lambda: |-
-            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
-            if (id(pm2).state < 12.0) {
-              // good
-              id(pm_2_5_aqi).publish_state((50.0 - 0.0) / (12.0 - 0.0) * (id(pm2).state - 0.0) + 0.0);
-            } else if (id(pm2).state < 35.4) {
-              // moderate
-              id(pm_2_5_aqi).publish_state((100.0 - 51.0) / (35.4 - 12.1) * (id(pm2).state - 12.1) + 51.0);
-            } else if (id(pm2).state < 55.4) {
-              // usg
-              id(pm_2_5_aqi).publish_state((150.0 - 101.0) / (55.4 - 35.5) * (id(pm2).state - 35.5) + 101.0);
-            } else if (id(pm2).state < 150.4) {
-              // unhealthy
-              id(pm_2_5_aqi).publish_state((200.0 - 151.0) / (150.4 - 55.5) * (id(pm2).state - 55.5) + 151.0);
-            } else if (id(pm2).state < 250.4) {
-              // very unhealthy
-              id(pm_2_5_aqi).publish_state((300.0 - 201.0) / (250.4 - 150.5) * (id(pm2).state - 150.5) + 201.0);
-            } else if (id(pm2).state < 350.4) {
-              // hazardous
-              id(pm_2_5_aqi).publish_state((400.0 - 301.0) / (350.4 - 250.5) * (id(pm2).state - 250.5) + 301.0);
-            } else if (id(pm2).state < 500.4) {
-              // hazardous 2
-              id(pm_2_5_aqi).publish_state((500.0 - 401.0) / (500.4 - 350.5) * (id(pm2).state - 350.5) + 401.0);
-            }
-      update_interval: 120s
-      uart_id: pms5003_uart
-
-    - platform: senseair
-      # SenseAir S8 https://esphome.io/components/sensor/senseair.html
-      co2:
-        name: "${upper_devicename} SenseAir S8 CO2 Value"
-        id: co2
-      id: senseair_s8
-      uart_id: senseair_s8_uart
-
-    - platform: sht3xd  # Change to sht4x for SHT40
-      # SHT30 https://esphome.io/components/sensor/sht3xd.html
-      temperature:
-        name: "${upper_devicename} Temperature"
-        id: temp
-      humidity:
-        name: "${upper_devicename} Humidity"
-        id: humidity
-      address: 0x44
-      update_interval: 30s
-
-    - platform: wifi_signal
-      name: "${upper_devicename} WiFi Signal"
-      id: wifi_dbm
-      update_interval: 60s
-
-    - platform: uptime
-      name: ${upper_devicename} Uptime Sensor
-      id: device_uptime
-      update_interval: 60s
-
-    - platform: sgp4x
-      # SGP41 https://esphome.io/components/sensor/sgp4x.html
-      voc:
-        name: "${upper_devicename} VOC Index"
-        id: voc
-      nox:
-        name: "${upper_devicename} NOx Index"
-        id: nox
-      compensation:  # Remove this block if no temp/humidity sensor present for compensation
-        temperature_source: temp
-        humidity_source: humidity
-
-    - platform: template
-      name: "${upper_devicename} PM <2.5 AQI"
-      unit_of_measurement: "AQI"
-      icon: "mdi:air-filter"
-      accuracy_decimals: 0
-      id: pm_2_5_aqi
+ota:
 
 
-  font:
-      # Font to use on the display
-      # Open Source font Liberation Sans by Red Hat
-      # https://www.dafont.com/liberation-sans.font
-    - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
-      id: opensans_14
-      size: 14
-    # - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
-    #   id: opensans_16
-    #   size: 16
+wifi:
+  ap:
+
+# The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
+# https://esphome.io/components/captive_portal.html
+captive_portal:
+
+web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
+
+# Create a switch for safe_mode in order to flash the device
+# Solution from this thread:
+# https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
+switch:
+  - platform: safe_mode
+    name: "${upper_devicename} Flash Mode (Safe Mode)"
+    icon: "mdi:cellphone-arrow-down"
+
+# https://www.esphome-devices.com/devices/AirGradient-DIY/
+# https://github.com/JacobMillward/airgradient_diy_pro_esphome/blob/main/airgradient_diy_pro.yaml
+
+uart:
+  # https://esphome.io/components/uart.html#uart
+  - rx_pin: D4
+    tx_pin: D3
+    baud_rate: 9600
+    id: senseair_s8_uart
+
+  - rx_pin: D5
+    tx_pin: D6
+    baud_rate: 9600
+    id: pms5003_uart
+
+i2c:
+  # https://esphome.io/components/i2c.html
+  sda: D2
+  scl: D1
+  # frequency: 400kHz  # Proposed fix for "Component took a long time for an operation" messages https://github.com/esphome/issues/issues/4717
+
+sensor:
+  - platform: pmsx003
+    # PMS5003 https://esphome.io/components/sensor/pmsx003.html
+    type: PMSX003
+    pm_2_5:
+      name: "${upper_devicename} Particulate Matter <2.5µm Concentration"
+      id: pm_2_5
+      on_value:
+        lambda: |-
+          // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+          // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
+          if (id(pm_2_5).state <= 12.0) {
+            // good
+            id(pm_2_5_aqi).publish_state((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
+          } else if (id(pm_2_5).state <= 35.4) {
+            // moderate
+            id(pm_2_5_aqi).publish_state((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
+          } else if (id(pm_2_5).state <= 55.4) {
+            // usg
+            id(pm_2_5_aqi).publish_state((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
+          } else if (id(pm_2_5).state <= 150.4) {
+            // unhealthy
+            id(pm_2_5_aqi).publish_state((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
+          } else if (id(pm_2_5).state <= 250.4) {
+            // very unhealthy
+            id(pm_2_5_aqi).publish_state((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
+          } else if (id(pm_2_5).state <= 350.4) {
+            // hazardous
+            id(pm_2_5_aqi).publish_state((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
+          } else if (id(pm_2_5).state <= 500.4) {
+            // hazardous 2
+            id(pm_2_5_aqi).publish_state((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
+          } else {
+            id(pm_2_5_aqi).publish_state(500);
+          }
+    pm_1_0:
+      name: "Particulate Matter <1.0µm Concentration"
+      id: pm_1_0
+    pm_10_0:
+      name: "Particulate Matter <10.0µm Concentration"
+      id: pm_10_0
+    pm_0_3um:
+      name: "Particulate Matter >0.3µm Count"
+      id: pm_0_3um
+    update_interval: 120s
+    uart_id: pms5003_uart
+
+  - platform: template
+    name: "${upper_devicename} PM <2.5 AQI"
+    unit_of_measurement: "AQI"
+    icon: "mdi:air-filter"
+    accuracy_decimals: 0
+    id: pm_2_5_aqi
+
+  - platform: senseair
+    # SenseAir S8 https://esphome.io/components/sensor/senseair.html
+    co2:
+      name: "${upper_devicename} SenseAir S8 CO2 Value"
+      id: co2
+    id: senseair_s8
+    uart_id: senseair_s8_uart
+
+  - platform: sht3xd  # Change to sht4x for SHT40
+    # SHT30 https://esphome.io/components/sensor/sht3xd.html
+    temperature:
+      name: "${upper_devicename} Temperature"
+      id: temp
+    humidity:
+      name: "${upper_devicename} Humidity"
+      id: humidity
+    address: 0x44
+    update_interval: 30s
+
+  - platform: wifi_signal
+    name: "${upper_devicename} WiFi Signal"
+    id: wifi_dbm
+    update_interval: 60s
+
+  - platform: uptime
+    name: ${upper_devicename} Uptime Sensor
+    id: device_uptime
+    update_interval: 60s
+
+  - platform: sgp4x
+    # SGP41 https://esphome.io/components/sensor/sgp4x.html
+    voc:
+      name: "${upper_devicename} VOC Index"
+      id: voc
+    nox:
+      name: "${upper_devicename} NOx Index"
+      id: nox
+    compensation:  # Remove this block if no temp/humidity sensor present for compensation
+      temperature_source: temp
+      humidity_source: humidity
+
+font:
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light_12
+    size: 12
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Ubuntu Mono"
+    id: ubuntu
+    size: 20
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 
 
-  display:
-    # https://esphome.io/components/display/ssd1306.html
-    # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
-    - platform: ssd1306_i2c
-      model: "SH1106 128x64"
-      id: oled_display
-      reset_pin: D0
-      address: 0x3C
-      # update_interval: 2s
-      # setup_priority: -100  # Attempt to fix the wifi 'auth expired' message https://github.com/esphome/issues/issues/3782
-      pages:
-        - id: page1
-          lambda: |-
-            it.printf(0, 0, id(opensans_14), "Temp: %.1f F", id(temp).state*9/5+32);
-            it.printf(0, 15, id(opensans_14), "Humidity: %.1f%%", id(humidity).state);
-            it.printf(0, 32, id(opensans_14), "CO2: %.0f ppm", id(co2).state);
-            it.printf(0, 47, id(opensans_14), "PM2.5: %.0f ug/m3", id(pm2).state);
-        - id: page2
-          lambda: |-
-            it.printf(0, 0, id(opensans_14), "VOC: %.0f", id(voc).state);
-            it.printf(0, 26, id(opensans_14), "NOx: %.0f", id(nox).state);
+display:
+  # https://esphome.io/components/display/ssd1306.html
+  # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    id: oled_display
+    reset_pin: D0
+    address: 0x3C
+    # rotation: 180°
+    pages:
+      - id: summary1
+        lambda: |-
+          it.printf(0, 0, id(poppins_light), "CO2:");
+          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 16, id(poppins_light), "PM2.5:");
+          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 32, id(poppins_light), "Temp:");
+          it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          it.printf(0, 48, id(poppins_light), "Humidity:");
+          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+      - id: summary2
+        lambda: |-
+          it.printf(0, 0, id(poppins_light), "CO2:");
+          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 16, id(poppins_light), "PM2.5:");
+          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 32, id(poppins_light), "VOC:");
+          it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(0, 48, id(poppins_light), "NOx:");
+          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+      - id: air_quality
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "CO2");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 34, id(ubuntu), "PM2");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+      - id: air_temp
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "Temp");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          it.printf(0, 34, id(ubuntu), "Humid");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+      - id: tvoc
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "VOC:");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(0, 34, id(ubuntu), "NOx:");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+      - id: combo
+        lambda: |-
+          it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+          it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
+          it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
+          it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
+          it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
+      - id: airgradient_arduino
+        lambda: |-
+          it.printf(0, 0, id(poppins_light_12), "PM: %.0f", id(pm_2_5).state);
+          it.printf(64, 0, id(poppins_light_12), "CO2: %.0f", id(co2).state);
+          it.printf(0, 16, id(poppins_light_12), "TVOC: %.0f", id(voc).state);
+          it.printf(64, 16, id(poppins_light_12), "NOX: %.0f", id(nox).state);
+          it.printf(0, 32, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+          it.printf(64, 32, id(poppins_light_12), "H: %.1f%%", id(humidity).state);
 
-  button:
-    # https://github.com/esphome/issues/issues/2444
-    - platform: template
-      name: ${upper_devicename} SenseAir S8 Calibration
-      id: senseair_s8_calibrate_button
-      on_press:
-        then:
-          - senseair.background_calibration: senseair_s8
-          - delay: 70s
-          - senseair.background_calibration_result: senseair_s8
 
-  http_request:
-    # Used to support POST request to send data to AirGradient
-    # https://esphome.io/components/http_request.html
-
-
-  interval:
-    - interval: 5s
-      # Automatically switch to the next page every five seconds
+button:
+  # https://github.com/esphome/issues/issues/2444
+  - platform: template
+    name: ${upper_devicename} SenseAir S8 Calibration
+    id: senseair_s8_calibrate_button
+    on_press:
       then:
-        - display.page.show_next: oled_display
-        - component.update: oled_display
-
-    - interval: 300s  # 5 minutes
-      # Send data to AirGradient API server
+        - senseair.background_calibration: senseair_s8
+        - delay: 70s
+        - senseair.background_calibration_result: senseair_s8
+  - platform: template
+    name: ${upper_devicename} SenseAir S8 Enable Automatic Calibration
+    id: senseair_s8_enable_calibrate_button
+    on_press:
       then:
-        - http_request.post:
-            # https://api.airgradient.com/public/docs/api/v1/
-            # AirGradient URL with the last 3 bytes of the MAC address in Hex format all lower case
-            url: !lambda |-
-              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-            headers:
-                Content-Type: application/json
-            # "!lambda return to_string(id(pm2).state);" Converts sensor output from double to string
-            json:
-              wifi: !lambda return to_string(id(wifi_dbm).state);
-              pm02: !lambda return to_string(id(pm2).state);
-              rco2: !lambda return to_string(id(co2).state);
-              atmp: !lambda return to_string(id(temp).state);
-              rhum: !lambda return to_string(id(humidity).state);
-              tvoc_index: !lambda return to_string(id(voc).state);
-              nox_index: !lambda return to_string(id(nox).state);
-            verify_ssl: false
+        - senseair.abc_enable: senseair_s8
+  - platform: template
+    name: ${upper_devicename} SenseAir S8 Disable Automatic Calibration
+    id: senseair_s8_disable_calibrate_button
+    on_press:
+      then:
+        - senseair.abc_disable: senseair_s8
+
+
+http_request:
+  # Used to support POST request to send data to AirGradient
+  # https://esphome.io/components/http_request.html
+
+
+interval:
+  - interval: 5s
+    # Automatically switch to the next page every five seconds
+    then:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
+
+  - interval: 300s  # 5 minutes
+    # Send data to AirGradient API server
+    then:
+      - http_request.post:
+          # https://api.airgradient.com/public/docs/api/v1/
+          # AirGradient URL with the last 3 bytes of the MAC address in Hex format all lower case
+          url: !lambda |-
+            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+          headers:
+              Content-Type: application/json
+          # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
+          json:
+            wifi: !lambda return to_string(id(wifi_dbm).state);
+            pm01: !lambda return to_string(id(pm_1_0).state);
+            pm02: !lambda return to_string(id(pm_2_5).state);
+            pm10: !lambda return to_string(id(pm_10_0).state);
+            pm003_count: !lambda return to_string(id(pm_0_3um).state);
+            rco2: !lambda return to_string(id(co2).state);
+            atmp: !lambda return to_string(id(temp).state);
+            rhum: !lambda return to_string(id(humidity).state);
+            tvoc_index: !lambda return to_string(id(voc).state);
+            nox_index: !lambda return to_string(id(nox).state);
+          verify_ssl: false
