@@ -1,47 +1,72 @@
-# Tested on Version 3.3
+# Tested on AirGradient Pro V3.3
 # https://www.airgradient.com/open-airgradient/instructions/overview/
+
+# Needs ESPHome 2023.7.0 or later
 
 # Reference for substitutions: https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-pro-diy.yaml
 substitutions:
   devicename: "airgradient-pro"
-  upper_devicename: "AirGradient Pro"
+  upper_devicename: "AG Pro"
+  ag_esphome_config_version: 0.9.5
 
 esphome:
   name: "${devicename}"
   friendly_name: "${upper_devicename}"
   name_add_mac_suffix: true  # Set to false if you don't want part of the MAC address in the name
+  on_boot:
+    priority: 200  # Network connections setup
+    then:
+      - http_request.post:
+          # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+          # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+          url: !lambda |-
+            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+          headers:
+              Content-Type: application/json
+          json:
+            wifi: !lambda return to_string(-50);
 
 esp8266:
   board: d1_mini
+  restore_from_flash: true  # Used to store state of display config
+
 
 # Enable logging
 # https://esphome.io/components/logger.html
 logger:
-  # logs:
-  #   pmsx003: INFO  # PMS5003 is very chatty at default update interval and was causing reboots
+  logs:
+    component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
 
 # Enable Home Assistant API
 api:
 
 ota:
 
-
 wifi:
+  # ssid: !secret wifi_ssid
+  # password: !secret wifi_password
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
 
 # The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
 # https://esphome.io/components/captive_portal.html
 captive_portal:
 
-web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
+# web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
 
 # Create a switch for safe_mode in order to flash the device
 # Solution from this thread:
 # https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
 switch:
   - platform: safe_mode
-    name: "${upper_devicename} Flash Mode (Safe Mode)"
+    name: "Flash Mode (Safe Mode)"
     icon: "mdi:cellphone-arrow-down"
+  - platform: template
+    name: "Display Temperature in °F"
+    icon: "mdi:thermometer"
+    id: display_in_f
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
 
 # https://www.esphome-devices.com/devices/AirGradient-DIY/
 # https://github.com/JacobMillward/airgradient_diy_pro_esphome/blob/main/airgradient_diy_pro.yaml
@@ -62,14 +87,14 @@ i2c:
   # https://esphome.io/components/i2c.html
   sda: D2
   scl: D1
-  # frequency: 400kHz  # Proposed fix for "Component took a long time for an operation" messages https://github.com/esphome/issues/issues/4717
+  frequency: 100kHz
 
 sensor:
   - platform: pmsx003
     # PMS5003 https://esphome.io/components/sensor/pmsx003.html
     type: PMSX003
     pm_2_5:
-      name: "${upper_devicename} Particulate Matter <2.5µm Concentration"
+      name: "PM 2.5"
       id: pm_2_5
       on_value:
         lambda: |-
@@ -100,19 +125,19 @@ sensor:
             id(pm_2_5_aqi).publish_state(500);
           }
     pm_1_0:
-      name: "Particulate Matter <1.0µm Concentration"
+      name: "PM 1.0"
       id: pm_1_0
     pm_10_0:
-      name: "Particulate Matter <10.0µm Concentration"
+      name: "PM 10.0"
       id: pm_10_0
     pm_0_3um:
-      name: "Particulate Matter >0.3µm Count"
+      name: "PM 0.3"
       id: pm_0_3um
-    update_interval: 120s
+    update_interval: 2min
     uart_id: pms5003_uart
 
   - platform: template
-    name: "${upper_devicename} PM <2.5 AQI"
+    name: "PM 2.5 AQI"
     unit_of_measurement: "AQI"
     icon: "mdi:air-filter"
     accuracy_decimals: 0
@@ -120,46 +145,68 @@ sensor:
 
   - platform: senseair
     # SenseAir S8 https://esphome.io/components/sensor/senseair.html
+    # https://senseair.com/products/size-counts/s8-lp/
     co2:
-      name: "${upper_devicename} SenseAir S8 CO2 Value"
+      name: "SenseAir S8 CO2"
       id: co2
+      filters:
+        - skip_initial: 2
+        - clamp:
+            min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
     id: senseair_s8
     uart_id: senseair_s8_uart
 
-  - platform: sht3xd  # Change to sht4x for SHT40
+  - platform: sht4x  # Change to sht4x for SHT40 or sht3xd for SHT30
     # SHT30 https://esphome.io/components/sensor/sht3xd.html
     temperature:
-      name: "${upper_devicename} Temperature"
+      name: "Temperature"
       id: temp
     humidity:
-      name: "${upper_devicename} Humidity"
+      name: "Humidity"
       id: humidity
     address: 0x44
     update_interval: 30s
 
   - platform: wifi_signal
-    name: "${upper_devicename} WiFi Signal"
+    name: "WiFi Signal"
     id: wifi_dbm
     update_interval: 60s
 
   - platform: uptime
-    name: ${upper_devicename} Uptime Sensor
+    name: "Uptime"
     id: device_uptime
-    update_interval: 60s
+    update_interval: 10s
 
   - platform: sgp4x
     # SGP41 https://esphome.io/components/sensor/sgp4x.html
     voc:
-      name: "${upper_devicename} VOC Index"
+      name: "VOC Index"
       id: voc
     nox:
-      name: "${upper_devicename} NOx Index"
+      name: "NOx Index"
       id: nox
     compensation:  # Remove this block if no temp/humidity sensor present for compensation
       temperature_source: temp
       humidity_source: humidity
 
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+    name: "Display in °F"
+    id: display_toggle_button
+    on_release:
+      then:
+        - switch.toggle: display_in_f
+
+
 font:
+    # Font to use on the display
+    # Open Source font Liberation Sans by Red Hat
+    # https://www.dafont.com/liberation-sans.font
+  # - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
   - file:
       type: gfonts
       family: Poppins
@@ -176,9 +223,8 @@ font:
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
   - file: "gfonts://Ubuntu Mono"
     id: ubuntu
-    size: 20
+    size: 22
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-
 
 display:
   # https://esphome.io/components/display/ssd1306.html
@@ -197,7 +243,11 @@ display:
           it.printf(0, 16, id(poppins_light), "PM2.5:");
           it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
           it.printf(0, 32, id(poppins_light), "Temp:");
-          it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          if (id(display_in_f).state) {
+            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+          }
           it.printf(0, 48, id(poppins_light), "Humidity:");
           it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
       - id: summary2
@@ -212,14 +262,18 @@ display:
           it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
       - id: air_quality
         lambda: |-
-          it.printf(0, 6, id(ubuntu), "CO2");
-          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 34, id(ubuntu), "PM2");
-          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 4, id(ubuntu), "CO2");
+          it.printf(128, 4, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 30, id(ubuntu), "PM2");
+          it.printf(128, 30, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
       - id: air_temp
         lambda: |-
           it.printf(0, 6, id(ubuntu), "Temp");
-          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          if (id(display_in_f).state) {
+            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+          }
           it.printf(0, 34, id(ubuntu), "Humid");
           it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
       - id: tvoc
@@ -230,27 +284,36 @@ display:
           it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
       - id: combo
         lambda: |-
-          it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+          if (id(display_in_f).state) {
+            it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+          } else {
+            it.printf(0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
+          }
           it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
           it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
           it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
           it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
           it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
           it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
-      - id: airgradient_arduino
+      - id: boot
         lambda: |-
-          it.printf(0, 0, id(poppins_light_12), "PM: %.0f", id(pm_2_5).state);
-          it.printf(64, 0, id(poppins_light_12), "CO2: %.0f", id(co2).state);
-          it.printf(0, 16, id(poppins_light_12), "TVOC: %.0f", id(voc).state);
-          it.printf(64, 16, id(poppins_light_12), "NOX: %.0f", id(nox).state);
-          it.printf(0, 32, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
-          it.printf(64, 32, id(poppins_light_12), "H: %.1f%%", id(humidity).state);
-
+          it.printf(0, 0, id(poppins_light), "Serial: %s", get_mac_address().substr(6,11).c_str());
+          it.printf(0, 32, id(poppins_light), "Config Ver: $ag_esphome_config_version");
+    on_page_change:
+      to: boot
+      then:
+        - if:
+            # Skip the boot page after initial boot
+            condition:
+                lambda: 'return id(device_uptime).state > 30;'
+            then:
+              - display.page.show_next: oled_display
+              - component.update: oled_display
 
 button:
   # https://github.com/esphome/issues/issues/2444
   - platform: template
-    name: ${upper_devicename} SenseAir S8 Calibration
+    name: SenseAir S8 Calibration
     id: senseair_s8_calibrate_button
     on_press:
       then:
@@ -258,13 +321,13 @@ button:
         - delay: 70s
         - senseair.background_calibration_result: senseair_s8
   - platform: template
-    name: ${upper_devicename} SenseAir S8 Enable Automatic Calibration
+    name: SenseAir S8 Enable Automatic Calibration
     id: senseair_s8_enable_calibrate_button
     on_press:
       then:
         - senseair.abc_enable: senseair_s8
   - platform: template
-    name: ${upper_devicename} SenseAir S8 Disable Automatic Calibration
+    name: SenseAir S8 Disable Automatic Calibration
     id: senseair_s8_disable_calibrate_button
     on_press:
       then:
@@ -280,10 +343,20 @@ interval:
   - interval: 5s
     # Automatically switch to the next page every five seconds
     then:
-      - display.page.show_next: oled_display
-      - component.update: oled_display
+      - if:
+          # Show boot screen for first 10 seconds with serial number and config version
+          condition:
+              lambda: 'return id(device_uptime).state < 10;'
+          then:
+            - display.page.show: boot
+            - lambda: id(device_uptime).set_update_interval(1);
+          else:
+            # Change page on display
+            - display.page.show_next: oled_display
+            - component.update: oled_display
 
-  - interval: 300s  # 5 minutes
+
+  - interval: 2.5min
     # Send data to AirGradient API server
     then:
       - http_request.post:
@@ -305,4 +378,3 @@ interval:
             rhum: !lambda return to_string(id(humidity).state);
             tvoc_index: !lambda return to_string(id(voc).state);
             nox_index: !lambda return to_string(id(nox).state);
-          verify_ssl: false
