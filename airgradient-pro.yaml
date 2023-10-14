@@ -7,7 +7,7 @@
 substitutions:
   devicename: "airgradient-pro"
   upper_devicename: "AG Pro"
-  ag_esphome_config_version: 0.9.5
+  ag_esphome_config_version: 0.9.6
 
 esphome:
   name: "${devicename}"
@@ -43,8 +43,6 @@ api:
 ota:
 
 wifi:
-  # ssid: !secret wifi_ssid
-  # password: !secret wifi_password
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
 
@@ -87,7 +85,7 @@ i2c:
   # https://esphome.io/components/i2c.html
   sda: D2
   scl: D1
-  frequency: 100kHz
+  frequency: 200kHz
 
 sensor:
   - platform: pmsx003
@@ -156,8 +154,8 @@ sensor:
     id: senseair_s8
     uart_id: senseair_s8_uart
 
-  - platform: sht4x  # Change to sht4x for SHT40 or sht3xd for SHT30
-    # SHT30 https://esphome.io/components/sensor/sht3xd.html
+  - platform: sht4x
+    # SHT40 https://esphome.io/components/sensor/sht4x.html
     temperature:
       name: "Temperature"
       id: temp
@@ -165,7 +163,17 @@ sensor:
       name: "Humidity"
       id: humidity
     address: 0x44
-    update_interval: 30s
+
+  # - platform: sht3xd
+  #   # SHT30 https://esphome.io/components/sensor/sht3xd.html
+  #   temperature:
+  #     name: "Temperature"
+  #     id: temp
+  #   humidity:
+  #     name: "Humidity"
+  #     id: humidity
+  #   address: 0x44
+  #   heater_enabled: false  # Only enable if in conditions that may have high condensation
 
   - platform: wifi_signal
     name: "WiFi Signal"
