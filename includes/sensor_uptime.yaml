@@ -1,0 +1,4 @@
+  - platform: uptime
+    name: "Uptime"
+    id: device_uptime
+    update_interval: 10s

@@ -1,0 +1,22 @@
+
+  # https://github.com/esphome/issues/issues/2444
+  - platform: template
+    name: SenseAir S8 Calibration
+    id: senseair_s8_calibrate_button
+    on_press:
+      then:
+        - senseair.background_calibration: senseair_s8
+        - delay: 70s
+        - senseair.background_calibration_result: senseair_s8
+  - platform: template
+    name: SenseAir S8 Enable Automatic Calibration
+    id: senseair_s8_enable_calibrate_button
+    on_press:
+      then:
+        - senseair.abc_enable: senseair_s8
+  - platform: template
+    name: SenseAir S8 Disable Automatic Calibration
+    id: senseair_s8_disable_calibrate_button
+    on_press:
+      then:
+        - senseair.abc_disable: senseair_s8

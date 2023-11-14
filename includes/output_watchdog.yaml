@@ -1,0 +1,4 @@
+# Pin to notify external watchdog that activity is present
+  - platform: gpio
+    id: watchdog
+    pin: GPIO2

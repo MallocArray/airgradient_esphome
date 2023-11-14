@@ -1,0 +1,23 @@
+font:
+    # Font to use on the display
+    # Open Source font Liberation Sans by Red Hat
+    # https://www.dafont.com/liberation-sans.font
+  # - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light_12
+    size: 12
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Ubuntu Mono"
+    id: ubuntu
+    size: 22
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'

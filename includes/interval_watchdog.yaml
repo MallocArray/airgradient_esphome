@@ -1,0 +1,6 @@
+  - interval: 2.5min
+    # Notify watchdog device it is still alive
+    then:
+      - output.turn_on: watchdog
+      - delay: 20ms
+      - output.turn_off: watchdog

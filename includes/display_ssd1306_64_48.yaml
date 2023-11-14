@@ -1,0 +1,43 @@
+  - platform: ssd1306_i2c
+    # https://esphome.io/components/display/ssd1306.html?highlight=display
+    model: "SSD1306 64x48"
+    id: oled_display
+    reset_pin: D0
+    address: 0x3C
+    # rotation: 180 # Enable to 180 to flip screen around
+    pages:
+      - id: display_pm2
+        lambda: |-
+          it.print(0, 0, id(font1), "PM2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(pm_2_5).state);
+      - id: display_co2
+        lambda: |-
+          it.print(0, 0, id(font1), "CO2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
+      # - id: display_temp
+      #   lambda: |-
+      #     it.print(0, 0, id(font1), "°C");
+      #     it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state);
+      - id: display_tempf
+        lambda: |-
+          it.print(0, 0, id(font1), "°F");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state*9/5+32);
+      - id: display_humidity
+        lambda: |-
+          it.print(0, 0, id(font1), "HUM");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
+      - id: boot
+        lambda: |-
+          it.printf(0, 0, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(6,11).c_str());
+
+
+    on_page_change:
+      to: boot
+      then:
+        - if:
+            # Skip the boot page after initial boot
+            condition:
+                lambda: 'return id(device_uptime).state > 30;'
+            then:
+              - display.page.show_next: oled_display
+              - component.update: oled_display

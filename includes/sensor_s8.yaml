@@ -1,0 +1,12 @@
+  - platform: senseair
+    # SenseAir S8 https://esphome.io/components/sensor/senseair.html
+    # https://senseair.com/products/size-counts/s8-lp/
+    co2:
+      name: "SenseAir S8 CO2"
+      id: co2
+      filters:
+        - skip_initial: 2
+        - clamp:
+            min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
+    id: senseair_s8
+    uart_id: senseair_s8_uart
