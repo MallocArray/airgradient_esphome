@@ -84,6 +84,8 @@ display:
 
 button:
   - <<: !include includes/button_s8_calibration.yaml
+  - <<: !include includes/button_s8_calibration_enable.yaml
+  - <<: !include includes/button_s8_calibration_disable.yaml
 
 interval:
   - <<: !include includes/interval_display_page_change.yaml

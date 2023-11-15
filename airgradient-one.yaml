@@ -82,6 +82,8 @@ display:
 
 button:
   - <<: !include includes/button_s8_calibration.yaml
+  - <<: !include includes/button_s8_calibration_enable.yaml
+  - <<: !include includes/button_s8_calibration_disable.yaml
 
 binary_sensor:
   - <<: !include includes/binary_sensor_config_gpio9.yaml

@@ -1,0 +1,6 @@
+  - platform: template
+    name: SenseAir S8 Disable Automatic Calibration
+    id: senseair_s8_disable_calibrate_button
+    on_press:
+      then:
+        - senseair.abc_disable: senseair_s8

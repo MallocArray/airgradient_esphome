@@ -77,6 +77,8 @@ sensor:
 
 button:
   - <<: !include includes/button_s8_calibration.yaml
+  - <<: !include includes/button_s8_calibration_enable.yaml
+  - <<: !include includes/button_s8_calibration_disable.yaml
 
 output:
   - <<: !include includes/output_watchdog.yaml
