@@ -1,0 +1,6 @@
+  devicename: "airgradient-pro"
+  upper_devicename: "AG Pro"
+  ag_esphome_config_version: 0.9.10
+  CO2_ABC_OFFSET: '0'
+  add_mac_suffix: "true"
+  pms5003_update_interval: 2min

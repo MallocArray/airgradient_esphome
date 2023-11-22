@@ -5,6 +5,7 @@
       name: "SenseAir S8 CO2"
       id: co2
       filters:
+        - offset: ${CO2_ABC_OFFSET}
         - skip_initial: 2
         - clamp:
             min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html

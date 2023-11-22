@@ -1,4 +1,3 @@
-
   # https://github.com/esphome/issues/issues/2444
   - platform: template
     name: SenseAir S8 Calibration
