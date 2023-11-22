@@ -1,5 +1,3 @@
-
-
   # https://esphome.io/components/display/ssd1306.html
   # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
   - platform: ssd1306_i2c

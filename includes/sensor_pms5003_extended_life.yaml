@@ -14,4 +14,4 @@
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
-    update_interval: 2min
+    update_interval: ${pms5004_update_interval}

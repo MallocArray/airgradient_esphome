@@ -30,7 +30,6 @@
         lambda: |-
           it.printf(0, 0, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(6,11).c_str());
 
-
     on_page_change:
       to: boot
       then:

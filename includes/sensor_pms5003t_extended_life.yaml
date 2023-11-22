@@ -20,4 +20,4 @@
     humidity:
       name: "Humidity"
       id: humidity
-    update_interval: 2min
+    update_interval: ${pms5004_update_interval}

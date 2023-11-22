@@ -1,4 +1,3 @@
-
   - platform: template
     name: SenseAir S8 Enable Automatic Calibration
     id: senseair_s8_enable_calibrate_button

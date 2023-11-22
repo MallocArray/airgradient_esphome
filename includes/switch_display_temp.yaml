@@ -2,5 +2,5 @@
     name: "Display Temperature in °F"
     icon: "mdi:thermometer"
     id: display_in_f
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: ${DEFAULT_DISPLAY_TEMP}
     optimistic: True

@@ -5,14 +5,12 @@
 
 # Reference for substitutions: https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-pro-diy.yaml
 substitutions:
-  devicename: "airgradient-pro"
-  upper_devicename: "AG Pro"
-  ag_esphome_config_version: 0.9.10
+  <<: !include includes/substitutions.yaml
 
 esphome:
   name: "${devicename}"
   friendly_name: "${upper_devicename}"
-  name_add_mac_suffix: true  # Set to false if you don't want part of the MAC address in the name
+  name_add_mac_suffix: ${add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
   <<: !include includes/call_home_on_boot.yaml  # Reports to AirGradient dashboard after Wifi connected for quick validation
 
 
