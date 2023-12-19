@@ -1,0 +1,407 @@
+substitutions:
+  devicename: ag-open-air-o-1pst
+  upper_devicename: AG Open Air CO2
+  ag_esphome_config_version: 0.1.1
+esphome:
+  name: ag-open-air-o-1pst
+  friendly_name: AG Open Air CO2
+  name_add_mac_suffix: true
+  on_boot:
+  - priority: 200.0
+    then:
+    - if:
+        condition:
+          switch.is_on:
+            id: upload_airgradient
+        then:
+        - http_request.post:
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+            headers:
+              Content-Type: application/json
+            json:
+              wifi: !lambda |-
+                return to_string(-50);
+            verify_ssl: true
+            method: POST
+  build_path: build/ag-open-air-o-1pst
+  area: ''
+  platformio_options: {}
+  includes: []
+  libraries: []
+  min_version: 2023.11.6
+esp32:
+  board: esp32-c3-devkitm-1
+  flash_size: 4MB
+  framework:
+    version: 2.0.5
+    source: ~3.20005.0
+    platform_version: platformio/espressif32@5.4.0
+    type: arduino
+  variant: ESP32C3
+logger:
+  baud_rate: 0
+  logs:
+    component: ERROR
+  tx_buffer_size: 512
+  deassert_rts_dtr: false
+  hardware_uart: UART0
+  level: DEBUG
+api:
+  port: 6053
+  password: \033[5m''\033[6m
+  reboot_timeout: 15min
+ota:
+  safe_mode: true
+  port: 3232
+  reboot_timeout: 5min
+  num_attempts: 10
+wifi:
+  ap:
+    ap_timeout: 1min
+  domain: .local
+  reboot_timeout: 15min
+  power_save_mode: LIGHT
+  fast_connect: false
+  passive_scan: false
+  enable_on_boot: true
+  use_address: ag-open-air-o-1pst.local
+captive_portal: {}
+http_request:
+  useragent: ESPHome
+  follow_redirects: true
+  redirect_limit: 3
+  timeout: 5s
+switch:
+- platform: safe_mode
+  name: Flash Mode (Safe Mode)
+  icon: mdi:cellphone-arrow-down
+  disabled_by_default: false
+  restore_mode: ALWAYS_OFF
+  entity_category: config
+- platform: template
+  name: Display Temperature in °F
+  icon: mdi:thermometer
+  id: display_in_f
+  restore_mode: RESTORE_DEFAULT_ON
+  optimistic: true
+  disabled_by_default: false
+  assumed_state: false
+- platform: template
+  name: Upload to AirGradient Dashboard
+  id: upload_airgradient
+  restore_mode: RESTORE_DEFAULT_ON
+  optimistic: true
+  disabled_by_default: false
+  assumed_state: false
+uart:
+- rx_pin:
+    number: 0
+    mode:
+      input: true
+      output: false
+      open_drain: false
+      pullup: false
+      pulldown: false
+    inverted: false
+    ignore_strapping_warning: false
+    drive_strength: 20.0
+  tx_pin:
+    number: 1
+    mode:
+      output: true
+      input: false
+      open_drain: false
+      pullup: false
+      pulldown: false
+    inverted: false
+    ignore_strapping_warning: false
+    drive_strength: 20.0
+  baud_rate: 9600
+  id: senseair_s8_uart
+  rx_buffer_size: 256
+  stop_bits: 1
+  data_bits: 8
+  parity: NONE
+- rx_pin:
+    number: 20
+    mode:
+      input: true
+      output: false
+      open_drain: false
+      pullup: false
+      pulldown: false
+    inverted: false
+    ignore_strapping_warning: false
+    drive_strength: 20.0
+  tx_pin:
+    number: 21
+    mode:
+      output: true
+      input: false
+      open_drain: false
+      pullup: false
+      pulldown: false
+    inverted: false
+    ignore_strapping_warning: false
+    drive_strength: 20.0
+  baud_rate: 9600
+  id: pms5003_uart
+  rx_buffer_size: 256
+  stop_bits: 1
+  data_bits: 8
+  parity: NONE
+i2c:
+- sda: 7
+  scl: 6
+  frequency: 400000.0
+  scan: true
+sensor:
+- platform: pmsx003
+  type: PMS5003T
+  uart_id: pms5003_uart
+  pm_2_5:
+    name: PM 2.5
+    id: pm_2_5
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+  pm_1_0:
+    name: PM 1.0
+    id: pm_1_0
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+  pm_10_0:
+    name: PM 10.0
+    id: pm_10_0
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+  pm_0_3um:
+    name: PM 0.3
+    id: pm_0_3um
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: /dL
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+  temperature:
+    name: Temperature
+    id: temp
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+  humidity:
+    name: Humidity
+    id: humidity
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    state_class: measurement
+  update_interval: 0s
+- platform: template
+  name: PM 2.5 AQI
+  id: pm_2_5_aqi
+  update_interval: 5min
+  unit_of_measurement: AQI
+  icon: mdi:air-filter
+  accuracy_decimals: 0
+  filters:
+  - skip_initial: 10
+  lambda: !lambda |-
+    // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+    // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
+    if (id(pm_2_5).state <= 12.0) {
+    // good
+    return((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
+    } else if (id(pm_2_5).state <= 35.4) {
+    // moderate
+    return((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
+    } else if (id(pm_2_5).state <= 55.4) {
+    // usg
+    return((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
+    } else if (id(pm_2_5).state <= 150.4) {
+    // unhealthy
+    return((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
+    } else if (id(pm_2_5).state <= 250.4) {
+    // very unhealthy
+    return((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
+    } else if (id(pm_2_5).state <= 350.4) {
+    // hazardous
+    return((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
+    } else if (id(pm_2_5).state <= 500.4) {
+    // hazardous 2
+    return((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
+    } else {
+    return(500);
+    }
+  disabled_by_default: false
+  force_update: false
+- platform: senseair
+  co2:
+    name: SenseAir S8 CO2
+    id: co2
+    filters:
+    - skip_initial: 2
+    - clamp:
+        min_value: 400.0
+        max_value: .nan
+        ignore_out_of_range: false
+    disabled_by_default: false
+    force_update: false
+    unit_of_measurement: ppm
+    icon: mdi:molecule-co2
+    accuracy_decimals: 0
+    device_class: carbon_dioxide
+    state_class: measurement
+  id: senseair_s8
+  uart_id: senseair_s8_uart
+  update_interval: 60s
+- platform: wifi_signal
+  name: WiFi Signal
+  id: wifi_dbm
+  update_interval: 60s
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: dBm
+  accuracy_decimals: 0
+  device_class: signal_strength
+  state_class: measurement
+  entity_category: diagnostic
+- platform: uptime
+  name: Uptime
+  id: device_uptime
+  update_interval: 10s
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: s
+  icon: mdi:timer-outline
+  accuracy_decimals: 0
+  device_class: duration
+  state_class: total_increasing
+  entity_category: diagnostic
+- platform: sgp4x
+  voc:
+    name: VOC Index
+    id: voc
+    disabled_by_default: false
+    force_update: false
+    icon: mdi:radiator
+    accuracy_decimals: 0
+    device_class: aqi
+    state_class: measurement
+  nox:
+    name: NOx Index
+    id: nox
+    disabled_by_default: false
+    force_update: false
+    icon: mdi:radiator
+    accuracy_decimals: 0
+    device_class: aqi
+    state_class: measurement
+  compensation:
+    temperature_source: temp
+    humidity_source: humidity
+  store_baseline: true
+  update_interval: 60s
+  address: 0x59
+button:
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Enable Automatic Calibration
+  id: senseair_s8_enable_calibrate_button
+  on_press:
+  - then:
+    - senseair.abc_enable:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Disable Automatic Calibration
+  id: senseair_s8_disable_calibrate_button
+  on_press:
+  - then:
+    - senseair.abc_disable:
+        id: senseair_s8
+  disabled_by_default: false
+output:
+- platform: gpio
+  id: watchdog
+  pin:
+    number: 2
+    mode:
+      output: true
+      input: false
+      open_drain: false
+      pullup: false
+      pulldown: false
+    inverted: false
+    ignore_strapping_warning: false
+    drive_strength: 20.0
+interval:
+- interval: 150s
+  then:
+  - output.turn_on:
+      id: watchdog
+  - delay: 20ms
+  - output.turn_off:
+      id: watchdog
+- interval: 150s
+  then:
+  - if:
+      condition:
+        switch.is_on:
+          id: upload_airgradient
+      then:
+      - http_request.post:
+          url: !lambda |-
+            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+          headers:
+            Content-Type: application/json
+          json:
+            wifi: !lambda |-
+              return to_string(id(wifi_dbm).state);
+            pm01: !lambda |-
+              return to_string(id(pm_1_0).state);
+            pm02: !lambda |-
+              return to_string(id(pm_2_5).state);
+            pm10: !lambda |-
+              return to_string(id(pm_10_0).state);
+            pm003_count: !lambda |-
+              return to_string(id(pm_0_3um).state);
+            rco2: !lambda |-
+              return to_string(id(co2).state);
+            atmp: !lambda |-
+              return to_string(id(temp).state);
+            rhum: !lambda |-
+              return to_string(id(humidity).state);
+            tvoc_index: !lambda |-
+              return to_string(id(voc).state);
+            nox_index: !lambda |-
+              return to_string(id(nox).state);
+          verify_ssl: true
+          method: POST
