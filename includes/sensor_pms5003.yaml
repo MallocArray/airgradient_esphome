@@ -1,0 +1,33 @@
+# Default interval of updating every second, but using an average over the last 30 seconds/readings
+  - platform: pmsx003
+    # PMS5003 https://esphome.io/components/sensor/pmsx003.html
+    type: PMSX003
+    uart_id: pms5003_uart
+    pm_2_5:
+      name: "PM 2.5"
+      id: pm_2_5
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_1_0:
+      name: "PM 1.0"
+      id: pm_1_0
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_10_0:
+      name: "PM 10.0"
+      id: pm_10_0
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_0_3um:
+      name: "PM 0.3"
+      id: pm_0_3um
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30

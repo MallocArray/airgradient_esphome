@@ -1,6 +1,0 @@
-  - platform: template
-    name: "PM 2.5 AQI"
-    unit_of_measurement: "AQI"
-    icon: "mdi:air-filter"
-    accuracy_decimals: 0
-    id: pm_2_5_aqi

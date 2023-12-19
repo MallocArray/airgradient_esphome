@@ -5,34 +5,6 @@
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
-      on_value:
-        lambda: |-
-          // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
-          // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
-          if (id(pm_2_5).state <= 12.0) {
-            // good
-            id(pm_2_5_aqi).publish_state((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
-          } else if (id(pm_2_5).state <= 35.4) {
-            // moderate
-            id(pm_2_5_aqi).publish_state((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
-          } else if (id(pm_2_5).state <= 55.4) {
-            // usg
-            id(pm_2_5_aqi).publish_state((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
-          } else if (id(pm_2_5).state <= 150.4) {
-            // unhealthy
-            id(pm_2_5_aqi).publish_state((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
-          } else if (id(pm_2_5).state <= 250.4) {
-            // very unhealthy
-            id(pm_2_5_aqi).publish_state((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
-          } else if (id(pm_2_5).state <= 350.4) {
-            // hazardous
-            id(pm_2_5_aqi).publish_state((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
-          } else if (id(pm_2_5).state <= 500.4) {
-            // hazardous 2
-            id(pm_2_5_aqi).publish_state((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
-          } else {
-            id(pm_2_5_aqi).publish_state(500);
-          }
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0

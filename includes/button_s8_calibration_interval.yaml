@@ -1,0 +1,7 @@
+
+  - platform: template
+    name: SenseAir S8 Show Calibration Interval
+    id: senseair_s8_show_calibrate_interval
+    on_press:
+      then:
+        - senseair.abc_get_period: senseair_s8

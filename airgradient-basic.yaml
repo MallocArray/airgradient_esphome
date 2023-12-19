@@ -3,7 +3,7 @@
 substitutions:
   devicename: "ag-basic"
   upper_devicename: "AG Basic"
-  ag_esphome_config_version: 0.1.0
+  ag_esphome_config_version: 0.1.1
 
   # Instructions: https://esphome.io/guides/getting_started_hassio.html
 esphome:
@@ -15,6 +15,7 @@ esp8266:
   board: d1_mini
 
 # Enable logging
+# https://esphome.io/components/logger.html
 logger:
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
@@ -40,6 +41,7 @@ http_request:
 switch:
   - <<: !include includes/switch_safe_mode.yaml
   - <<: !include includes/switch_display_temp.yaml
+  - <<: !include includes/switch_upload_airgradient.yaml
 
 # https://www.esphome-devices.com/devices/AirGradient-DIY/
 
@@ -62,8 +64,8 @@ i2c:
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
 
 sensor:
-  - <<: !include includes/sensor_pms5003_extended_life.yaml
-  - <<: !include includes/sensor_pms5003_aiq.yaml  # Depends on the psm5003 sensor
+  - <<: !include includes/sensor_pms5003.yaml
+  - <<: !include includes/sensor_aqi.yaml
   - <<: !include includes/sensor_s8.yaml
   # - <<: !include includes/sensor_sht40.yaml
   - <<: !include includes/sensor_sht30.yaml
@@ -86,6 +88,7 @@ button:
   - <<: !include includes/button_s8_calibration.yaml
   - <<: !include includes/button_s8_calibration_enable.yaml
   - <<: !include includes/button_s8_calibration_disable.yaml
+  - <<: !include includes/button_s8_calibration_interval.yaml
 
 interval:
   - <<: !include includes/interval_display_page_change.yaml

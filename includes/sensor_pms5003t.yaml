@@ -1,6 +1,6 @@
   - platform: pmsx003
-    # PMS5003 https://esphome.io/components/sensor/pmsx003.html
-    type: PMSX003
+    # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
+    type: PMS5003T
     uart_id: pms5003_uart
     pm_2_5:
       name: "PM 2.5"
@@ -14,4 +14,9 @@
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
-    update_interval: 2min
+    temperature:
+      name: "Temperature"
+      id: temp
+    humidity:
+      name: "Humidity"
+      id: humidity

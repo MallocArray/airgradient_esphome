@@ -3,11 +3,10 @@
 
 # Needs ESPHome 2023.7.0 or later
 
-# Reference for substitutions: https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-pro-diy.yaml
 substitutions:
   devicename: "airgradient-one"
   upper_devicename: "AG One"
-  ag_esphome_config_version: 0.2.0
+  ag_esphome_config_version: 0.2.1
 
 esphome:
   name: "${devicename}"
@@ -18,10 +17,10 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
 
-# Disable logging
+# Enable logging
 # https://esphome.io/components/logger.html
 logger:
-  baud_rate: 0  # Must disable serial logging as ESP32-C3 only has 2 hardware UART and both are in use
+  baud_rate: 0  # Must disable serial logging as it conflicts with pms5003 uart pins and ESP32-C3 only has 2 hardware UART
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
 
@@ -47,6 +46,7 @@ http_request:
 switch:
   - <<: !include includes/switch_safe_mode.yaml
   - <<: !include includes/switch_display_temp.yaml
+  - <<: !include includes/switch_upload_airgradient.yaml
 
 uart:
   # https://esphome.io/components/uart.html#uart
@@ -67,8 +67,8 @@ i2c:
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
 
 sensor:
-  - <<: !include includes/sensor_pms5003_extended_life.yaml
-  - <<: !include includes/sensor_pms5003_aiq.yaml  # Depends on the psm5003 sensor
+  - <<: !include includes/sensor_pms5003.yaml
+  - <<: !include includes/sensor_aqi.yaml
   - <<: !include includes/sensor_s8_led.yaml
   - <<: !include includes/sensor_sht40.yaml
   # - <<: !include includes/sensor_sht30.yaml
@@ -84,12 +84,16 @@ button:
   - <<: !include includes/button_s8_calibration.yaml
   - <<: !include includes/button_s8_calibration_enable.yaml
   - <<: !include includes/button_s8_calibration_disable.yaml
+  - <<: !include includes/button_s8_calibration_interval.yaml
 
 binary_sensor:
   - <<: !include includes/binary_sensor_config_gpio9.yaml
 
 light:
   - <<: !include includes/light_led.yaml
+
+number:
+  - <<: !include includes/number_brightness.yaml
 
 output:
   - <<: !include includes/output_watchdog.yaml

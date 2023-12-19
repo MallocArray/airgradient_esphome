@@ -1,12 +1,16 @@
   on_boot:
     priority: 200  # Network connections setup
     then:
-      - http_request.post:
-          # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
-          # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
-          url: !lambda |-
-            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
-          headers:
-              Content-Type: application/json
-          json:
-            wifi: !lambda return to_string(-50);
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+        - http_request.post:
+            # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+            # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+            headers:
+                Content-Type: application/json
+            json:
+              wifi: !lambda return to_string(-50);

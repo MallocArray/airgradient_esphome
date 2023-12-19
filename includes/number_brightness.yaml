@@ -1,0 +1,12 @@
+# https://esphome.io/components/number/template.html
+  - platform: template
+    name: "LED Brightness %"
+    icon: "mdi:lightbulb"
+    id: led_brightness
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 100
+    optimistic: true
+    restore_value: true
+    mode: slider

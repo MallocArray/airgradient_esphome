@@ -1,0 +1,5 @@
+  - platform: template
+    name: "Upload to AirGradient Dashboard"
+    id: upload_airgradient
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
