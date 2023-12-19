@@ -69,7 +69,7 @@ i2c:
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
 
 sensor:
-  - <<: !include includes/sensor_pms5003.yaml
+  - <<: !include includes/sensor_pms5003t.yaml
   - <<: !include includes/sensor_aqi.yaml
   - <<: !include includes/sensor_s8.yaml
   - <<: !include includes/sensor_wifi.yaml
