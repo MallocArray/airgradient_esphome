@@ -7,7 +7,7 @@
 substitutions:
   devicename: "ag-open-air-o-1pst"
   upper_devicename: "AG Open Air CO2"
-  ag_esphome_config_version: 0.1.0
+  ag_esphome_config_version: 0.1.1
 
 esphome:
   name: "${devicename}"
@@ -48,6 +48,7 @@ http_request:
 switch:
   - <<: !include includes/switch_safe_mode.yaml
   - <<: !include includes/switch_display_temp.yaml
+  - <<: !include includes/switch_upload_airgradient.yaml
 
 uart:
   # https://esphome.io/components/uart.html#uart
@@ -57,7 +58,7 @@ uart:
     id: senseair_s8_uart
 
   - rx_pin: GPIO20  # Pin 30 or RX
-    tx_pin: GPIO21  # Pin 31, or TX
+    tx_pin: GPIO21  # Pin 31 or TX
     baud_rate: 9600
     id: pms5003_uart
 
@@ -68,8 +69,8 @@ i2c:
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
 
 sensor:
-  - <<: !include includes/sensor_pms5003t_extended_life.yaml
-  - <<: !include includes/sensor_pms5003_aiq.yaml  # Depends on the psm5003 sensor
+  - <<: !include includes/sensor_pms5003.yaml
+  - <<: !include includes/sensor_aqi.yaml
   - <<: !include includes/sensor_s8.yaml
   - <<: !include includes/sensor_wifi.yaml
   - <<: !include includes/sensor_uptime.yaml
