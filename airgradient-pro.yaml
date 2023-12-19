@@ -8,6 +8,10 @@ substitutions:
   devicename: "airgradient-pro"
   upper_devicename: "AG Pro"
   ag_esphome_config_version: 0.9.6
+  line0: 0
+  line1: 128
+  wifi_ssid: !secret wifi_ssid
+  SENSE_AIR_S8_CO2_MIN: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
 
 esphome:
   name: "${devicename}"
@@ -150,7 +154,7 @@ sensor:
       filters:
         - skip_initial: 2
         - clamp:
-            min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
+            min_value: $SENSE_AIR_S8_CO2_MIN
     id: senseair_s8
     uart_id: senseair_s8_uart
 
@@ -246,67 +250,69 @@ display:
     pages:
       - id: summary1
         lambda: |-
-          it.printf(0, 0, id(poppins_light), "CO2:");
-          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 16, id(poppins_light), "PM2.5:");
-          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
-          it.printf(0, 32, id(poppins_light), "Temp:");
+          it.printf($line0, 0, id(poppins_light), "CO2:");
+          it.printf($line1, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf($line0, 16, id(poppins_light), "PM2.5:");
+          it.printf($line1, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf($line0, 32, id(poppins_light), "Temp:");
           if (id(display_in_f).state) {
-            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+            it.printf($line1, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", (id(temp).state * 9.0f / 5.0f) + 32.05f);
           } else {
-            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+            it.printf($line1, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
           }
-          it.printf(0, 48, id(poppins_light), "Humidity:");
-          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf($line0, 48, id(poppins_light), "Humidity:");
+          it.printf($line1, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
       - id: summary2
         lambda: |-
-          it.printf(0, 0, id(poppins_light), "CO2:");
-          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 16, id(poppins_light), "PM2.5:");
-          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
-          it.printf(0, 32, id(poppins_light), "VOC:");
-          it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
-          it.printf(0, 48, id(poppins_light), "NOx:");
-          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+          it.printf($line0, 0, id(poppins_light), "CO2:");
+          it.printf($line1, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf($line0, 16, id(poppins_light), "PM2.5:");
+          it.printf($line1, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf($line0, 32, id(poppins_light), "VOC:");
+          it.printf($line1, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf($line0, 48, id(poppins_light), "NOx:");
+          it.printf($line1, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
       - id: air_quality
         lambda: |-
-          it.printf(0, 4, id(ubuntu), "CO2");
-          it.printf(128, 4, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 30, id(ubuntu), "PM2");
-          it.printf(128, 30, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf($line0, 4, id(ubuntu), "CO2");
+          it.printf($line1, 4, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf($line0, 30, id(ubuntu), "PM2");
+          it.printf($line1, 30, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
       - id: air_temp
         lambda: |-
-          it.printf(0, 6, id(ubuntu), "Temp");
+          it.printf($line0, 6, id(ubuntu), "Temp");
           if (id(display_in_f).state) {
-            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+            it.printf($line1, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", (id(temp).state * 9.0f / 5.0f) + 32.05f);
           } else {
-            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+            it.printf($line1, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
           }
-          it.printf(0, 34, id(ubuntu), "Humid");
-          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf($line0, 34, id(ubuntu), "Humid");
+          it.printf($line1, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
       - id: tvoc
         lambda: |-
-          it.printf(0, 6, id(ubuntu), "VOC:");
-          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
-          it.printf(0, 34, id(ubuntu), "NOx:");
-          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+          it.printf($line0, 6, id(ubuntu), "VOC:");
+          it.printf($line1, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf($line0, 34, id(ubuntu), "NOx:");
+          it.printf($line1, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
       - id: combo
         lambda: |-
           if (id(display_in_f).state) {
-            it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+            it.printf($line0, 0, id(poppins_light_12), "%.1f °F", (id(temp).state * 9.0f / 5.0f) + 32.05f);
           } else {
-            it.printf(0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
+            it.printf($line0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
           }
-          it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
-          it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
-          it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
-          it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
-          it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
+          it.printf($line1, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf($line0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
+          it.printf($line1, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf($line0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
+          it.printf($line1, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
+          it.printf($line0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
+          it.printf($line1, 48, id(poppins_light_12), "Wifi: %.0fdbm", id(wifi_dbm).state);
       - id: boot
         lambda: |-
-          it.printf(0, 0, id(poppins_light), "Serial: %s", get_mac_address().substr(6,11).c_str());
-          it.printf(0, 32, id(poppins_light), "Config Ver: $ag_esphome_config_version");
+          it.printf($line0, 0, id(poppins_light), "Serial: %s", get_mac_address().substr(6,11).c_str());
+          it.printf($line0, 32, id(poppins_light), "Config Ver: $ag_esphome_config_version");
+          it.printf($line1, 0, id(poppins_light), "WIFI SSID: $wifi_ssid");
     on_page_change:
       to: boot
       then:
