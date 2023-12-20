@@ -508,7 +508,6 @@ interval:
             - display.page.show_next: oled_display
             - component.update: oled_display
 
-
   - interval: 2.5min
     # Send data to AirGradient API server
     then:

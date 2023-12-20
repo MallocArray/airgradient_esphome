@@ -7,7 +7,7 @@
 substitutions:
   devicename: "airgradient-pro"
   upper_devicename: "AG Pro"
-  ag_esphome_config_version: 0.9.6
+  ag_esphome_config_version: 0.9.10
 
 esphome:
   name: "${devicename}"
@@ -16,20 +16,23 @@ esphome:
   on_boot:
     priority: 200  # Network connections setup
     then:
-      - http_request.post:
-          # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
-          # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
-          url: !lambda |-
-            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-          headers:
-              Content-Type: application/json
-          json:
-            wifi: !lambda return to_string(-50);
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+        - http_request.post:
+            # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+            # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+            headers:
+                Content-Type: application/json
+            json:
+              wifi: !lambda return to_string(-50);
 
 esp8266:
   board: d1_mini
   restore_from_flash: true  # Used to store state of display config
-
 
 # Enable logging
 # https://esphome.io/components/logger.html
@@ -52,10 +55,15 @@ captive_portal:
 
 # web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
 
-# Create a switch for safe_mode in order to flash the device
-# Solution from this thread:
-# https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
+http_request:
+  # Used to support POST request to send data to AirGradient
+  # https://esphome.io/components/http_request.html
+
+
 switch:
+    # Create a switch for safe_mode in order to flash the device
+    # Solution from this thread:
+    # https://community.home-assistant.io/t/esphome-flashing-over-wifi-does-not-work/357352/1
   - platform: safe_mode
     name: "Flash Mode (Safe Mode)"
     icon: "mdi:cellphone-arrow-down"
@@ -65,9 +73,13 @@ switch:
     id: display_in_f
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
+  - platform: template
+    name: "Upload to AirGradient Dashboard"
+    id: upload_airgradient
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
 
 # https://www.esphome-devices.com/devices/AirGradient-DIY/
-# https://github.com/JacobMillward/airgradient_diy_pro_esphome/blob/main/airgradient_diy_pro.yaml
 
 uart:
   # https://esphome.io/components/uart.html#uart
@@ -85,61 +97,80 @@ i2c:
   # https://esphome.io/components/i2c.html
   sda: D2
   scl: D1
-  frequency: 200kHz
+  frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
 
 sensor:
   - platform: pmsx003
+    # Default interval of updating every second, but using an average over the last 30 seconds/readings
     # PMS5003 https://esphome.io/components/sensor/pmsx003.html
     type: PMSX003
+    uart_id: pms5003_uart
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
-      on_value:
-        lambda: |-
-          // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
-          // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
-          if (id(pm_2_5).state <= 12.0) {
-            // good
-            id(pm_2_5_aqi).publish_state((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
-          } else if (id(pm_2_5).state <= 35.4) {
-            // moderate
-            id(pm_2_5_aqi).publish_state((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
-          } else if (id(pm_2_5).state <= 55.4) {
-            // usg
-            id(pm_2_5_aqi).publish_state((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
-          } else if (id(pm_2_5).state <= 150.4) {
-            // unhealthy
-            id(pm_2_5_aqi).publish_state((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
-          } else if (id(pm_2_5).state <= 250.4) {
-            // very unhealthy
-            id(pm_2_5_aqi).publish_state((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
-          } else if (id(pm_2_5).state <= 350.4) {
-            // hazardous
-            id(pm_2_5_aqi).publish_state((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
-          } else if (id(pm_2_5).state <= 500.4) {
-            // hazardous 2
-            id(pm_2_5_aqi).publish_state((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
-          } else {
-            id(pm_2_5_aqi).publish_state(500);
-          }
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
-    update_interval: 2min
-    uart_id: pms5003_uart
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
 
   - platform: template
+    # Depends on another sensor providing an ID of pm_2_5 such as a pms5003
     name: "PM 2.5 AQI"
+    id: pm_2_5_aqi
+    update_interval: 5 min
     unit_of_measurement: "AQI"
     icon: "mdi:air-filter"
     accuracy_decimals: 0
-    id: pm_2_5_aqi
+    filters:
+      - skip_initial: 10  # Need valid data from PM 2.5 sensor before able to calculate
+    lambda: |-
+      // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+      // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
+      if (id(pm_2_5).state <= 12.0) {
+      // good
+      return((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
+      } else if (id(pm_2_5).state <= 35.4) {
+      // moderate
+      return((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
+      } else if (id(pm_2_5).state <= 55.4) {
+      // usg
+      return((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
+      } else if (id(pm_2_5).state <= 150.4) {
+      // unhealthy
+      return((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
+      } else if (id(pm_2_5).state <= 250.4) {
+      // very unhealthy
+      return((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
+      } else if (id(pm_2_5).state <= 350.4) {
+      // hazardous
+      return((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
+      } else if (id(pm_2_5).state <= 500.4) {
+      // hazardous 2
+      return((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
+      } else {
+      return(500);
+      }
 
   - platform: senseair
     # SenseAir S8 https://esphome.io/components/sensor/senseair.html
@@ -164,16 +195,15 @@ sensor:
       id: humidity
     address: 0x44
 
-  # - platform: sht3xd
-  #   # SHT30 https://esphome.io/components/sensor/sht3xd.html
-  #   temperature:
-  #     name: "Temperature"
-  #     id: temp
-  #   humidity:
-  #     name: "Humidity"
-  #     id: humidity
-  #   address: 0x44
-  #   heater_enabled: false  # Only enable if in conditions that may have high condensation
+    # - platform: sht3xd
+    #   # SHT30 https://esphome.io/components/sensor/sht3xd.html
+    #   temperature:
+    #     name: "Temperature"
+    #     id: temp
+    #   humidity:
+    #     name: "Humidity"
+    #     id: humidity
+    #   address: 0x44
 
   - platform: wifi_signal
     name: "WiFi Signal"
@@ -197,24 +227,8 @@ sensor:
       temperature_source: temp
       humidity_source: humidity
 
-
-binary_sensor:
-  - platform: gpio
-    pin:
-      number: D7
-      mode: INPUT_PULLUP
-    name: "Display in °F"
-    id: display_toggle_button
-    on_release:
-      then:
-        - switch.toggle: display_in_f
-
-
 font:
-    # Font to use on the display
-    # Open Source font Liberation Sans by Red Hat
-    # https://www.dafont.com/liberation-sans.font
-  # - file: "./fonts/liberation_sans/LiberationSans-Regular.ttf"
+  # Font to use on the display
   - file:
       type: gfonts
       family: Poppins
@@ -235,12 +249,11 @@ font:
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 
 display:
-  # https://esphome.io/components/display/ssd1306.html
-  # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
+    # https://esphome.io/components/display/ssd1306.html
+    # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
   - platform: ssd1306_i2c
     model: "SH1106 128x64"
     id: oled_display
-    reset_pin: D0
     address: 0x3C
     # rotation: 180°
     pages:
@@ -270,10 +283,10 @@ display:
           it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
       - id: air_quality
         lambda: |-
-          it.printf(0, 4, id(ubuntu), "CO2");
-          it.printf(128, 4, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 30, id(ubuntu), "PM2");
-          it.printf(128, 30, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 6, id(ubuntu), "CO2");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 34, id(ubuntu), "PM2");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
       - id: air_temp
         lambda: |-
           it.printf(0, 6, id(ubuntu), "Temp");
@@ -290,23 +303,26 @@ display:
           it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
           it.printf(0, 34, id(ubuntu), "NOx:");
           it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
-      - id: combo
-        lambda: |-
-          if (id(display_in_f).state) {
-            it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
-          } else {
-            it.printf(0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
-          }
-          it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
-          it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
-          it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
-          it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
-          it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
+      # - id: combo
+      #   lambda: |-
+      #     if (id(display_in_f).state) {
+      #       it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+      #     } else {
+      #       it.printf(0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
+      #     }
+      #     it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+      #     it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
+      #     it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+      #     it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
+      #     it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
+      #     it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
       - id: boot
         lambda: |-
-          it.printf(0, 0, id(poppins_light), "Serial: %s", get_mac_address().substr(6,11).c_str());
-          it.printf(0, 32, id(poppins_light), "Config Ver: $ag_esphome_config_version");
+          it.printf(0, 0, id(poppins_light), "ID:");
+          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
+          it.printf(0, 21, id(poppins_light), "Config Ver: $ag_esphome_config_version");
+          it.printf(0, 42, id(poppins_light), "$upper_devicename");
+
     on_page_change:
       to: boot
       then:
@@ -328,12 +344,14 @@ button:
         - senseair.background_calibration: senseair_s8
         - delay: 70s
         - senseair.background_calibration_result: senseair_s8
+
   - platform: template
     name: SenseAir S8 Enable Automatic Calibration
     id: senseair_s8_enable_calibrate_button
     on_press:
       then:
         - senseair.abc_enable: senseair_s8
+
   - platform: template
     name: SenseAir S8 Disable Automatic Calibration
     id: senseair_s8_disable_calibrate_button
@@ -341,11 +359,39 @@ button:
       then:
         - senseair.abc_disable: senseair_s8
 
+  - platform: template
+    name: SenseAir S8 Show Calibration Interval
+    id: senseair_s8_show_calibrate_interval
+    on_press:
+      then:
+        - senseair.abc_get_period: senseair_s8
 
-http_request:
-  # Used to support POST request to send data to AirGradient
-  # https://esphome.io/components/http_request.html
-
+binary_sensor:
+  - platform: gpio
+    # Binary sensor to perform action when physical config button is pressed
+    # https://esphome.io/components/binary_sensor/index.html?highlight=on_multi_click
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+      inverted: true
+    internal: true  # Hide from displaying in HomeAssistant
+    name: "Option Button"
+    id: option_button
+    on_multi_click:
+      - timing:  # Short Click
+          - ON for at most 1s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: "Toggling display betwen C and F"
+          - switch.toggle: display_in_f
+      - timing:  # Press and hold up to 5 seconds
+          - ON for 1s to 5s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: "Starting manual CO2 calibration"
+          - senseair.background_calibration: senseair_s8
+          - delay: 70s
+          - senseair.background_calibration_result: senseair_s8
 
 interval:
   - interval: 5s
@@ -363,26 +409,29 @@ interval:
             - display.page.show_next: oled_display
             - component.update: oled_display
 
-
   - interval: 2.5min
     # Send data to AirGradient API server
     then:
-      - http_request.post:
-          # https://api.airgradient.com/public/docs/api/v1/
-          # AirGradient URL with the last 3 bytes of the MAC address in Hex format all lower case
-          url: !lambda |-
-            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-          headers:
-              Content-Type: application/json
-          # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
-          json:
-            wifi: !lambda return to_string(id(wifi_dbm).state);
-            pm01: !lambda return to_string(id(pm_1_0).state);
-            pm02: !lambda return to_string(id(pm_2_5).state);
-            pm10: !lambda return to_string(id(pm_10_0).state);
-            pm003_count: !lambda return to_string(id(pm_0_3um).state);
-            rco2: !lambda return to_string(id(co2).state);
-            atmp: !lambda return to_string(id(temp).state);
-            rhum: !lambda return to_string(id(humidity).state);
-            tvoc_index: !lambda return to_string(id(voc).state);
-            nox_index: !lambda return to_string(id(nox).state);
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+          - http_request.post:
+              # https://api.airgradient.com/public/docs/api/v1/
+              # AirGradient URL with the MAC address all lower case
+              url: !lambda |-
+                return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+              headers:
+                  Content-Type: application/json
+              # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
+              json:
+                wifi: !lambda return to_string(id(wifi_dbm).state);
+                pm01: !lambda return to_string(id(pm_1_0).state);
+                pm02: !lambda return to_string(id(pm_2_5).state);
+                pm10: !lambda return to_string(id(pm_10_0).state);
+                pm003_count: !lambda return to_string(id(pm_0_3um).state);
+                rco2: !lambda return to_string(id(co2).state);
+                atmp: !lambda return to_string(id(temp).state);
+                rhum: !lambda return to_string(id(humidity).state);
+                tvoc_index: !lambda return to_string(id(voc).state);
+                nox_index: !lambda return to_string(id(nox).state);
