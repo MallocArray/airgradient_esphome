@@ -2,24 +2,46 @@
 
 ESPHome yaml files for an AirGradient DIY devices to send data to HomeAssistant and AirGradient servers while maintaining a similar functionality and look to the official AirGradient Arduino IDE sketch
 
+## Features
+
+- Button to initate a SenseAir S8 CO2 Calibration on demand
+- Buttons to enable or disable SenseAir S8 CO2 sensor Automatic Baseline Calibration (ABC)
+- Button to view the current S8 ABC interval (confirm if ABC is disabled or enable, which defaults to every 7 days)
+- Switch to disable LED output on AirGradient ONE model
+- Brightness slider to adjust intensity of AirGradient ONE LED
+- Switch to toggle display between Fahrenheit and Celsius and persist between reboots
+- Switch to enable or disable uploading to AirGradient Dashboard via API (Choose to keep data local or also send to AirGradient)
+- Utilize hardware configuration buttons on AirGradient Pro v3.7 and higher
+  - Short press (Less than 1 second) - Toggle between F and C on display
+  - Long press (More than 1 second, less than 5) - Trigger manual CO2 calibration
+
 ## Configuration
 
-If all original sensors (PMS5003, Senseair S8, SHT3x) are connected, airgradient-basic.yml should be fully ready
+If all original sensors (PMS5003, Senseair S8, SHT4x) are connected, configuration files should be ready
 If some sensors are not installed, comment or remove the associated sections in sensor: and display: and http_request.post:
-Code supports TVOC readings from SGP30 sensor, but in testing, when used with the Basic board, it required being connected to 3.3v instead of 5v as wired on the AirGradient board.  Also does not appear to work if the OLED display is connected, but works if display is physically removed.
 
-To add your wifi SSID and password, either remove the "!secret" section and type in your information, or edit the secrets.yaml file with
-your information so it is not hard coded into the device's file.
+To add your wifi SSID and password, add your SSID and password information, per ESPHome specifications
+
+```yaml
+wifi:
+  ssid: NachoWiFi
+  password: 123456123456
+```
 
 ## Installation
 
 Copy the .yaml files and any associated fonts or secrets.yaml files to the config folder in your ESPHome installation.
 
-Alternatively, save the .bin file and go to [https://web.esphome.io/](https://web.esphome.io/) in your browser to connect your ESP device and sent the .bin file to it, without having ESPHome installed
+Alternatively, save the .bin file and go to [https://web.esphome.io/](https://web.esphome.io/) in your browser to connect your ESP device and send the .bin file to it, without having ESPHome installed
 
-## Fonts
+## Todo list
 
-You may substitute any font as desired.  Included font "Liberation Sans" is open source and very similar to Arial that is
-used by the official AirGradient Arduino sketch
+Several more features are planned to be added to this repo
 
-Future configurations will begin using fonts downloaded directly from Google's servers so they will not need to be present in the same folder as the .yaml files
+- Support for Open Air without CO2 sensor
+- Explore options for disabling display/LED during certain times (May be deffered to HomeAssistant Automations)
+- Switches to enable/disable desired display pages
+- Add Display page to show all relevant information in a single page
+  - https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328
+- Standardize font on AirGradient Basic display to match Pro
+- Add GitHub actions to automatically build updated .bin files as needed
