@@ -1,0 +1,10 @@
+sensor:
+  - platform: sht3xd
+    # SHT30 https://esphome.io/components/sensor/sht3xd.html
+    temperature:
+      name: "Temperature"
+      id: temp
+    humidity:
+      name: "Humidity"
+      id: humidity
+    address: 0x44

@@ -1,0 +1,62 @@
+
+bme680_bsec:
+  address: 0x77
+  sample_rate: ulp  # Ultra Low Power: every 5 minutes
+
+sensor:
+  # https://esphome.io/components/sensor/bme680_bsec.html
+  - platform: bme680_bsec
+    temperature:
+      name: "${upper_devicename} BME680 BSEC Temperature"
+      id: bme_temp
+    pressure:
+      name: "${upper_devicename} BME680 BSEC Pressure"
+      id: bme_pressure
+    humidity:
+      name: "${upper_devicename} BME680 BSEC Humidity"
+      id: bme_humidity
+    iaq:
+      name: "${upper_devicename} BME680 BSEC IAQ"
+      id: bme_iaq
+    co2_equivalent:
+      name: "${upper_devicename} BME680 BSEC CO2 Equivalent"
+      id: bme_eco2
+    breath_voc_equivalent:
+      name: "${upper_devicename} BME680 BSEC Breath VOC Equivalent"
+      id: bme_voc
+
+text_sensor:
+  - platform: bme680_bsec
+    iaq_accuracy:
+      name: "${upper_devicename} BME680 IAQ Accuracy"
+      id: iaq_accuracy
+
+  - platform: template
+    name: "${upper_devicename} BME680 IAQ Classification"
+    icon: "mdi:checkbox-marked-circle-outline"
+    id: iaq_classification
+    lambda: |-
+      if ( int(id(bme_iaq).state) <= 50) {
+        return {"Excellent"};
+      }
+      else if (int(id(bme_iaq).state) >= 51 && int(id(bme_iaq).state) <= 100) {
+        return {"Good"};
+      }
+      else if (int(id(bme_iaq).state) >= 101 && int(id(bme_iaq).state) <= 150) {
+        return {"Lightly polluted"};
+      }
+      else if (int(id(bme_iaq).state) >= 151 && int(id(bme_iaq).state) <= 200) {
+        return {"Moderately polluted"};
+      }
+      else if (int(id(bme_iaq).state) >= 201 && int(id(bme_iaq).state) <= 250) {
+        return {"Heavily polluted"};
+      }
+      else if (int(id(bme_iaq).state) >= 251 && int(id(bme_iaq).state) <= 350) {
+        return {"Severely polluted"};
+      }
+      else if (int(id(bme_iaq).state) >= 351) {
+        return {"Extremely polluted"};
+      }
+      else {
+        return {"error"};
+      }

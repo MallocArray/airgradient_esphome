@@ -1,0 +1,44 @@
+sensor:
+  - platform: senseair
+    # SenseAir S8 https://esphome.io/components/sensor/senseair.html
+    # https://senseair.com/products/size-counts/s8-lp/
+    co2:
+      name: "SenseAir S8 CO2"
+      id: co2
+      filters:
+        - skip_initial: 2
+        - clamp:
+            min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
+    id: senseair_s8
+    uart_id: senseair_s8_uart
+
+button:
+  # https://github.com/esphome/issues/issues/2444
+  - platform: template
+    name: SenseAir S8 Calibration
+    id: senseair_s8_calibrate_button
+    on_press:
+      then:
+        - senseair.background_calibration: senseair_s8
+        - delay: 70s
+        - senseair.background_calibration_result: senseair_s8
+
+  - platform: template
+    # Displays the current ABC interval in the ESPhome logs to verify status
+    name: SenseAir S8 Show Calibration Interval
+    id: senseair_s8_show_calibrate_interval
+    on_press:
+      then:
+        - senseair.abc_get_period: senseair_s8
+
+switch:
+  - platform: template
+    name: SenseAir S8 Automatic Background Calibration
+    id: senseair_s8_abc_switch
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+    entity_category: config
+    turn_on_action:
+      - senseair.abc_enable: senseair_s8
+    turn_off_action:
+      - senseair.abc_disable: senseair_s8

@@ -1,0 +1,56 @@
+interval:
+  - interval: 2.5min
+    # Send data to AirGradient API server
+    then:
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+          - http_request.post:
+              # https://api.airgradient.com/public/docs/api/v1/
+              # AirGradient URL with the MAC address all lower case
+              url: !lambda |-
+                return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+              headers:
+                  Content-Type: application/json
+              # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
+              json:
+                wifi: !lambda return to_string(id(wifi_dbm).state);
+                pm01: !lambda return to_string(id(pm_1_0).state);
+                pm02: !lambda return to_string(id(pm_2_5).state);
+                pm10: !lambda return to_string(id(pm_10_0).state);
+                pm003_count: !lambda return to_string(id(pm_0_3um).state);
+                rco2: !lambda return to_string(id(co2).state);
+                atmp: !lambda return to_string(id(temp).state);
+                rhum: !lambda return to_string(id(humidity).state);
+                tvoc_index: !lambda return to_string(id(voc).state);
+                nox_index: !lambda return to_string(id(nox).state);
+
+switch:
+  - platform: template
+    name: "Upload to AirGradient Dashboard"
+    id: upload_airgradient
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+
+esphome:
+  on_boot:
+    priority: 200  # Network connections setup
+    then:
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+        - http_request.post:
+            # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+            # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+            headers:
+                Content-Type: application/json
+            json:
+              wifi: !lambda return to_string(-50);
+
+http_request:
+  # Used to support POST request to send data to AirGradient
+  # https://esphome.io/components/http_request.html

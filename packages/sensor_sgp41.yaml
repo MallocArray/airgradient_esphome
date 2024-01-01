@@ -1,0 +1,12 @@
+sensor:
+  - platform: sgp4x
+    # SGP41 https://esphome.io/components/sensor/sgp4x.html
+    voc:
+      name: "VOC Index"
+      id: voc
+    nox:
+      name: "NOx Index"
+      id: nox
+    compensation:  # Remove this block if no temp/humidity sensor present for compensation
+      temperature_source: temp
+      humidity_source: humidity

@@ -1,0 +1,88 @@
+font:
+  - file: "gfonts://Open Sans"
+    id: open_sans_14
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_9
+    size: 9
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_20
+    size: 20
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+
+
+display:
+  - platform: ssd1306_i2c
+    # https://esphome.io/components/display/ssd1306.html
+    # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
+    model: "SH1106 128x64"
+    id: oled_display
+    address: 0x3C
+    # rotation: 180°
+    pages:
+      - id: summary
+        # https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328
+        lambda: |-
+          if (id(display_in_f).state) {
+            it.printf(0, 0, id(open_sans_14), "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(0, 0, id(open_sans_14), "%.1f°C", id(temp).state);
+          }
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.line(0,17,128,17);
+          it.printf(0,19, id(open_sans_9), "CO2");
+          it.printf(0,27, id(open_sans_20), "%.0f", id(co2).state);
+          it.printf(0,52, id(open_sans_9), "ppm");
+          it.line(50,19,50,64);
+          it.printf(54, 19, id(open_sans_9), "PM2.5");
+          it.printf(54, 27, id(open_sans_20), "%.0f", id(pm_2_5).state);
+          it.printf(54, 52, id(open_sans_9), "µg/m³");
+          it.line(100,19,100,64);
+          it.printf(104,18, id(open_sans_9), "TVOC");
+          it.printf(104,29, id(open_sans_9), "%.0f", id(voc).state);
+          it.printf(104,41, id(open_sans_9), "NOx");
+          it.printf(104,52, id(open_sans_9), "%.0f", id(nox).state);
+      - id: boot
+        lambda: |-
+          it.printf(0, 0, id(open_sans_14), "ID:");
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
+          it.printf(0, 21, id(open_sans_14), "Config Ver: $ag_esphome_config_version");
+          it.printf(0, 42, id(open_sans_14), "$upper_devicename");
+
+    on_page_change:
+      to: boot
+      then:
+        - if:
+            # Skip the boot page after initial boot
+            condition:
+                lambda: 'return id(device_uptime).state > 30;'
+            then:
+              - display.page.show_next: oled_display
+              - component.update: oled_display
+
+
+interval:
+  - interval: 5s
+    # Automatically switch to the next page every five seconds
+    then:
+      - if:
+          # Show boot screen for first 10 seconds with serial number and config version
+          condition:
+              lambda: 'return id(device_uptime).state < 10;'
+          then:
+            - display.page.show: boot
+          else:
+            # Change page on display
+            - display.page.show_next: oled_display
+            - component.update: oled_display
+
+
+switch:
+  - platform: template
+    name: "Display Temperature in °F"
+    icon: "mdi:thermometer"
+    id: display_in_f
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True

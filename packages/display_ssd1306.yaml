@@ -1,0 +1,77 @@
+
+font:
+    # Font to use on the display
+    # Open Source font Liberation Sans by Red Hat
+    # https://www.dafont.com/liberation-sans.font
+  - file: './fonts/liberation_sans/LiberationSans-Regular.ttf'
+    id: font1
+    size: 24
+
+display:
+  - platform: ssd1306_i2c
+    # https://esphome.io/components/display/ssd1306.html?highlight=display
+    model: "SSD1306 64x48"
+    id: oled_display
+    reset_pin: D0
+    address: 0x3C
+    # rotation: 180 # Enable to 180 to flip screen around
+    pages:
+      - id: display_pm2
+        lambda: |-
+          it.print(0, 0, id(font1), "PM2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(pm_2_5).state);
+      - id: display_co2
+        lambda: |-
+          it.print(0, 0, id(font1), "CO2");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
+      # - id: display_temp
+      #   lambda: |-
+      #     it.print(0, 0, id(font1), "°C");
+      #     it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state);
+      - id: display_tempf
+        lambda: |-
+          it.print(0, 0, id(font1), "°F");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state*9/5+32);
+      - id: display_humidity
+        lambda: |-
+          it.print(0, 0, id(font1), "HUM");
+          it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
+      - id: boot
+        lambda: |-
+          it.printf(0, 0, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(6,11).c_str());
+    on_page_change:
+      to: boot
+      then:
+        - if:
+            # Skip the boot page after initial boot
+            condition:
+                lambda: 'return id(device_uptime).state > 30;'
+            then:
+              - display.page.show_next: oled_display
+              - component.update: oled_display
+
+
+
+interval:
+  - interval: 5s
+    # Automatically switch to the next page every five seconds
+    then:
+      - if:
+          # Show boot screen for first 10 seconds with serial number and config version
+          condition:
+              lambda: 'return id(device_uptime).state < 10;'
+          then:
+            - display.page.show: boot
+          else:
+            # Change page on display
+            - display.page.show_next: oled_display
+            - component.update: oled_display
+
+
+switch:
+  - platform: template
+    name: "Display Temperature in °F"
+    icon: "mdi:thermometer"
+    id: display_in_f
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True

@@ -1,0 +1,19 @@
+# Hardware watchdog for boards with ESP32-C3 chips
+# Must notify the watchdog the device is still alive, or it will force a hardware restart to attempt to clear errors
+
+output:
+  - platform: gpio
+    # Pin to notify external watchdog that activity is present
+    id: watchdog
+    pin:
+      number: GPIO2
+      ignore_strapping_warning: true  # Acknowledging that this is a strapping pin and should not have external pullup/down resistors  https://esphome.io/guides/faq.html#why-am-i-getting-a-warning-about-strapping-pins
+
+
+interval:
+  - interval: 2.5min
+    # Notify watchdog device it is still alive
+    then:
+      - output.turn_on: watchdog
+      - delay: 20ms
+      - output.turn_off: watchdog

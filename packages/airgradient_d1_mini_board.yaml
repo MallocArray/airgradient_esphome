@@ -1,0 +1,43 @@
+
+esphome:
+  name: "${devicename}"
+  friendly_name: "${upper_devicename}"
+  name_add_mac_suffix: ${add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
+  project:
+    name: mallocarray.airgradient
+    version: "$ag_esphome_config_version"
+  min_version: 2023.7.0
+
+esp8266:
+  board: d1_mini
+  restore_from_flash: true  # Used to store state of display config
+
+# Enable logging
+# https://esphome.io/components/logger.html
+logger:
+  logs:
+    component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
+
+# The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
+# https://esphome.io/components/captive_portal.html
+captive_portal:
+
+# web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
+
+uart:
+  # https://esphome.io/components/uart.html#uart
+  - rx_pin: D4
+    tx_pin: D3
+    baud_rate: 9600
+    id: senseair_s8_uart
+
+  - rx_pin: D5
+    tx_pin: D6
+    baud_rate: 9600
+    id: pms5003_uart
+
+i2c:
+  # https://esphome.io/components/i2c.html
+  sda: D2
+  scl: D1
+  frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717

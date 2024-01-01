@@ -1,0 +1,306 @@
+font:
+  - file: "gfonts://Open Sans"
+    id: open_sans_14
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_9
+    size: 9
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_20
+    size: 20
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file:
+      type: gfonts
+      family: Poppins
+      weight: light
+    id: poppins_light_12
+    size: 12
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Ubuntu Mono"
+    id: ubuntu
+    size: 22
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+
+
+display:
+  - platform: ssd1306_i2c
+    # https://esphome.io/components/display/ssd1306.html
+    # Formatting reference: https://www.tutorialspoint.com/c_standard_library/c_function_printf.htm
+    model: "SH1106 128x64"
+    id: oled_display
+    address: 0x3C
+    # rotation: 180°
+    pages:
+      - id: airgradient_default
+        # https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328
+        lambda: |-
+          if (id(display_in_f).state) {
+            it.printf(0, 0, id(open_sans_14), "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(0, 0, id(open_sans_14), "%.1f°C", id(temp).state);
+          }
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.line(0,17,128,17);
+          it.printf(0,19, id(open_sans_9), "CO2");
+          it.printf(0,27, id(open_sans_20), "%.0f", id(co2).state);
+          it.printf(0,52, id(open_sans_9), "ppm");
+          it.line(50,19,50,64);
+          it.printf(54, 19, id(open_sans_9), "PM2.5");
+          it.printf(54, 27, id(open_sans_20), "%.0f", id(pm_2_5).state);
+          it.printf(54, 52, id(open_sans_9), "µg/m³");
+          it.line(100,19,100,64);
+          it.printf(104,18, id(open_sans_9), "TVOC");
+          it.printf(104,29, id(open_sans_9), "%.0f", id(voc).state);
+          it.printf(104,41, id(open_sans_9), "NOx");
+          it.printf(104,52, id(open_sans_9), "%.0f", id(nox).state);
+      - id: boot
+        lambda: |-
+          it.printf(0, 0, id(open_sans_14), "ID:");
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
+          it.printf(0, 21, id(open_sans_14), "Config Ver: $ag_esphome_config_version");
+          it.printf(0, 42, id(open_sans_14), "$upper_devicename");
+      - id: summary1
+        lambda: |-
+          it.printf(0, 0, id(poppins_light), "CO2:");
+          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 16, id(poppins_light), "PM2.5:");
+          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 32, id(poppins_light), "Temp:");
+          if (id(display_in_f).state) {
+            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+          }
+          it.printf(0, 48, id(poppins_light), "Humidity:");
+          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+      - id: summary2
+        lambda: |-
+          it.printf(0, 0, id(poppins_light), "CO2:");
+          it.printf(128, 0, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 16, id(poppins_light), "PM2.5:");
+          it.printf(128, 16, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(0, 32, id(poppins_light), "VOC:");
+          it.printf(128, 32, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(0, 48, id(poppins_light), "NOx:");
+          it.printf(128, 48, id(poppins_light), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+      - id: air_quality
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "CO2");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 34, id(ubuntu), "PM2");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+      - id: air_temp
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "Temp");
+          if (id(display_in_f).state) {
+            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
+          } else {
+            it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+          }
+          it.printf(0, 34, id(ubuntu), "Humid");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+      - id: air_voc
+        lambda: |-
+          it.printf(0, 6, id(ubuntu), "VOC:");
+          it.printf(128, 6, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(0, 34, id(ubuntu), "NOx:");
+          it.printf(128, 34, id(ubuntu), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+      - id: combo
+        lambda: |-
+          if (id(display_in_f).state) {
+            it.printf(0, 0, id(poppins_light_12), "%.1f °F", id(temp).state*9/5+32);
+          } else {
+            it.printf(0, 0, id(poppins_light_12), "%.1f °C", id(temp).state);
+          }
+          it.printf(128, 0, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(0, 16, id(poppins_light_12), "%.0f µg", id(pm_2_5).state);
+          it.printf(128, 16, id(poppins_light_12), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(0, 32, id(poppins_light_12), "VOC: %.0f", id(voc).state);
+          it.printf(128, 32, id(poppins_light_12), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
+          it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
+      - id: blank
+        lambda: |-
+          it.printf(0, 0, id(open_sans_14), "");
+
+
+    on_page_change:
+      - to: airgradient_default
+        then:
+          - if:
+              condition:
+                switch.is_off: display_ag_default_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: summary1
+        then:
+          - if:
+              condition:
+                switch.is_off: display_summary_pages
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: summary2
+        then:
+          - if:
+              condition:
+                switch.is_off: display_summary_pages
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: air_quality
+        then:
+          - if:
+              condition:
+                switch.is_off: display_air_quality_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: air_temp
+        then:
+          - if:
+              condition:
+                switch.is_off: display_air_temp_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: air_voc
+        then:
+          - if:
+              condition:
+                switch.is_off: display_voc_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: combo
+        then:
+          - if:
+              condition:
+                switch.is_off: display_combo_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: boot
+        then:
+          - if:
+              condition:
+                switch.is_off: display_boot_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: blank
+        then:
+          - if:
+              condition:
+                switch.is_off: display_blank_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+
+
+interval:
+  - interval: 10s
+    startup_delay: 1s
+    # Show boot screen serial number and config version only when first starting up
+    then:
+      if:
+        condition:
+          switch.is_on: display_boot_page
+        then:
+          switch.turn_off: display_boot_page
+  - interval: 5s
+    # Automatically switch to the next page every five seconds
+    then:
+      - if:
+          # Always show boot screen if switch is enabled
+          condition:
+              switch.is_on: display_boot_page
+          then:
+            - display.page.show: boot
+          else:
+            # Change page on display
+            - display.page.show_next: oled_display
+            - component.update: oled_display
+
+
+switch:
+  - platform: template
+    name: "Display Temperature in °F"
+    id: display_in_f
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+    entity_category: config
+    icon: "mdi:thermometer"
+
+  - platform: template
+    name: "Display AirGradient Default Page"
+    id: display_ag_default_page
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Summary Pages"
+    id: display_summary_pages
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Air Quality Page"
+    id: display_air_quality_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Temp/Hum Page"
+    id: display_air_temp_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display VOC Page"
+    id: display_voc_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Combo Page"
+    id: display_combo_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Boot Page"
+    id: display_boot_page
+    restore_mode: ALWAYS_ON
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Blank Page"
+    id: display_blank_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"

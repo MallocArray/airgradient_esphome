@@ -1,0 +1,25 @@
+light:
+    # https://esphome.io/components/light/esp32_rmt_led_strip.html
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: GPIO10  # Pin 16
+    num_leds: 11
+    rmt_channel: 0
+    chipset: ws2812
+    name: "LED Strip"
+    id: led_strip
+    restore_mode: RESTORE_DEFAULT_OFF
+
+number:
+  - platform: template
+    # https://esphome.io/components/number/template.html
+    name: "LED Brightness %"
+    icon: "mdi:lightbulb"
+    id: led_brightness
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 100
+    optimistic: true
+    restore_value: true
+    mode: slider

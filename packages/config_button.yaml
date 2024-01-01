@@ -1,0 +1,26 @@
+binary_sensor:
+  - platform: gpio
+    # Binary sensor to perform action when physical config button is pressed
+    # https://esphome.io/components/binary_sensor/index.html?highlight=on_multi_click
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: true
+    internal: true  # Hide from displaying in HomeAssistant
+    name: "Configuration Button"
+    id: config_button
+    on_multi_click:
+      - timing:  # Short Click
+          - ON for at most 1s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: "Toggling display betwen C and F"
+          - switch.toggle: display_in_f
+      - timing:  # Press and hold up to 5 seconds
+          - ON for 1s to 5s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: "Starting manual CO2 calibration"
+          - senseair.background_calibration: senseair_s8
+          - delay: 70s
+          - senseair.background_calibration_result: senseair_s8

@@ -1,0 +1,43 @@
+
+esphome:
+  name: "${devicename}"
+  friendly_name: "${upper_devicename}"
+  name_add_mac_suffix: ${add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
+  project:
+    name: mallocarray.airgradient
+    version: "$ag_esphome_config_version"
+  min_version: 2023.7.0
+
+esp32:
+  board: esp32-c3-devkitm-1
+
+# Enable logging
+# https://esphome.io/components/logger.html
+logger:
+  baud_rate: 0  # Must disable serial logging as it conflicts with pms5003 uart pins and ESP32-C3 only has 2 hardware UART
+  logs:
+    component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
+
+# The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
+# https://esphome.io/components/captive_portal.html
+captive_portal:
+
+# web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
+
+uart:
+  # https://esphome.io/components/uart.html#uart
+  - rx_pin: GPIO0  # Pin 12
+    tx_pin: GPIO1  # Pin 13
+    baud_rate: 9600
+    id: senseair_s8_uart
+
+  - rx_pin: GPIO20  # Pin 30 or RX
+    tx_pin: GPIO21  # Pin 31 or TX
+    baud_rate: 9600
+    id: pms5003_uart
+
+i2c:
+  # https://esphome.io/components/i2c.html
+  sda: GPIO7 # Pin 21
+  scl: GPIO6 # Pin 20
+  frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
