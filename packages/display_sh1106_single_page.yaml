@@ -49,7 +49,7 @@ display:
           it.printf(0, 0, id(open_sans_14), "ID:");
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
           it.printf(0, 21, id(open_sans_14), "Config Ver: $ag_esphome_config_version");
-          it.printf(0, 42, id(open_sans_14), "$upper_devicename");
+          it.printf(0, 42, id(open_sans_14), "$friendly_devicename");
 
     on_page_change:
       to: boot

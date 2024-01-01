@@ -1,7 +1,7 @@
 
 esphome:
   name: "${devicename}"
-  friendly_name: "${upper_devicename}"
+  friendly_name: "${friendly_devicename}"
   name_add_mac_suffix: ${add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
   project:
     name: mallocarray.airgradient
