@@ -3,7 +3,7 @@ sensor:
     # SenseAir S8 https://esphome.io/components/sensor/senseair.html
     # https://senseair.com/products/size-counts/s8-lp/
     co2:
-      name: "SenseAir S8 CO2"
+      name: "CO2"
       id: co2
       filters:
         - skip_initial: 2
