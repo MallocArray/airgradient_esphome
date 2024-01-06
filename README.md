@@ -17,26 +17,26 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
 - Compact single page display by default with all relevant sensor readings
 - Enable different pages of information to be shown on the OLED display, or leave the default of a single page with all relevant information
-  
+
   ![1703765819874](image/README/1703765819874.png)
 - Button to initiate a SenseAir S8 CO2 Calibration on demand
-  
+
   ![1703765340274](image/README/1703765340274.png)
 - Switch to enable or disable SenseAir S8 CO2 sensor Automatic Baseline Calibration (ABC)
-  
+
   ![1704131891282](image/README/1704131891282.png)
 - Button to view the current S8 ABC interval (confirm if ABC is disabled or enable, which defaults to every 7 days) View ESPHome logs to see the output of this button
-  
+
   ![1703765530959](image/README/1703765530959.png)
 - Switch to disable LED output on AirGradient ONE model
 - Brightness slider to adjust intensity of AirGradient ONE LED
-  
+
   ![1703765585475](image/README/1703765585475.png)
 - Switch to toggle display between Fahrenheit and Celsius and persist between reboots
-  
+
   ![1703765618154](image/README/1703765618154.png)
 - Switch to enable or disable uploading to AirGradient Dashboard via API (Choose to keep data local or also send to AirGradient)
-  
+
   ![1703765631637](image/README/1703765631637.png)
 - Utilize hardware configuration buttons on AirGradient Pro v3.7 and higher
 
@@ -50,7 +50,28 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
 Copy the .yaml file from the main folder for your model and place it in the `config` folder of your ESPHome.  Make any desired changes to the substitutions to name the devices for your use case
 
->  Note: by default ESPHome only syncs remote repositories that the packages are referencing once per day, so if changes are made to the repository, you may not get the updated config for up to 1 day after it is published.  You can remove the contents of the folder config/.esphome/packages to force it to update sooner
+> Note: by default ESPHome only syncs remote repositories that the packages are referencing once per day, so if changes are made to the repository, you may not get the updated config for up to 1 day after it is published.  You can remove the contents of the folder config/.esphome/packages to force it to update sooner
+
+> Note: setting `add_mac_suffix: "true"` allows for multiple devices on your network at the same time and report as unique entries, but it can cause ESPHome to not detect devices as Online after installing, since ESPHome is looking for only the `devicename:` field and the actual device name has the MAC address added to the end.
+>
+>     One way to resolve this is to change`add_mac_suffix: "false"` so the devicename will match exactly.  If you have multiple devices, make sure to change the `devicename: `field to be unique for each device
+>
+>     Another alternative is to add a static IP to the wifi configuration and configure ESPHome to ping the device by IP instead of hostname
+>
+> [Dashboard status light not working across subnets/zones · Issue #641 · esphome/issues (github.com)](https://github.com/esphome/issues/issues/641#issuecomment-534156628)
+>
+> Example for static IP
+>
+> ```yaml
+> wifi:
+>   ssid: !secret wifi_ssid
+>   password: !secret wifi_password
+>   manual_ip:
+>     static_ip: 192.168.1.121
+>     gateway: 192.168.1.1
+>     subnet: 255.255.255.0
+>     dns1: 192.168.1.1
+> ```
 
 #### Using local packages
 
