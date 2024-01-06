@@ -54,9 +54,9 @@ Copy the .yaml file from the main folder for your model and place it in the `con
 
 > Note: setting `add_mac_suffix: "true"` allows for multiple devices on your network at the same time and report as unique entries, but it can cause ESPHome to not detect devices as Online after installing, since ESPHome is looking for only the `devicename:` field and the actual device name has the MAC address added to the end.
 >
->     One way to resolve this is to change`add_mac_suffix: "false"` so the devicename will match exactly.  If you have multiple devices, make sure to change the `devicename: `field to be unique for each device
+> One way to resolve this is to change `add_mac_suffix: "false"` so the devicename will match exactly.  If you have multiple devices, make sure to change the `devicename: `field to be unique for each device
 >
->     Another alternative is to add a static IP to the wifi configuration and configure ESPHome to ping the device by IP instead of hostname
+> Another alternative is to add a static IP to the wifi configuration and configure ESPHome to ping the device by IP instead of hostname
 >
 > [Dashboard status light not working across subnets/zones · Issue #641 · esphome/issues (github.com)](https://github.com/esphome/issues/issues/641#issuecomment-534156628)
 >
@@ -86,7 +86,7 @@ Install a compiled file to your device all with just a browser and USB cable, no
 Save the appropriate .bin file and go to [https://web.esphome.io/](https://web.esphome.io/) in your browser to connect your ESP device and send the .bin file to it
 
 > In some cases, the device may encounter errors using the web flash tool.  Steps to put the device in a special boot flash mode can be found here:
-> https://forum.airgradient.com/t/airgradient-one-not-working-after-flashing-with-arduino/1326/4
+> [https://forum.airgradient.com/t/airgradient-one-not-working-after-flashing-with-arduino/1326/4 ](https://forum.airgradient.com/t/airgradient-one-not-working-after-flashing-with-arduino/1326/4)
 
 ### Full YAML file
 
