@@ -7,32 +7,32 @@ sensor:
   # https://esphome.io/components/sensor/bme680_bsec.html
   - platform: bme680_bsec
     temperature:
-      name: "${friendly_devicename} BME680 BSEC Temperature"
+      name: "BME680 BSEC Temperature"
       id: bme_temp
     pressure:
-      name: "${friendly_devicename} BME680 BSEC Pressure"
+      name: "BME680 BSEC Pressure"
       id: bme_pressure
     humidity:
-      name: "${friendly_devicename} BME680 BSEC Humidity"
+      name: "BME680 BSEC Humidity"
       id: bme_humidity
     iaq:
-      name: "${friendly_devicename} BME680 BSEC IAQ"
+      name: "BME680 BSEC IAQ"
       id: bme_iaq
     co2_equivalent:
-      name: "${friendly_devicename} BME680 BSEC CO2 Equivalent"
+      name: "BME680 BSEC CO2 Equivalent"
       id: bme_eco2
     breath_voc_equivalent:
-      name: "${friendly_devicename} BME680 BSEC Breath VOC Equivalent"
+      name: "BME680 BSEC Breath VOC Equivalent"
       id: bme_voc
 
 text_sensor:
   - platform: bme680_bsec
     iaq_accuracy:
-      name: "${friendly_devicename} BME680 IAQ Accuracy"
+      name: "BME680 IAQ Accuracy"
       id: iaq_accuracy
 
   - platform: template
-    name: "${friendly_devicename} BME680 IAQ Classification"
+    name: "BME680 IAQ Classification"
     icon: "mdi:checkbox-marked-circle-outline"
     id: iaq_classification
     lambda: |-

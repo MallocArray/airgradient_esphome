@@ -7,6 +7,7 @@ sensor:
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
+      device_class: pm25  # Added to report properly to Homekit
       filters:
         - sliding_window_moving_average:
             window_size: 30
@@ -14,6 +15,7 @@ sensor:
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
+      device_class: pm1  # Added to report properly to Homekit
       filters:
         - sliding_window_moving_average:
             window_size: 30
@@ -21,6 +23,7 @@ sensor:
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
+      device_class: pm10  # Added to report properly to Homekit
       filters:
         - sliding_window_moving_average:
             window_size: 30

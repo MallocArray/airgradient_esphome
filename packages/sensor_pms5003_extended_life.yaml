@@ -7,12 +7,15 @@ sensor:
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
+      device_class: pm25  # Added to report properly to Homekit
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
+      device_class: pm1  # Added to report properly to Homekit
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
+      device_class: pm10  # Added to report properly to Homekit
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um

@@ -3,10 +3,10 @@
 # https://www.airgradient.com/open-airgradient/instructions/overview/
 
 substitutions:
-  devicename: "ag-basic"
-  friendly_devicename: "AG Basic"
-  ag_esphome_config_version: 1.0.0
-  add_mac_suffix: "true"  # Must have quotes around value
+  name: "ag-basic"
+  friendly_name: "AG Basic"
+  config_version: 2.0.0
+  name_add_mac_suffix: "false"  # Must have quotes around value
 
 # Enable Home Assistant API
 api:  # Add encryption key as desired
@@ -16,6 +16,10 @@ ota:  # Add password as desired
 wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
+
+dashboard_import:
+  package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
+  import_full_config: false
 
 packages:
   board: github://MallocArray/airgradient_esphome/packages/airgradient_d1_mini_board.yaml

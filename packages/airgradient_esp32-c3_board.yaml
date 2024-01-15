@@ -1,15 +1,20 @@
 
 esphome:
-  name: "${devicename}"
-  friendly_name: "${friendly_devicename}"
-  name_add_mac_suffix: ${add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: ${name_add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
+
   project:
     name: mallocarray.airgradient
-    version: "$ag_esphome_config_version"
-  min_version: 2023.7.0
+    version: "$config_version"
+
+  min_version: 2023.12.0
 
 esp32:
   board: esp32-c3-devkitm-1
+
+# esp32_improv:  # Uses around 30% of available flash space due to loading BLE stack
+#   authorizer: none
 
 # Enable logging
 # https://esphome.io/components/logger.html
@@ -41,3 +46,9 @@ i2c:
   sda: GPIO7 # Pin 21
   scl: GPIO6 # Pin 20
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
+
+button:
+  - platform: factory_reset
+    disabled_by_default: true
+    name: "Factory Reset ESP"
+    id: factory_reset_all

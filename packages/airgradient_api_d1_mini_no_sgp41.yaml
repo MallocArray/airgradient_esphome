@@ -28,7 +28,7 @@ switch:
   - platform: template
     name: "Upload to AirGradient Dashboard"
     id: upload_airgradient
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True
 
 esphome:

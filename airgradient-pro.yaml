@@ -2,10 +2,10 @@
 # https://www.airgradient.com/open-airgradient/instructions/overview/
 
 substitutions:
-  devicename: "ag-pro"
-  friendly_devicename: "AG Pro"
-  ag_esphome_config_version: 1.0.0
-  add_mac_suffix: "true"  # Must have quotes around value
+  name: "ag-pro"
+  friendly_name: "AG Pro"
+  config_version: 2.0.0
+  name_add_mac_suffix: "false"  # Must have quotes around value
 
 # Enable Home Assistant API
 api:
@@ -15,6 +15,10 @@ ota:
 wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
+
+dashboard_import:
+  package_import_url: github://MallocArray/airgradient_esphome/airgradient-pro.yaml
+  import_full_config: false
 
 packages:
   board: github://MallocArray/airgradient_esphome/packages/airgradient_d1_mini_board.yaml
