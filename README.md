@@ -1,7 +1,5 @@
 # AirGradient ESPHome Configurations
 
-[toc]
-
 ESPHome yaml files for AirGradient devices to maintain the research and accuracy of AirGradient sensors, while also gaining the benefits of ESPHome/HomeAssistant for easy to use switches, buttons, configurations, and dashboards.  Maintains the ability to also send data to the AirGradient Dashboard, which can also be disabled/removed to keep all data local	.
 
 ## Breaking Changes
@@ -65,9 +63,9 @@ Copy the .yaml file from the main folder for your model and place it in the `con
 
 > Note: by default ESPHome only syncs remote repositories that the packages are referencing once per day, so if changes are made to the repository, you may not get the updated config for up to 1 day after it is published.  You can remove the contents of the folder config/.esphome/packages to force it to update sooner
 
-> Note: setting `add_mac_suffix: "true"` allows for multiple devices on your network at the same time and report as unique entries, but it can cause ESPHome to not detect devices as Online after installing, since ESPHome is looking for only the `devicename:` field and the actual device name has the MAC address added to the end.
+> Note: setting `add_mac_suffix: "true"` allows for multiple devices on your network at the same time and report as unique entries even if your `name:` field is duplicated, but it can cause ESPHome to not detect devices as Online after installing, since ESPHome is looking for only the `devicename:` field and the actual device name has the MAC address added to the end
 >
-> One way to resolve this is to change `add_mac_suffix: "false"` so the devicename will match exactly.  If you have multiple devices, make sure to change the `devicename: `field to be unique for each device
+> One way to resolve this is to change `add_mac_suffix: "false"` so the devicename will match exactly.  If you have multiple devices, make sure to change the `name: `field to be unique for each device
 >
 > Another alternative is to add a static IP to the wifi configuration and configure ESPHome to ping the device by IP instead of hostname
 >
@@ -85,12 +83,6 @@ Copy the .yaml file from the main folder for your model and place it in the `con
 >     subnet: 255.255.255.0
 >     dns1: 192.168.1.1
 > ```
-
-#### Using local packages
-
-By default, packages are referencing this GitHub repository, allowing you to do a new Install from ESPHome dashboard to get the latest modifications without downloading other files, but does require an Internet connection.  If you wish to have more control over modifications or only reference local files, copy the `packages` folder to your local ESPHome folder and replace `github://MallocArray/airgradient_esphome/packages` with `!include packages`
-
-> Example: `board: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml` becomes `board: !include packages/sensor_s8.yaml`
 
 ### ESPHome Web install
 
