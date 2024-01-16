@@ -162,8 +162,7 @@ Several more features are planned to be added to this repo
   - [ ] Open Sans displays a consistent height, but some characters, such as F and 0 are mismatched, the left side is double line thick while right is single line
   - [ ] Poppins Light is consistent thickness, but numbers are taller than letters, giving a mismatched height
 - [ ] Add GitHub actions to automatically build updated .bin files as needed
-
-* [X] Add support for esp32_improv and improv_serial (improv_serial not supported with this board and used pins.  esp32_improv uses 30% of available flash memory and is nearly full)
-  * [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
-* [X] Add support for dashboard_import and project information
-  * [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
+- [X] Add support for esp32_improv and improv_serial (improv_serial not supported with this board and used pins.  esp32_improv uses 30% of available flash memory and is nearly full)
+  - [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
+- [X] Add support for dashboard_import and project information
+  - [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
