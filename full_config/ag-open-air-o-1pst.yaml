@@ -1,16 +1,16 @@
 substitutions:
-  devicename: ag-open-air-o-1pst
-  friendly_devicename: AG Open Air O-1PST
-  ag_esphome_config_version: 1.0.0
-  add_mac_suffix: 'true'
+  name: ag-open-air-o-1pst
+  friendly_name: AG Open Air O-1PST
+  config_version: 2.0.0
+  name_add_mac_suffix: 'false'
 esphome:
   name: ag-open-air-o-1pst
   friendly_name: AG Open Air O-1PST
-  name_add_mac_suffix: true
+  name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 1.0.0
-  min_version: 2023.7.0
+    version: 2.0.0
+  min_version: 2023.12.0
   on_boot:
   - priority: 200.0
     then:
@@ -114,6 +114,33 @@ i2c:
   scl: 6
   frequency: 400000.0
   scan: true
+button:
+- platform: factory_reset
+  disabled_by_default: true
+  name: Factory Reset ESP
+  id: factory_reset_all
+  icon: mdi:restart-alert
+  entity_category: config
+  device_class: restart
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Show Calibration Interval
+  id: senseair_s8_show_calibrate_interval
+  on_press:
+  - then:
+    - senseair.abc_get_period:
+        id: senseair_s8
+  disabled_by_default: false
 sensor:
 - platform: pmsx003
   type: PMS5003T
@@ -121,6 +148,7 @@ sensor:
   pm_2_5:
     name: PM 2.5
     id: pm_2_5
+    device_class: pm25
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -135,6 +163,7 @@ sensor:
   pm_1_0:
     name: PM 1.0
     id: pm_1_0
+    device_class: pm1
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -149,6 +178,7 @@ sensor:
   pm_10_0:
     name: PM 10.0
     id: pm_10_0
+    device_class: pm10
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -308,26 +338,6 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
-button:
-- platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
-  on_press:
-  - then:
-    - senseair.background_calibration:
-        id: senseair_s8
-    - delay: 70s
-    - senseair.background_calibration_result:
-        id: senseair_s8
-  disabled_by_default: false
-- platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
-  on_press:
-  - then:
-    - senseair.abc_get_period:
-        id: senseair_s8
-  disabled_by_default: false
 switch:
 - platform: template
   name: SenseAir S8 Automatic Background Calibration
@@ -348,7 +358,7 @@ switch:
 - platform: template
   name: Upload to AirGradient Dashboard
   id: upload_airgradient
-  restore_mode: RESTORE_DEFAULT_ON
+  restore_mode: RESTORE_DEFAULT_OFF
   optimistic: true
   disabled_by_default: false
   assumed_state: false
@@ -441,4 +451,7 @@ wifi:
   passive_scan: false
   enable_on_boot: true
   use_address: ag-open-air-o-1pst.local
+dashboard_import:
+  package_import_url: github://MallocArray/airgradient_esphome/airgradient-open-air-o-1pst.yaml
+  import_full_config: false
 

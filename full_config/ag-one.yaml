@@ -1,16 +1,16 @@
 substitutions:
-  devicename: ag-one
-  friendly_devicename: AG One
-  ag_esphome_config_version: 1.0.0
-  add_mac_suffix: 'true'
+  name: ag-one
+  friendly_name: AG One
+  config_version: 2.0.0
+  name_add_mac_suffix: 'false'
 esphome:
   name: ag-one
   friendly_name: AG One
-  name_add_mac_suffix: true
+  name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 1.0.0
-  min_version: 2023.7.0
+    version: 2.0.0
+  min_version: 2023.12.0
   on_boot:
   - priority: 200.0
     then:
@@ -114,6 +114,33 @@ i2c:
   scl: 6
   frequency: 400000.0
   scan: true
+button:
+- platform: factory_reset
+  disabled_by_default: true
+  name: Factory Reset ESP
+  id: factory_reset_all
+  icon: mdi:restart-alert
+  entity_category: config
+  device_class: restart
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Show Calibration Interval
+  id: senseair_s8_show_calibrate_interval
+  on_press:
+  - then:
+    - senseair.abc_get_period:
+        id: senseair_s8
+  disabled_by_default: false
 sensor:
 - platform: pmsx003
   type: PMSX003
@@ -121,6 +148,7 @@ sensor:
   pm_2_5:
     name: PM 2.5
     id: pm_2_5
+    device_class: pm25
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -135,6 +163,7 @@ sensor:
   pm_1_0:
     name: PM 1.0
     id: pm_1_0
+    device_class: pm1
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -149,6 +178,7 @@ sensor:
   pm_10_0:
     name: PM 10.0
     id: pm_10_0
+    device_class: pm10
     filters:
     - sliding_window_moving_average:
         window_size: 30
@@ -307,26 +337,6 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
-button:
-- platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
-  on_press:
-  - then:
-    - senseair.background_calibration:
-        id: senseair_s8
-    - delay: 70s
-    - senseair.background_calibration_result:
-        id: senseair_s8
-  disabled_by_default: false
-- platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
-  on_press:
-  - then:
-    - senseair.abc_get_period:
-        id: senseair_s8
-  disabled_by_default: false
 switch:
 - platform: template
   name: SenseAir S8 Automatic Background Calibration
@@ -428,7 +438,7 @@ switch:
 - platform: template
   name: Upload to AirGradient Dashboard
   id: upload_airgradient
-  restore_mode: RESTORE_DEFAULT_ON
+  restore_mode: RESTORE_DEFAULT_OFF
   optimistic: true
   disabled_by_default: false
   assumed_state: false
@@ -992,7 +1002,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 1.0.0");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 2.0.0");
       it.printf(0, 42, id(open_sans_14), "AG One");
   - id: summary1
     lambda: !lambda |-
@@ -1321,6 +1331,37 @@ interval:
   - output.turn_off:
       id: watchdog
   startup_delay: 0s
+number:
+- platform: template
+  name: Display Contrast %
+  icon: mdi:lightbulb
+  id: display_contrast
+  min_value: 0.0
+  max_value: 100.0
+  step: 1.0
+  initial_value: 100.0
+  optimistic: true
+  restore_value: true
+  mode: SLIDER
+  on_value:
+  - then:
+    - lambda: !lambda |-
+        id(oled_display).set_contrast(id(display_contrast).state / 100.0);
+  disabled_by_default: false
+  update_interval: 60s
+- platform: template
+  name: LED Brightness %
+  icon: mdi:lightbulb
+  id: led_brightness
+  min_value: 0.0
+  max_value: 100.0
+  step: 1.0
+  initial_value: 100.0
+  optimistic: true
+  restore_value: true
+  mode: SLIDER
+  disabled_by_default: false
+  update_interval: 60s
 light:
 - platform: esp32_rmt_led_strip
   rgb_order: GRB
@@ -1336,20 +1377,6 @@ light:
   default_transition_length: 1s
   flash_transition_length: 0s
   is_rgbw: false
-number:
-- platform: template
-  name: LED Brightness %
-  icon: mdi:lightbulb
-  id: led_brightness
-  min_value: 0.0
-  max_value: 100.0
-  step: 1.0
-  initial_value: 100.0
-  optimistic: true
-  restore_value: true
-  mode: SLIDER
-  disabled_by_default: false
-  update_interval: 60s
 http_request:
   useragent: ESPHome
   follow_redirects: true
@@ -1395,8 +1422,8 @@ binary_sensor:
     then:
     - logger.log:
         format: Toggling display betwen C and F
-        tag: main
         level: DEBUG
+        tag: main
         args: []
     - switch.toggle:
         id: display_in_f
@@ -1410,8 +1437,8 @@ binary_sensor:
     then:
     - logger.log:
         format: Starting manual CO2 calibration
-        tag: main
         level: DEBUG
+        tag: main
         args: []
     - senseair.background_calibration:
         id: senseair_s8
@@ -1439,4 +1466,7 @@ wifi:
   passive_scan: false
   enable_on_boot: true
   use_address: ag-one.local
+dashboard_import:
+  package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
+  import_full_config: false
 
