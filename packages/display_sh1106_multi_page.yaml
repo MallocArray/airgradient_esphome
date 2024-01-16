@@ -66,8 +66,8 @@ display:
         lambda: |-
           it.printf(0, 0, id(open_sans_14), "ID:");
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-          it.printf(0, 21, id(open_sans_14), "Config Ver: $ag_esphome_config_version");
-          it.printf(0, 42, id(open_sans_14), "$friendly_devicename");
+          it.printf(0, 21, id(open_sans_14), "Config Ver: $config_version");
+          it.printf(0, 42, id(open_sans_14), "$friendly_name");
       - id: summary1
         lambda: |-
           it.printf(0, 0, id(poppins_light), "CO2:");
@@ -304,3 +304,21 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+
+number:
+  - platform: template
+    # https://esphome.io/components/number/template.html
+    name: "Display Contrast %"
+    icon: "mdi:lightbulb"
+    id: display_contrast
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 100
+    optimistic: true
+    restore_value: true
+    mode: slider
+    on_value:
+      then:
+        # https://www.reddit.com/r/Esphome/comments/sy1d1s/how_to_write_a_lamba_to_change_the_contrast_of/
+        lambda: id(oled_display).set_contrast(id(display_contrast).state / 100.0);
