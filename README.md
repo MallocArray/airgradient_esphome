@@ -95,8 +95,6 @@ Save the appropriate .bin file and go to [https://web.esphome.io/](https://web.e
 
 ### Full YAML file
 
-Configuration files reference other packages files, making for a very modular configuration, but requires looking at multiple files to see the entire picture.
-
 The `full_config` folder contains a single yaml file per model that contains the full standalone configuration, created by the `esphome config` command.  This adds in all of the optional parameters, so is much longer than the minimum configuration, but the single file contains all needed information to be completely independent from this repo.
 
 Copy the full config file to your personal ESPhome config file and customize as desired, then install to your device.
@@ -118,16 +116,19 @@ wifi:
   password: 123456123456
 ```
 
-Several packages are available in the `packages` folder that can be added or removed as needed.  For example, the display package includes configuration for multiple pages of information that can be enabled or disabled, or you may wish to change to the package that has a single page to avoid extra switches in HomeAssistant or if you know you won't be using the other pages and want to save on flash memory space.
-
-### Modification
+## Modification
 
 #### Using local packages
 
 By default, packages are referencing this GitHub repository, allowing you to do a new Install from ESPHome dashboard to get the latest modifications without downloading other files, but does require an Internet connection.  If you wish to have more control over modifications or only reference local files, copy the `packages` folder to your local ESPHome folder and replace `github://MallocArray/airgradient_esphome/packages` with `!include packages`
 
-> Example: `board: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml`
-> becomes `board: !include packages/sensor_s8.yaml`
+> Example:
+>
+> `board: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml`
+>
+> becomes
+>
+> `board: !include packages/sensor_s8.yaml`
 
 #### Using Extend feature
 
@@ -155,7 +156,7 @@ MQTT support has been mentioned in the AirGradient forums several times.  ESPHom
 
 Several more features are planned to be added to this repo
 
-- [ ] Support for Open Air without CO2 sensor
+- [ ] Support for Open Air without CO2 sensor (Model: O-1PPT)
 - [ ] Explore options for disabling display/LED during certain times (May be differed to HomeAssistant Automations)
 - [ ] Standardize font on AirGradient Basic display to match Pro
 - [ ] Reduce number of fonts used in the multi_page package
