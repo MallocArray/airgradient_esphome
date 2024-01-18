@@ -28,8 +28,8 @@ interval:
                 doc["pm02"] = to_string(id(pm_2_5_avg).state);
                 doc["pm10"] = to_string(id(pm_10_0_avg).state);
                 doc["pm003_count"] = to_string(id(pm_0_3um_avg).state);
-                // doc["atmp"] = to_string(id(temp_avg).state);
-                // doc["rhum"] = to_string(id(humidity_avg).state);
+                doc["atmp"] = to_string(id(temp_avg).state);
+                doc["rhum"] = to_string(id(humidity_avg).state);
 
                 // We don't have access to the boot loop counter in esphome, so just send a 1
                 // See: https://github.com/esphome/issues/issues/1539
@@ -50,8 +50,8 @@ interval:
                 channels_2["pm02"] = to_string(id(pm_2_5_2).state);
                 channels_2["pm10"] = to_string(id(pm_10_0_2).state);
                 channels_2["pm003_count"] = to_string(id(pm_0_3um_2).state);
-                // channels_2["atmp"] = to_string(id(temp_2).state);
-                // channels_2["rhum"] = to_string(id(humidity_2).state);
+                channels_2["atmp"] = to_string(id(temp_2).state);
+                channels_2["rhum"] = to_string(id(humidity_2).state);
 
                 // Serialize the JSON document into the string
                 serializeJson(doc, jsonString);

@@ -36,20 +36,20 @@ sensor:
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
-    # temperature:
-    #   name: "Temperature (2)"
-    #   id: temp_2
-    #   filters:
-    #     - sliding_window_moving_average:
-    #         window_size: 30
-    #         send_every: 30
-    # humidity:
-    #   name: "Humidity (2)"
-    #   id: humidity_2
-    #   filters:
-    #     - sliding_window_moving_average:
-    #         window_size: 30
-    #         send_every: 30
+    temperature:
+      name: "Temperature (2)"
+      id: temp_2
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    humidity:
+      name: "Humidity (2)"
+      id: humidity_2
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
 
 # Average the readings from both sensors to return a value
   - platform: template
@@ -107,30 +107,30 @@ sensor:
       - sliding_window_moving_average:
           window_size: 30
 
-  # - platform: template
-  #   id: temp_avg
-  #   name: "Temperature (Average)"
-  #   lambda: return (id(temp).state + id(temp_2).state) / 2.0;
-  #   unit_of_measurement: °C
-  #   accuracy_decimals: 1
-  #   device_class: temperature
-  #   state_class: measurement
-  #   icon: mdi:thermometer
-  #   update_interval: 1s
-  #   filters:
-  #     - sliding_window_moving_average:
-  #         window_size: 30
+  - platform: template
+    id: temp_avg
+    name: "Temperature (Average)"
+    lambda: return (id(temp).state + id(temp_2).state) / 2.0;
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    icon: mdi:thermometer
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
 
-  # - platform: template
-  #   id: humidity_avg
-  #   name: "Humidity (Average)"
-  #   lambda: return (id(humidity).state + id(humidity_2).state) / 2.0;
-  #   unit_of_measurement: '%'
-  #   accuracy_decimals: 1
-  #   device_class: humidity
-  #   state_class: measurement
-  #   icon: mdi:water-percent
-  #   update_interval: 1s
-  #   filters:
-  #     - sliding_window_moving_average:
-  #         window_size: 30
+  - platform: template
+    id: humidity_avg
+    name: "Humidity (Average)"
+    lambda: return (id(humidity).state + id(humidity_2).state) / 2.0;
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    state_class: measurement
+    icon: mdi:water-percent
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
