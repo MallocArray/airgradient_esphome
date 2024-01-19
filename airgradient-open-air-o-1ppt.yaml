@@ -22,12 +22,12 @@ dashboard_import:
   import_full_config: false
 
 packages:
-  board: github://MallocArray/airgradient_esphome/packages/airgradient_esp32-c3_board.yaml@o-ppt1
-  pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t.yaml@o-ppt1
-  pm_2.5_2: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_2.yaml@o-ppt1
-  tvoc: github://MallocArray/airgradient_esphome/packages/sensor_sgp41.yaml@o-ppt1
-  airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_esp32-c3_dual_pms5003t.yaml@o-ppt1
-  hardware_watchdog: github://MallocArray/airgradient_esphome/packages/watchdog.yaml@o-ppt1
-  wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml@o-ppt1
-  uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml@o-ppt1
-  safe_mode: github://MallocArray/airgradient_esphome/packages/switch_safe_mode.yaml@o-ppt1
+  board: github://MallocArray/airgradient_esphome/packages/airgradient_esp32-c3_board.yaml
+  pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t.yaml
+  pm_2.5_2: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_2.yaml
+  tvoc: github://MallocArray/airgradient_esphome/packages/sensor_sgp41.yaml
+  airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_esp32-c3_dual_pms5003t.yaml
+  hardware_watchdog: github://MallocArray/airgradient_esphome/packages/watchdog.yaml
+  wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml
+  uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml
+  safe_mode: github://MallocArray/airgradient_esphome/packages/switch_safe_mode.yaml
