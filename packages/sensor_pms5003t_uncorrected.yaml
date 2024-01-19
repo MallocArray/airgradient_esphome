@@ -39,14 +39,6 @@ sensor:
       name: "Temperature"
       id: temp
       filters:
-          # https://www.airgradient.com/blog/slr-temperature-example/
-          # - lambda: return (x - 4.55) / 0.83;  # Once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
-        - lambda: !lambda |-
-            // Fix negative values for now
-            if (x > 6000) {
-              return (x - 6553.6 - 4.55) / 0.83;
-            }
-            return (x - 4.55) / 0.83;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
@@ -54,10 +46,6 @@ sensor:
       name: "Humidity"
       id: humidity
       filters:
-          # https://www.airgradient.com/blog/linear-regression-improves-sensor-accuracy/
-        # - lambda: return x * 1.500574 - 4.76;
-          # https://forum.airgradient.com/t/open-air-outdoor-air-quality-monitor-humidity-readings-are-off/1171/2
-        - lambda: return x * 1.3921 - 1.0245;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
