@@ -1,7 +1,7 @@
 substitutions:
   name: ag-basic
   friendly_name: AG Basic
-  config_version: 2.0.0
+  config_version: 2.0.1
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-basic
@@ -559,4 +559,3 @@ wifi:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
   import_full_config: false
-
