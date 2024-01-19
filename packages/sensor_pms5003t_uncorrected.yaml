@@ -39,8 +39,6 @@ sensor:
       name: "Temperature"
       id: temp
       filters:
-          # https://www.airgradient.com/blog/slr-temperature-example/
-        - lambda: return (x - 4.55) / 0.83;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
@@ -48,10 +46,6 @@ sensor:
       name: "Humidity"
       id: humidity
       filters:
-          # https://www.airgradient.com/blog/linear-regression-improves-sensor-accuracy/
-        # - lambda: return x * 1.500574 - 4.76;
-          # https://forum.airgradient.com/t/open-air-outdoor-air-quality-monitor-humidity-readings-are-off/1171/2
-        - lambda: return x * 1.3921 - 1.0245;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
@@ -66,7 +60,7 @@ sensor:
     icon: "mdi:air-filter"
     accuracy_decimals: 0
     filters:
-      - skip_initial: 10  # Need valid data from PM 2.5 sensor before able to calculate
+      - skip_initial: 1  # Need valid data from PM 2.5 sensor before able to calculate
     lambda: |-
       // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
       // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml

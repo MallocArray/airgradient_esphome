@@ -7,24 +7,32 @@ sensor:
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
-      device_class: pm25  # Added to report properly to HomeKit
+      device_class: pm25  # Added to report properly to Homekit
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
-      device_class: pm1  # Added to report properly to HomeKit
+      device_class: pm1  # Added to report properly to Homekit
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
-      device_class: pm10  # Added to report properly to HomeKit
+      device_class: pm10  # Added to report properly to Homekit
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
     temperature:
       name: "Temperature"
       id: temp
+      filters:
+          # https://www.airgradient.com/blog/slr-temperature-example/
+        - lambda: return (x - 4.55) / 0.83;
     humidity:
       name: "Humidity"
       id: humidity
+      filters:
+          # https://www.airgradient.com/blog/linear-regression-improves-sensor-accuracy/
+        # - lambda: return x * 1.500574 - 4.76;
+          # https://forum.airgradient.com/t/open-air-outdoor-air-quality-monitor-humidity-readings-are-off/1171/2
+        - lambda: return x * 1.3921 - 1.0245;
     update_interval: 2min
 
 
@@ -37,7 +45,7 @@ sensor:
     icon: "mdi:air-filter"
     accuracy_decimals: 0
     filters:
-      - skip_initial: 10  # Need valid data from PM 2.5 sensor before able to calculate
+      - skip_initial: 1  # Need valid data from PM 2.5 sensor before able to calculate
     lambda: |-
       // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
       // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
