@@ -40,7 +40,13 @@ sensor:
       id: temp
       filters:
           # https://www.airgradient.com/blog/slr-temperature-example/
-        - lambda: return (x - 4.55) / 0.83;
+          # - lambda: return (x - 4.55) / 0.83;  # Once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+        - lambda: !lambda |-
+            // Fix negative values for now
+            if (x > 6000) {
+              return (x - 6553.6 - 4.55) / 0.83;
+            }
+            return (x - 4.55) / 0.83;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
@@ -66,7 +72,7 @@ sensor:
     icon: "mdi:air-filter"
     accuracy_decimals: 0
     filters:
-      - skip_initial: 10  # Need valid data from PM 2.5 sensor before able to calculate
+      - skip_initial: 1  # Need valid data from PM 2.5 sensor before able to calculate
     lambda: |-
       // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
       // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml

@@ -24,7 +24,13 @@ sensor:
       id: temp
       filters:
           # https://www.airgradient.com/blog/slr-temperature-example/
-        - lambda: return (x - 4.55) / 0.83;
+          # - lambda: return (x - 4.55) / 0.83;  # Once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+        - lambda: !lambda |-
+            // Fix negative values for now
+            if (x > 6000) {
+              return (x - 6553.6 - 4.55) / 0.83;
+            }
+            return (x - 4.55) / 0.83;
     humidity:
       name: "Humidity"
       id: humidity
