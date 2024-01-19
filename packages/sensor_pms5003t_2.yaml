@@ -1,0 +1,148 @@
+# Used for a second PMS5003T in the same device, such as the Open Air O-1PPT
+sensor:
+  - platform: pmsx003
+    # Default interval of updating every second, but using an average over the last 30 seconds/readings
+    # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
+    type: PMS5003T  # ! Don't forget to change this back to T
+    uart_id: senseair_s8_uart
+    pm_2_5:
+      name: "PM 2.5 (2)"
+      id: pm_2_5_2
+      device_class: pm25  # Added to report properly to HomeKit
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_1_0:
+      name: "PM 1.0 (2)"
+      id: pm_1_0_2
+      device_class: pm1  # Added to report properly to HomeKit
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_10_0:
+      name: "PM 10.0 (2)"
+      id: pm_10_0_2
+      device_class: pm10  # Added to report properly to HomeKit
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    pm_0_3um:
+      name: "PM 0.3 (2)"
+      id: pm_0_3um_2
+      filters:
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    temperature:
+      name: "Temperature (2)"
+      id: temp_2
+      filters:
+          # https://www.airgradient.com/blog/slr-temperature-example/
+          # - lambda: return (x - 4.55) / 0.83;  # Once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+        - lambda: !lambda |-
+            // Fix negative values for now
+            if (x > 6000) {
+              return (x - 6553.6 - 4.55) / 0.83;
+            }
+            return (x - 4.55) / 0.83;
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+    humidity:
+      name: "Humidity (2)"
+      id: humidity_2
+      filters:
+          # https://www.airgradient.com/blog/linear-regression-improves-sensor-accuracy/
+        # - lambda: return x * 1.500574 - 4.76;
+          # https://forum.airgradient.com/t/open-air-outdoor-air-quality-monitor-humidity-readings-are-off/1171/2
+        - lambda: return x * 1.3921 - 1.0245;
+        - sliding_window_moving_average:
+            window_size: 30
+            send_every: 30
+
+# Average the readings from both sensors to return a value
+  - platform: template
+    id: pm_2_5_avg
+    name: "PM 2.5 (Average)"
+    lambda: return (id(pm_2_5).state + id(pm_2_5_2).state) / 2.0;
+    device_class: pm25
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
+
+  - platform: template
+    id: pm_1_0_avg
+    name: "PM 1.0 (Average)"
+    lambda: return (id(pm_1_0).state + id(pm_1_0_2).state) / 2.0;
+    device_class: pm1
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
+
+  - platform: template
+    id: pm_10_0_avg
+    name: "PM 10.0 (Average)"
+    lambda: return (id(pm_10_0).state + id(pm_10_0_2).state) / 2.0;
+    device_class: pm10
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
+
+  - platform: template
+    id: pm_0_3um_avg
+    name: "PM 0.3 (Average)"
+    lambda: return (id(pm_0_3um).state + id(pm_0_3um_2).state) / 2.0;
+    unit_of_measurement: /dL
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
+
+  - platform: template
+    id: temp_avg
+    name: "Temperature (Average)"
+    lambda: return (id(temp).state + id(temp_2).state) / 2.0;
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    icon: mdi:thermometer
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30
+
+  - platform: template
+    id: humidity_avg
+    name: "Humidity (Average)"
+    lambda: return (id(humidity).state + id(humidity_2).state) / 2.0;
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
+    device_class: humidity
+    state_class: measurement
+    icon: mdi:water-percent
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 30

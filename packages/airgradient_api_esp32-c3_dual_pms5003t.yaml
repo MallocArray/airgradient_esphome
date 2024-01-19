@@ -1,0 +1,92 @@
+# Used with the Open Air O-PPT1 with dual PMS5003T sensors
+interval:
+  - interval: 2.5min
+    # Send data to AirGradient API server
+    then:
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+          - http_request.post:
+              # https://api.airgradient.com/public/docs/api/v1/
+              # AirGradient URL with the MAC address all lower case
+              url: !lambda |-
+                return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+              headers:
+                  Content-Type: application/json
+              # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
+              # Method borrowed from ajfriesen
+              # https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-open-air.yaml
+              # https://arduinojson.org/v7/assistant
+              body: !lambda |
+                String jsonString;
+                StaticJsonDocument<1024> doc;
+
+                doc["wifi"] = id(wifi_dbm).state;
+
+                doc["pm01"] = to_string(id(pm_1_0_avg).state);
+                doc["pm02"] = to_string(id(pm_2_5_avg).state);
+                doc["pm10"] = to_string(id(pm_10_0_avg).state);
+                doc["pm003_count"] = to_string(id(pm_0_3um_avg).state);
+                doc["atmp"] = to_string(id(temp_avg).state);
+                doc["rhum"] = to_string(id(humidity_avg).state);
+
+                // We don't have access to the boot loop counter in esphome, so just send a 1
+                // See: https://github.com/esphome/issues/issues/1539
+                doc["boot"] = "1";
+
+                JsonObject channels = doc.createNestedObject("channels");
+
+                JsonObject channels_1 = channels.createNestedObject("1");
+                channels_1["pm01"] = to_string(id(pm_1_0).state);
+                channels_1["pm02"] = to_string(id(pm_2_5).state);
+                channels_1["pm10"] = to_string(id(pm_10_0).state);
+                channels_1["pm003_count"] = to_string(id(pm_0_3um).state);
+                channels_1["atmp"] = to_string(id(temp).state);
+                channels_1["rhum"] = to_string(id(humidity).state);
+
+                JsonObject channels_2 = channels.createNestedObject("2");
+                channels_2["pm01"] = to_string(id(pm_1_0_2).state);
+                channels_2["pm02"] = to_string(id(pm_2_5_2).state);
+                channels_2["pm10"] = to_string(id(pm_10_0_2).state);
+                channels_2["pm003_count"] = to_string(id(pm_0_3um_2).state);
+                channels_2["atmp"] = to_string(id(temp_2).state);
+                channels_2["rhum"] = to_string(id(humidity_2).state);
+
+                // Serialize the JSON document into the string
+                serializeJson(doc, jsonString);
+
+                // Convert String to std::string
+                std::string stdJsonString(jsonString.c_str());
+
+                return stdJsonString;
+
+
+switch:
+  - platform: template
+    name: "Upload to AirGradient Dashboard"
+    id: upload_airgradient
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+
+esphome:
+  on_boot:
+    priority: 200  # Network connections setup
+    then:
+      if:
+        condition:
+          switch.is_on: upload_airgradient
+        then:
+        - http_request.post:
+            # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+            # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+            url: !lambda |-
+              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+            headers:
+                Content-Type: application/json
+            json:
+              wifi: !lambda return to_string(-50);
+
+http_request:
+  # Used to support POST request to send data to AirGradient
+  # https://esphome.io/components/http_request.html
