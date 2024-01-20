@@ -5,7 +5,7 @@
 substitutions:
   name: "ag-open-air-o-1ppt"
   friendly_name: "AG Open Air O-1PPT"
-  config_version: 2.0.1
+  config_version: 2.0.2
   name_add_mac_suffix: "false"  # Must have quotes around value
 
 # Enable Home Assistant API

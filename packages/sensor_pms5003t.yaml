@@ -39,14 +39,12 @@ sensor:
       name: "Temperature"
       id: temp
       filters:
-          # https://www.airgradient.com/blog/slr-temperature-example/
-          # - lambda: return (x - 4.55) / 0.83;  # Once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+          # https://forum.airgradient.com/t/outdoor-temperature-and-humidity-reading-correction/1544/19
         - lambda: !lambda |-
-            // Fix negative values for now
-            if (x > 6000) {
-              return (x - 6553.6 - 4.55) / 0.83;
-            }
-            return (x - 4.55) / 0.83;
+            // Remove line with (x > 6000) once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+            if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
+            if (x < 10.0) return (x * 1.327) - 6.738;
+            return (x * 1.181) - 5.113;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
