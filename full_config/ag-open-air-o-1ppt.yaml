@@ -1,7 +1,7 @@
 substitutions:
   name: ag-open-air-o-1ppt
   friendly_name: AG Open Air O-1PPT
-  config_version: 2.0.1
+  config_version: 2.0.2
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-open-air-o-1ppt
@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.1
+    version: 2.0.2
   min_version: 2023.12.0
   on_boot:
   - priority: 200.0
@@ -189,11 +189,10 @@ sensor:
     id: temp
     filters:
     - lambda: !lambda |-
-        // Fix negative values for now
-        if (x > 6000) {
-          return (x - 6553.6 - 4.55) / 0.83;
-        }
-        return (x - 4.55) / 0.83;
+        // Remove line with (x > 6000) once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+        if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
+        if (x < 10.0) return (x * 1.327) - 6.738;
+        return (x * 1.181) - 5.113;
     - sliding_window_moving_average:
         window_size: 30
         send_every: 30
@@ -325,15 +324,10 @@ sensor:
     id: temp_2
     filters:
     - lambda: !lambda |-
-        // Fix negative values for now
-        if (x > 6000) {
-          return (x - 6553.6 - 4.55) / 0.83;
-        }
-        return (x - 4.55) / 0.83;
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
+        // Remove line with (x > 6000) once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
+        if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
+        if (x < 10.0) return (x * 1.327) - 6.738;
+        return (x * 1.181) - 5.113;
     disabled_by_default: false
     force_update: false
     unit_of_measurement: °C
