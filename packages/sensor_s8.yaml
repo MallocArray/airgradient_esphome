@@ -8,7 +8,7 @@ sensor:
       filters:
         - skip_initial: 2
         - clamp:
-            min_value: 400  # 419 as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
+            min_value: 350  # 419 global mean as of 2023-06 https://gml.noaa.gov/ccgg/trends/global.html
     id: senseair_s8
     uart_id: senseair_s8_uart
 
