@@ -1,0 +1,21 @@
+debug:
+  update_interval: 5s
+
+sensor:
+  - platform: debug
+    # https://esphome.io/components/debug.html
+    free:
+      name: "Heap Free"
+    fragmentation:
+      name: "Heap Fragmentation"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+
+text_sensor:
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
