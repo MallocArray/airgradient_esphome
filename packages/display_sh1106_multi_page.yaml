@@ -129,7 +129,7 @@ display:
           it.printf(0, 48, id(poppins_light_12), "AQI: %.0f", id(pm_2_5_aqi).state);
       - id: blank
         lambda: |-
-          it.printf(0, 0, id(open_sans_14), "");
+          it.printf(0, 0, id(open_sans_14), " ");
 
 
     on_page_change:
