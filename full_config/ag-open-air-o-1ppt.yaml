@@ -1,7 +1,7 @@
 substitutions:
   name: ag-open-air-o-1ppt
   friendly_name: AG Open Air O-1PPT
-  config_version: 2.0.2
+  config_version: 2.0.3
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-open-air-o-1ppt
@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.2
+    version: 2.0.3
   min_version: 2023.12.0
   on_boot:
   - priority: 200.0
@@ -184,6 +184,7 @@ sensor:
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
+    state_class: measurement
   temperature:
     name: Temperature
     id: temp
@@ -208,7 +209,7 @@ sensor:
     id: humidity
     filters:
     - lambda: !lambda |-
-        return x * 1.3921 - 1.0245;
+        return x * 1.259 + 7.34;
     - sliding_window_moving_average:
         window_size: 30
         send_every: 30
@@ -319,6 +320,7 @@ sensor:
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
+    state_class: measurement
   temperature:
     name: Temperature (2)
     id: temp_2
@@ -328,6 +330,10 @@ sensor:
         if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
         if (x < 10.0) return (x * 1.327) - 6.738;
         return (x * 1.181) - 5.113;
+    - sliding_window_moving_average:
+        window_size: 30
+        send_every: 30
+        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: °C
@@ -339,7 +345,7 @@ sensor:
     id: humidity_2
     filters:
     - lambda: !lambda |-
-        return x * 1.3921 - 1.0245;
+        return x * 1.259 + 7.34;
     - sliding_window_moving_average:
         window_size: 30
         send_every: 30
@@ -611,6 +617,7 @@ api:
   reboot_timeout: 15min
 ota:
   safe_mode: true
+  version: 2
   port: 3232
   reboot_timeout: 5min
   num_attempts: 10

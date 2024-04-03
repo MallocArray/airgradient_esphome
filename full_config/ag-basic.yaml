@@ -200,6 +200,7 @@ sensor:
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
+    state_class: measurement
   update_interval: 0s
 - platform: template
   name: PM 2.5 AQI
@@ -245,10 +246,6 @@ sensor:
     id: co2
     filters:
     - skip_initial: 2
-    - clamp:
-        min_value: 400.0
-        max_value: .nan
-        ignore_out_of_range: false
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -372,6 +369,7 @@ font:
   - '9'
   - ':'
   - '='
+  - '?'
   - A
   - B
   - C
@@ -542,6 +540,7 @@ api:
   reboot_timeout: 15min
 ota:
   safe_mode: true
+  version: 2
   port: 8266
   reboot_timeout: 5min
   num_attempts: 10

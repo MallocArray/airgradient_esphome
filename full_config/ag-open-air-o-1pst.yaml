@@ -1,7 +1,7 @@
 substitutions:
   name: ag-open-air-o-1pst
   friendly_name: AG Open Air O-1PST
-  config_version: 2.0.2
+  config_version: 2.0.3
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-open-air-o-1pst
@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.2
+    version: 2.0.3
   min_version: 2023.12.0
   on_boot:
   - priority: 200.0
@@ -203,6 +203,7 @@ sensor:
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
+    state_class: measurement
   temperature:
     name: Temperature
     id: temp
@@ -227,7 +228,7 @@ sensor:
     id: humidity
     filters:
     - lambda: !lambda |-
-        return x * 1.3921 - 1.0245;
+        return x * 1.259 + 7.34;
     - sliding_window_moving_average:
         window_size: 30
         send_every: 30
@@ -283,10 +284,6 @@ sensor:
     id: co2
     filters:
     - skip_initial: 2
-    - clamp:
-        min_value: 400.0
-        max_value: .nan
-        ignore_out_of_range: false
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -445,6 +442,7 @@ api:
   reboot_timeout: 15min
 ota:
   safe_mode: true
+  version: 2
   port: 3232
   reboot_timeout: 5min
   num_attempts: 10
