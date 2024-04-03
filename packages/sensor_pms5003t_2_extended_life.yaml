@@ -1,7 +1,6 @@
 # Used for a second PMS5003T in the same device, such as the Open Air O-1PPT
 sensor:
   - platform: pmsx003
-    # Default interval of updating every second, but using an average over the last 30 seconds/readings
     # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
     type: PMS5003T
     uart_id: senseair_s8_uart
@@ -9,33 +8,17 @@ sensor:
       name: "PM 2.5 (2)"
       id: pm_2_5_2
       device_class: pm25  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_1_0:
       name: "PM 1.0 (2)"
       id: pm_1_0_2
       device_class: pm1  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_10_0:
       name: "PM 10.0 (2)"
       id: pm_10_0_2
       device_class: pm10  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_0_3um:
       name: "PM 0.3 (2)"
       id: pm_0_3um_2
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     temperature:
       name: "Temperature (2)"
       id: temp_2
@@ -46,18 +29,13 @@ sensor:
             if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
             if (x < 10.0) return (x * 1.327) - 6.738;
             return (x * 1.181) - 5.113;
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     humidity:
       name: "Humidity (2)"
       id: humidity_2
       filters:
           # Compensation algorithm from AirGradient's research
         - lambda: return x * 1.259 + 7.34;
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
+    update_interval: 2min
 
 # Average the readings from both sensors to return a value
   - platform: template
@@ -69,10 +47,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
 
   - platform: template
     id: pm_1_0_avg
@@ -83,10 +58,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
 
   - platform: template
     id: pm_10_0_avg
@@ -97,10 +69,8 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
+
 
   - platform: template
     id: pm_0_3um_avg
@@ -110,10 +80,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
 
   - platform: template
     id: temp_avg
@@ -124,10 +91,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     icon: mdi:thermometer
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
 
   - platform: template
     id: humidity_avg
@@ -138,7 +102,4 @@ sensor:
     device_class: humidity
     state_class: measurement
     icon: mdi:water-percent
-    update_interval: 1s
-    filters:
-      - sliding_window_moving_average:
-          window_size: 30
+    update_interval: 2min
