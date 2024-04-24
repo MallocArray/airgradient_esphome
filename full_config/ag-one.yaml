@@ -450,6 +450,7 @@ font:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_14
   size: 14
@@ -533,10 +534,12 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 - file:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_9
   size: 9
@@ -620,10 +623,12 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 - file:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_20
   size: 20
@@ -707,6 +712,7 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 display:
 - platform: ssd1306_i2c
   model: SH1106_128X64

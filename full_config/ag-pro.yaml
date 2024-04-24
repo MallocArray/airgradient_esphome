@@ -38,9 +38,9 @@ esp8266:
   board: d1_mini
   restore_from_flash: true
   framework:
-    version: 3.0.2
-    source: ~3.30002.0
-    platform_version: platformio/espressif8266@3.2.0
+    version: 3.1.2
+    source: ~3.30102.0
+    platform_version: platformio/espressif8266@4.2.1
   early_pin_init: true
   board_flash_mode: dout
 logger:
@@ -374,6 +374,7 @@ font:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_14
   size: 14
@@ -457,10 +458,12 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 - file:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_9
   size: 9
@@ -544,10 +547,12 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 - file:
     family: Open Sans
     weight: 400
     italic: false
+    refresh: 1d
     type: gfonts
   id: open_sans_20
   size: 20
@@ -631,6 +636,7 @@ font:
   - °
   - ³
   - µ
+  bpp: 1
 display:
 - platform: ssd1306_i2c
   model: SH1106_128X64
@@ -786,9 +792,9 @@ binary_sensor:
     then:
     - logger.log:
         format: Toggling display betwen C and F
-        tag: main
         level: DEBUG
         args: []
+        tag: main
     - switch.toggle:
         id: display_in_f
     invalid_cooldown: 1s
@@ -801,9 +807,9 @@ binary_sensor:
     then:
     - logger.log:
         format: Starting manual CO2 calibration
-        tag: main
         level: DEBUG
         args: []
+        tag: main
     - senseair.background_calibration:
         id: senseair_s8
     - delay: 70s

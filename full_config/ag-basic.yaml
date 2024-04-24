@@ -38,9 +38,9 @@ esp8266:
   board: d1_mini
   restore_from_flash: true
   framework:
-    version: 3.0.2
-    source: ~3.30002.0
-    platform_version: platformio/espressif8266@3.2.0
+    version: 3.1.2
+    source: ~3.30102.0
+    platform_version: platformio/espressif8266@4.2.1
   early_pin_init: true
   board_flash_mode: dout
 logger:
@@ -424,6 +424,7 @@ font:
   - y
   - z
   - °
+  bpp: 1
 display:
 - platform: ssd1306_i2c
   model: SSD1306_64X48
