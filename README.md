@@ -101,7 +101,8 @@ Copy the full config file to your personal ESPhome config file and customize as 
 
 ## Configuration
 
-If all original sensors (PMS5003, Senseair S8, SHT4x) are connected, configuration files should be ready
+If all original sensors (PMS5003, Senseair S8, SHT4x) are connected, configuration files should be ready for use.
+
 If some sensors are not installed, comment or remove the associated sections under `packages:`
 
 The PMS5003 sensor by default collects readings every second.  Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently, although this could impact the accuracy of the readings collected, since there will not be constant airflow through the device when the fan shuts down.  To collect readings every 2 minutes, change the line for the pms5003 sensor to `sensor_pms5003_extended_life.yaml`
