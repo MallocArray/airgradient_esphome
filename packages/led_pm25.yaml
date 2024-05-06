@@ -1,0 +1,72 @@
+# https://app.airgradient.com/dashboard/about
+interval:
+  - interval: 1min
+    # Set full LED strip to color based on CO2 values
+    then:
+      - if:
+          condition:
+            light.is_on: led_strip
+          then:
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state <=5;'
+                  # lambda: 'return id(pm_2_5).state < 1;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 0%
+                      green: 100%
+                      blue: 0%
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state > 5 && id(pm_2_5).state <= 10;'
+                  # lambda: 'return id(pm_2_5).state >= 1 && id(pm_2_5).state < 2;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 100%
+                      green: 100%
+                      blue: 0%
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state > 10 && id(pm_2_5).state <= 35;'
+                  # lambda: 'return id(pm_2_5).state >= 2 && id(pm_2_5).state < 3;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 100%
+                      green: 70%
+                      blue: 0%
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state > 35 && id(pm_2_5).state <= 55;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 100%
+                      green: 0%
+                      blue: 0%
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state > 55 && id(pm_2_5).state <= 200;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 60%
+                      green: 0%
+                      blue: 60%
+            - if:
+                condition:
+                  lambda: 'return id(pm_2_5).state > 200;'
+                then:
+                  - light.turn_on:
+                      id: led_strip
+                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      red: 40%
+                      green: 0%
+                      blue: 0%

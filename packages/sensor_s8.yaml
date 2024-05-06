@@ -2,6 +2,7 @@ sensor:
   - platform: senseair
     # SenseAir S8 https://esphome.io/components/sensor/senseair.html
     # https://senseair.com/products/size-counts/s8-lp/
+    # https://climate.nasa.gov/vital-signs/carbon-dioxide/?intent=121
     co2:
       name: "CO2"
       id: co2
