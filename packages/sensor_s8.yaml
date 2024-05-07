@@ -1,3 +1,6 @@
+substitutions:
+  co2_offset: '0'
+
 sensor:
   - platform: senseair
     # SenseAir S8 https://esphome.io/components/sensor/senseair.html
@@ -7,7 +10,7 @@ sensor:
       name: "CO2"
       id: co2
       filters:
-        - skip_initial: 2
+        - offset: $co2_offset
     id: senseair_s8
     uart_id: senseair_s8_uart
 
