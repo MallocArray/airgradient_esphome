@@ -4,6 +4,7 @@
 # Far right LED indicates TVOC
 # LED Fade setting fades out the bars on the sides at the set percentage each step
 
+# Colors based on Monitor LED Information https://app.airgradient.com/dashboard/about
 substitutions:
   co2_green: '400'
   co2_yellow: '1000'

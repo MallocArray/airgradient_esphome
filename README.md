@@ -4,22 +4,17 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 
 ## Breaking Changes
 
-In the 2.x release of these configurations, some breaking changes are introduced
-
-* See previous 1.x release breaking changes if coming from earlier versions
-* Changed `name_add_mac_suffix` to false by default.  This will no longer add the MAC address to the end of the device name.  Assists ESPHome in properly detecting new device as Online without a static IP.  Can be changed to `true` if desired. Ensure all devices have unique `name:` fields if `false`.
-* Changed the variable names in the `substitutions:` section to have them match the ESPHome parameters they are used with.
-* Changed to `config_version:` substitution name for a shorter name
-* Disabled Upload to AirGradient Dashboard by default, but able to flip the switch in HomeAssistant to enable if desired
+Due to renaming of the Automatic Background Calibration switch to the proper name of Automatic Baseline Correction, this switch will default to being enabled, even if previously you had disabled it.  After installing, disable again if desired
 
 ## Changes
 
 * Added Display Contrast slider to dim the display
 * Added device_class to the PMSx005 sensors to have them properly reflect in the HomeKit integration if supported ([Forum Link](https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328/7?u=mallocarray))
 * Added optional Factory Reset switch that is disabled by default. Can be enabled in HomeAssistant and used if desired
-* Added optional `diagnostic.yaml` package with extra sensors about the ESP device itself, including temperature and free
-* Added optional `sensor_bme680.yaml` package to support the BME680 module if desired
-* Added `dashboard_import` to assist discovery of new devices installed with the pre-compiled .bin files
+* LED combo package. Left 5 LEDs reflect CO2 levels, middle 5 LEDs reflect PM2.5 levels, far right indicates VOC. (Same as display)
+* LED bar configs feature a "LED Fade" parameter that controls the percentage that the LED bar dims out from the center
+  ![1715467068556](image/README/1715467068556.png)
+* CO2 package supports optional substitution `co2_offset` to offset reported readings by a set amount.  Useful if sensor is known to be off by a certain amount, or if wanting to override default calibration of 400 ppm
 
 ## Features
 
@@ -59,7 +54,10 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
 ### Standard
 
-Copy the .yaml file from the main folder for your model and place it in the `config` folder of your ESPHome.  Make any desired changes to the substitutions to name the devices for your use case
+* In ESPHome web interface, click New Device.  Give any name. Select any model of board, and click Skip on the final page to not install at this time. Click Edit on the new entry and replace with the contents of the .yaml file for your model.
+* Alternatively, copy the .yaml file from the main folder for your model in this repo and place it in the `config` folder of your ESPHome.
+* Make any desired changes to the substitutions to name the devices for your use case
+* Install to the device using one of the ESPHome options.
 
 > Note: by default ESPHome only syncs remote repositories that the packages are referencing once per day, so if changes are made to the repository, you may not get the updated config for up to 1 day after it is published.  You can remove the contents of the folder config/.esphome/packages to force it to update sooner
 
@@ -98,6 +96,10 @@ Save the appropriate .bin file and go to [https://web.esphome.io/](https://web.e
 The `full_config` folder contains a single yaml file per model that contains the full standalone configuration, created by the `esphome config` command.  This adds in all of the optional parameters, so is much longer than the minimum configuration, but the single file contains all needed information to be completely independent from this repo.
 
 Copy the full config file to your personal ESPhome config file and customize as desired, then install to your device.
+
+## Troubleshooting
+
+If some sensors are not showing valid readings after installing or upgrading, please remove the power cable from the device entirely for 5-10 seconds, then reconnect.  Many issues are resolved with a full power reset, as the software reset does not fully clear some situations.
 
 ## Configuration
 
@@ -143,9 +145,13 @@ Rather than download an individual package and update the reference to it, you m
 >       number: D7
 > ```
 
+#### Copy and Paste
+
+It is also possible to copy the contents of a package file and paste it directly into your YAML file.  Do note that sections cannot be duplicated, so if multiple sections like `interval` are pasted in, they must be combined into a single entry when using this method.
+
 #### Adding other packages
 
-Several additional packages are available in the `packages` folder that can be added or removed as needed.  For example, the display package includes configuration for multiple pages of information that can be enabled or disabled, or you may wish to change to the package that has a single page to avoid extra switches in HomeAssistant or if you know you won't be using the other pages and want to save on flash memory space.
+Several additional packages are available in the `packages` folder that can be added or removed as needed.  See the [Packages page](/packages.md) for more information about available options.
 
 ## Additional Information
 
@@ -156,12 +162,12 @@ MQTT support has been mentioned in the AirGradient forums several times.  ESPHom
 
 Several more features are planned to be added to this repo
 
-- [ ] Support for Open Air without CO2 sensor (Model: O-1PPT)
+- [X] Support for Open Air without CO2 sensor (Model: O-1PPT)
 - [ ] Explore options for disabling display/LED during certain times (May be differed to HomeAssistant Automations)
 - [ ] Standardize font on AirGradient Basic display to match Pro
-- [ ] Reduce number of fonts used in the multi_page package
-  - [ ] Open Sans displays a consistent height, but some characters, such as F and 0 are mismatched, the left side is double line thick while right is single line
-  - [ ] Poppins Light is consistent thickness, but numbers are taller than letters, giving a mismatched height
+- [X] Reduce number of fonts used in the multi_page package
+  - [X] Open Sans displays a consistent height, but some characters, such as F and 0 are mismatched, the left side is double line thick while right is single line
+  - [X] Poppins Light is consistent thickness, but numbers are taller than letters, giving a mismatched height
 - [ ] Add GitHub actions to automatically build updated .bin files as needed
 - [X] Add support for esp32_improv and improv_serial (improv_serial not supported with this board and used pins.  esp32_improv uses 30% of available flash memory and is nearly full)
   - [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
