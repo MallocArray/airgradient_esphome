@@ -77,13 +77,38 @@ Display configuration for AG Basic
 
 LED bar in AG ONE reflecting multiple sensor values.
 
-Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient
+Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient.  The values for each color can be modified by adding a substitution section to your config.
+
+```yaml
+substitutions:
+  co2_green: '400'
+  co2_yellow: '1000'
+  co2_red: '2000'
+  co2_purple: '4000'
+```
 
 ## led_combo.yaml
 
 LED bar in AG ONE reflecting multiple sensor values. Left 5 LEDs reflect CO2 levels, middle 5 LEDs reflect PM2.5 levels, far right indicates TVOC. (Same as display)
 
-Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient
+Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient. The values for each color can be modified by adding a substitution section to your config.
+
+```yaml
+substitutions:
+  co2_green: '400'
+  co2_yellow: '1000'
+  co2_red: '2000'
+  co2_purple: '4000'
+  pm_2_5_green: '0'
+  pm_2_5_yellow: '11'
+  pm_2_5_red: '56'
+  pm_2_5_purple: '201'
+  voc_green: '100'
+  voc_yellow: '150'
+  voc_red: '250'
+  voc_purple: '400'
+  voc_blue: '50'
+```
 
   ![1715467068556](image/README/1715467068556.png)
 
@@ -91,8 +116,21 @@ Mixes colors from green>yellow>orange>red>purple based on numbers provided by Ai
 
 LED bar in AG ONE reflects PM2.5 levels.
 
-Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient
-led.yaml
+Mixes colors from green>yellow>orange>red>purple based on numbers provided by AirGradient. The values for each color can be modified by adding a substitution section to your config.
+
+```yaml
+substitutions:
+  pm_2_5_green: '0'
+  pm_2_5_yellow: '11'
+  pm_2_5_red: '56'
+  pm_2_5_purple: '201'
+```
+
+## led.yaml
+
+Configures the 11 segment LED bar in AG ONE models.
+
+Also enables On/Off toggle, brightness, and LED fade out
 
 ## sensor_bme680.yaml
 
