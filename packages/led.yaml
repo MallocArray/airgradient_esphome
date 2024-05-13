@@ -23,3 +23,16 @@ number:
     optimistic: true
     restore_value: true
     mode: slider
+
+  - platform: template
+    # https://esphome.io/components/number/template.html
+    name: "LED Fade %"
+    icon: "mdi:lightbulb"
+    id: led_fade
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 20
+    optimistic: true
+    restore_value: true
+    mode: box

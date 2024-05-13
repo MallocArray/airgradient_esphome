@@ -1,6 +1,14 @@
+# Sets the full LED bar to a color relative to CO2 levels
+# https://app.airgradient.com/dashboard/about
+
+substitutions:
+  co2_green: '400'
+  co2_yellow: '1000'
+  co2_red: '2000'
+  co2_purple: '4000'
+
 interval:
-  - interval: 1min
-    # Set full LED strip to color based on CO2 values
+  - interval: 5s
     then:
       - if:
           condition:
@@ -8,61 +16,68 @@ interval:
           then:
             - if:
                 condition:
-                  lambda: 'return id(co2).state < 800;'
+                  lambda: 'return !(isnan(id(co2).state));' # Valid data returned
                 then:
-                  - light.turn_on:
+                  - light.addressable_set:
                       id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      # Red prompt: If x is 400 or less assign 0, if between 400 and 1000 then gradually increase from 0 to 100, 1000 or higher assign 100 in a single line of C++
+                      # Green prompt: If x is 1000 or less assign 1, if between 1000 and 2000 then gradually decrease from 1 to 0, 2000 or higher assign 0 in a single line of C++
+                      # Blue prompt: If x is 2000 or less assign 0, if between 2000 and 4000 then gradually increase from 0 to 100, 4000 or higher assign 100 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 5)) / 100.0);'
+                      range_from: 0
+                      range_to: 10
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 4)) / 100.0);'
+                      range_from: 1
+                      range_to: 9
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 3)) / 100.0);'
+                      range_from: 2
+                      range_to: 8
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);'
+                      range_from: 3
+                      range_to: 7
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state)) / 100.0);'
+                      range_from: 4
+                      range_to: 6
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      range_from: 5
+                      range_to: 5
+                      red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
+                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
+            - if:
+                condition:
+                  lambda: 'return (isnan(id(co2).state));'  # No data from sensor yet
+                then:
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      range_from: 0
+                      range_to: 10
                       red: 0%
-                      green: 100%
-                      blue: 0%
-            - if:
-                condition:
-                  lambda: 'return id(co2).state >= 800 && id(co2).state < 1000;'
-                then:
-                  - light.turn_on:
-                      id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      red: 100%
-                      green: 100%
-                      blue: 0%
-            - if:
-                condition:
-                  lambda: 'return id(co2).state >= 1000 && id(co2).state < 1500;'
-                then:
-                  - light.turn_on:
-                      id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      red: 100%
-                      green: 70%
-                      blue: 0%
-            - if:
-                condition:
-                  lambda: 'return id(co2).state >= 1500 && id(co2).state < 2000;'
-                then:
-                  - light.turn_on:
-                      id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      red: 100%
-                      green: 0%
-                      blue: 0%
-            - if:
-                condition:
-                  lambda: 'return id(co2).state >= 2000 && id(co2).state < 3000;'
-                then:
-                  - light.turn_on:
-                      id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      red: 60%
-                      green: 0%
-                      blue: 60%
-            - if:
-                condition:
-                  lambda: 'return id(co2).state >= 3000 && id(co2).state < 10000;'
-                then:
-                  - light.turn_on:
-                      id: led_strip
-                      brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      red: 40%
                       green: 0%
                       blue: 0%
