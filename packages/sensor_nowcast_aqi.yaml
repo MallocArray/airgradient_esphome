@@ -63,8 +63,7 @@ sensor:
     accuracy_decimals: 0
     unit_of_measurement: minutes
 
-  - platform: copy
-    source_id: pm_2_5
+  - platform: template
     id: pm_2_5_1h_avg
     name: "PM 2.5 1h Average"
     disabled_by_default: true
@@ -72,9 +71,12 @@ sensor:
     accuracy_decimals: 1
     filters:
       - sliding_window_moving_average:
-          window_size: 20 # every 3 minutes = 1 hour
-          send_every: 20
-          send_first_at: 20
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+    update_interval: 60s
+    lambda: |
+      return id(pm_2_5).state;
     on_value:
       lambda: |
         // Insert the current value
@@ -87,18 +89,20 @@ sensor:
           }
         }
 
-  - platform: copy
-    source_id: pm_10_0
+  - platform: template
     id: pm_10_0_1h_avg
     name: "PM 10.0 1h Average"
     disabled_by_default: true
-    device_class: pm10
+    device_class: pm25
     accuracy_decimals: 1
     filters:
       - sliding_window_moving_average:
-          window_size: 20 # every 3 minutes = 1 hour
-          send_every: 20
-          send_first_at: 20
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+    update_interval: 60s
+    lambda: |
+      return id(pm_10_0).state;
     on_value:
       lambda: |
         // Insert the current value
@@ -110,7 +114,6 @@ sensor:
             id(pm_10_0_hourly_avg).resize(24);
           }
         }
-
 
 script:
   - id: calculate_aqi

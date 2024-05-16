@@ -132,6 +132,12 @@ Configures the 11 segment LED bar in AG ONE models.
 
 Also enables On/Off toggle, brightness, and LED fade out
 
+## sensor_nowcast_aqi.yaml
+
+Configures sensors for AQI and NowCast values and Category directly on the device.
+
+Submitted by GitHub user @Ex-Nerd
+
 ## sensor_bme680.yaml
 
 Configures sensors from BME 680 chip to supply temperature, humidity, pressure, IAQ, CO2 equivalent, and Breath VOC.
@@ -144,7 +150,8 @@ Configures the Plantower PMS5003 sensor.
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes
+Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+`pm_update_interval: "2min"`
 
 ## sensor_pms5003t_2_extended_life.yaml
 
@@ -156,7 +163,8 @@ In addition to enabling sensors from the second device, also creates sensors tha
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes
+Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+`pm_update_interval: "2min"`
 
 ## sensor_pms5003t_2.yaml
 
@@ -174,7 +182,8 @@ Also applies a compensation algorithm from AirGradient to correct temperature an
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes
+Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+`pm_update_interval: "2min"`
 
 ## sensor_pms5003t_uncorrected.yaml
 

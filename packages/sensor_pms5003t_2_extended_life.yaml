@@ -1,4 +1,7 @@
 # Used for a second PMS5003T in the same device, such as the Open Air O-1PPT
+substitutions:
+  pm_update_interval: "2min"
+
 sensor:
   - platform: pmsx003
     # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
@@ -35,7 +38,7 @@ sensor:
       filters:
           # Compensation algorithm from AirGradient's research
         - lambda: return x * 1.259 + 7.34;
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
 # Average the readings from both sensors to return a value
   - platform: template
@@ -47,7 +50,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
   - platform: template
     id: pm_1_0_avg
@@ -58,7 +61,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
   - platform: template
     id: pm_10_0_avg
@@ -69,8 +72,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 2min
-
+    update_interval: $pm_update_interval
 
   - platform: template
     id: pm_0_3um_avg
@@ -80,7 +82,7 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
   - platform: template
     id: temp_avg
@@ -91,7 +93,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     icon: mdi:thermometer
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
   - platform: template
     id: humidity_avg
@@ -102,4 +104,4 @@ sensor:
     device_class: humidity
     state_class: measurement
     icon: mdi:water-percent
-    update_interval: 2min
+    update_interval: $pm_update_interval
