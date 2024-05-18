@@ -34,7 +34,9 @@ sensor:
       id: humidity_2
       filters:
           # Compensation algorithm from AirGradient's research
-        - lambda: return x * 1.259 + 7.34;
+        - lambda: |-
+            if ((x * 1.259 + 7.34) > 100) return 100;
+            else return x * 1.259 + 7.34;
     update_interval: 2min
 
 # Average the readings from both sensors to return a value

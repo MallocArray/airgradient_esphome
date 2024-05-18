@@ -54,7 +54,9 @@ sensor:
       id: humidity_2
       filters:
           # Compensation algorithm from AirGradient's research
-        - lambda: return x * 1.259 + 7.34;
+        - lambda: |-
+            if ((x * 1.259 + 7.34) > 100) return 100;
+            else return x * 1.259 + 7.34;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30
