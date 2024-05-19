@@ -13,18 +13,21 @@ interval:
                 return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
               headers:
                   Content-Type: application/json
-              # "!lambda return to_string(id(pm_2_5).state);" Converts sensor output from double to string
               json:
                 wifi: !lambda return to_string(id(wifi_dbm).state);
+                rco2: !lambda return to_string(id(co2).state);
                 pm01: !lambda return to_string(id(pm_1_0).state);
                 pm02: !lambda return to_string(id(pm_2_5).state);
                 pm10: !lambda return to_string(id(pm_10_0).state);
-                pm003_count: !lambda return to_string(id(pm_0_3um).state);
-                rco2: !lambda return to_string(id(co2).state);
+                pm003Count: !lambda return to_string(id(pm_0_3um).state);
                 atmp: !lambda return to_string(id(temp).state);
                 rhum: !lambda return to_string(id(humidity).state);
-                tvoc_index: !lambda return to_string(id(voc).state);
-                nox_index: !lambda return to_string(id(nox).state);
+                tvocIndex: !lambda return to_string(id(voc).state);
+                # tvocRaw:
+                noxIndex: !lambda return to_string(id(nox).state);
+                # noxRaw:
+                # Uptime in minutes as the boot value
+                boot: !lambda return to_string(round(id(device_uptime).state/60));
 
 switch:
   - platform: template
