@@ -1,0 +1,397 @@
+# On-device Nowcast and AQI created by ex-nerd
+# https://github.com/ex-nerd/ESPHome-AirGradient/blob/main/air-gradient-open-air.yaml
+# https://github.com/ex-nerd/ESPHome-AirGradient/commit/3c0e8db922cfb3de7950fb34aa9874739f56c95f
+
+globals:
+  - id: aqi_delay_mins
+    type: int
+    restore_value: false
+    # AQI is calculated over a 24 hour minimum, but EPA says it's acceptable to
+    # report at 75%, or 18 hours: https://forum.airnowtech.org/t/aqi-calculations-overview-ozone-pm2-5-and-pm10/168
+    initial_value: '1080'
+  - id: nowcast_delay_mins
+    type: int
+    restore_value: false
+    # NowCast is calculated over a 12 hour period
+    initial_value: '720'
+  - id: pm_2_5_hourly_avg
+    type: std::vector<float>
+    restore_value: false
+  - id: pm_10_0_hourly_avg
+    type: std::vector<float>
+    restore_value: false
+
+text_sensor:
+  - platform: template
+    id: aqi_category
+    name: "AQI Category"
+    icon: "mdi:weather-windy-variant"
+    update_interval: 15min
+
+  - platform: template
+    id: nowcast_category
+    name: "NowCast Category"
+    icon: "mdi:weather-windy-variant"
+    update_interval: 15min
+
+sensor:
+  - platform: template
+    id: aqi
+    name: "AQI"
+    device_class: aqi
+    icon: "mdi:weather-windy-variant"
+    accuracy_decimals: 0
+
+  - platform: template
+    id: nowcast
+    name: "NowCast"
+    device_class: aqi
+    icon: "mdi:weather-windy-variant"
+    accuracy_decimals: 0
+
+  - platform: template
+    id: aqi_mins_remaining
+    name: "AQI: Minutes Remaining"
+    icon: mdi:timer-sand
+    accuracy_decimals: 0
+    unit_of_measurement: minutes
+
+  - platform: template
+    id: nowcast_mins_remaining
+    name: "NowCast: Minutes Remaining"
+    icon: mdi:timer-sand
+    accuracy_decimals: 0
+    unit_of_measurement: minutes
+
+  - platform: template
+    id: pm_2_5_1h_avg
+    name: "PM 2.5 1h Average"
+    disabled_by_default: true
+    device_class: pm25
+    accuracy_decimals: 1
+    filters:
+      - sliding_window_moving_average:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+    update_interval: 60s
+    lambda: |
+      return id(pm_2_5).state;
+    on_value:
+      lambda: |
+        // Insert the current value
+        float current = id(pm_2_5_1h_avg).state;
+        if (!isnan(current)) {
+          id(pm_2_5_hourly_avg).insert(id(pm_2_5_hourly_avg).begin(), current);
+          // Truncate anything past the first 24
+          if (id(pm_2_5_hourly_avg).size() > 24) {
+            id(pm_2_5_hourly_avg).resize(24);
+          }
+        }
+
+  - platform: template
+    id: pm_10_0_1h_avg
+    name: "PM 10.0 1h Average"
+    disabled_by_default: true
+    device_class: pm25
+    accuracy_decimals: 1
+    filters:
+      - sliding_window_moving_average:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+    update_interval: 60s
+    lambda: |
+      return id(pm_10_0).state;
+    on_value:
+      lambda: |
+        // Insert the current value
+        float current = id(pm_10_0_1h_avg).state;
+        if (!isnan(current)) {
+          id(pm_10_0_hourly_avg).insert(id(pm_10_0_hourly_avg).begin(), current);
+          // Truncate anything past the first 24
+          if (id(pm_10_0_hourly_avg).size() > 24) {
+            id(pm_10_0_hourly_avg).resize(24);
+          }
+        }
+
+script:
+  - id: calculate_aqi
+    then:
+      # https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+      - lambda: |
+          int aqi_2_5 = -1;
+          int aqi_10_0 = -1;
+
+          // AQI is calculated over a 24 hour minimum, but EPA says it's acceptable to
+          // report at 75%, or 18 hours: https://forum.airnowtech.org/t/aqi-calculations-overview-ozone-pm2-5-and-pm10/168
+          int size_2_5 = id(pm_2_5_hourly_avg).size();
+          if (size_2_5 > 24) {
+            size_2_5 = 24;
+          }
+          if (size_2_5 >= 18) {
+
+            float sum = 0.0;
+            for (int i = 0; i < size_2_5; i++) {
+              sum += id(pm_2_5_hourly_avg)[i];
+            }
+
+            float pm25 = sum / (float)size_2_5;
+            if (pm25 < 12.0) {
+              aqi_2_5 = (50.0 - 0.0) / (12.0 - 0.0) * (pm25 - 0.0) + 0.0;
+            } else if (pm25 < 35.4) {
+              aqi_2_5 = (100.0 - 51.0) / (35.4 - 12.1) * (pm25 - 12.1) + 51.0;
+            } else if (pm25 < 55.4) {
+              aqi_2_5 = (150.0 - 101.0) / (55.4 - 35.5) * (pm25 - 35.5) + 101.0;
+            } else if (pm25 < 150.4) {
+              aqi_2_5 = (200.0 - 151.0) / (150.4 - 55.5) * (pm25 - 55.5) + 151.0;
+            } else if (pm25 < 250.4) {
+              aqi_2_5 = (300.0 - 201.0) / (250.4 - 150.5) * (pm25 - 150.5) + 201.0;
+            } else if (pm25 < 350.4) {
+              aqi_2_5 = (400.0 - 301.0) / (350.4 - 250.5) * (pm25 - 250.5) + 301.0;
+            } else if (pm25 < 500.4) {
+              aqi_2_5 = (500.0 - 401.0) / (500.4 - 350.5) * (pm25 - 350.5) + 401.0;
+            } else {
+              aqi_2_5 = 500; // everything higher is just counted as 500
+            }
+          }
+
+          int size_10_0 = id(pm_10_0_hourly_avg).size();
+          if (size_10_0 > 24) {
+            size_10_0 = 24;
+          }
+          if (size_10_0 >= 18) {
+
+            float sum = 0.0;
+            for (int i = 0; i < size_10_0; i++) {
+              sum += id(pm_10_0_hourly_avg)[i];
+            }
+
+            float pm10 = sum / (float)size_10_0;
+            if (pm10 < 54.0) {
+              aqi_10_0 = (50.0 - 0.0) / (54.0 - 0.0) * (pm10 - 0.0) + 0.0;
+            } else if (pm10 < 154.0) {
+              aqi_10_0 = (100.0 - 51.0) / (154.0 - 55.0) * (pm10 - 55.0) + 51.0;
+            } else if (pm10 < 254.0) {
+              aqi_10_0 = (150.0 - 101.0) / (254.0 - 155.0) * (pm10 - 155.0) + 101.0;
+            } else if (pm10 < 354.0) {
+              aqi_10_0 = (200.0 - 151.0) / (354.0 - 255.0) * (pm10 - 255.0) + 151.0;
+            } else if (pm10 < 424.0) {
+              aqi_10_0 = (300.0 - 201.0) / (424.0 - 355.0) * (pm10 - 355.0) + 201.0;
+            } else if (pm10 < 504.0) {
+              aqi_10_0 = (400.0 - 301.0) / (504.0 - 425.0) * (pm10 - 425.0) + 301.0;
+            } else if (pm10 < 604) {
+              aqi_10_0 = (500.0 - 401.0) / (604.0 - 505.0) * (pm10 - 505.0) + 401.0;
+            } else {
+              aqi_10_0 = 500; // everything higher is just counted as 500
+            }
+          }
+
+          int aqi_calc = std::max(aqi_2_5, aqi_10_0);
+          if (aqi_calc > 0) {
+            id(aqi).publish_state(aqi_calc);
+            // Just in case we're counting down, make sure we set to zero
+            id(aqi_delay_mins) = 0;
+            if (id(aqi_delay_mins) > 0) {
+              id(aqi_delay_mins) = 0;
+              id(aqi_mins_remaining).publish_state(0);
+            }
+          }
+
+  # https://forum.airnowtech.org/t/the-nowcast-for-pm2-5-and-pm10/172
+  - id: calculate_nowcast
+    then:
+      - lambda: |
+          int nowcast_2_5 = -1;
+          int nowcast_10_0 = -1;
+
+          if (id(pm_2_5_hourly_avg).size() >= 12) {
+            // Calculate min and max
+            float max = 0.0;
+            float min = 31337.0; // just a random large number
+            for (int i = 0; i < 12; i++) {
+              float pm = id(pm_2_5_hourly_avg)[i];
+              if (pm < min) {
+                min = pm;
+              }
+              if (pm > max) {
+                max = pm;
+              }
+            }
+            // Calculate the weight factor
+            float range = max - min;
+            float rate = range / max;
+            float weight_factor = 1.0 - range;
+            if (weight_factor < 0.5) {
+              weight_factor = 0.5;
+            } else if (weight_factor > 1.0) {
+              weight_factor = 1.0;
+            }
+
+            float pm_sum = 0.0;
+            float weight_sum = 0.0;
+            for (int i = 0; i < 12; i++) {
+              float weight_pow = pow(weight_factor, i);
+              pm_sum += id(pm_2_5_hourly_avg)[i] * weight_pow;
+              weight_sum += weight_pow;
+            }
+            float pm25 = pm_sum / weight_sum;
+
+            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+            if (pm25 < 12.0) {
+              nowcast_2_5 = (50.0 - 0.0) / (12.0 - 0.0) * (pm25 - 0.0) + 0.0;
+            } else if (pm25 < 35.4) {
+              nowcast_2_5 = (100.0 - 51.0) / (35.4 - 12.1) * (pm25 - 12.1) + 51.0;
+            } else if (pm25 < 55.4) {
+              nowcast_2_5 = (150.0 - 101.0) / (55.4 - 35.5) * (pm25 - 35.5) + 101.0;
+            } else if (pm25 < 150.4) {
+              nowcast_2_5 = (200.0 - 151.0) / (150.4 - 55.5) * (pm25 - 55.5) + 151.0;
+            } else if (pm25 < 250.4) {
+              nowcast_2_5 = (300.0 - 201.0) / (250.4 - 150.5) * (pm25 - 150.5) + 201.0;
+            } else if (pm25 < 350.4) {
+              nowcast_2_5 = (400.0 - 301.0) / (350.4 - 250.5) * (pm25 - 250.5) + 301.0;
+            } else if (pm25 < 500.4) {
+              nowcast_2_5 = (500.0 - 401.0) / (500.4 - 350.5) * (pm25 - 350.5) + 401.0;
+            } else {
+              // everything higher is just counted as 500
+              nowcast_2_5 = 500;
+            }
+          }
+
+          if (id(pm_10_0_hourly_avg).size() >= 12) {
+            // Calculate min and max
+            float max = 0.0;
+            float min = 31337.0; // just a random large number
+            for (int i = 0; i < 12; i++) {
+              float pm = id(pm_10_0_hourly_avg)[i];
+              if (pm < min) {
+                min = pm;
+              }
+              if (pm > max) {
+                max = pm;
+              }
+            }
+            // Calculate the weight factor
+            float range = max - min;
+            float rate = range / max;
+            float weight_factor = 1.0 - range;
+            if (weight_factor < 0.5) {
+              weight_factor = 0.5;
+            } else if (weight_factor > 1.0) {
+              weight_factor = 1.0;
+            }
+
+            float pm_sum = 0.0;
+            float weight_sum = 0.0;
+            for (int i = 0; i < 12; i++) {
+              float weight_pow = pow(weight_factor, i);
+              pm_sum += id(pm_10_0_hourly_avg)[i] * weight_pow;
+              weight_sum += weight_pow;
+            }
+            float pm10 = pm_sum / weight_sum;
+
+            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+            if (pm10 < 54.0) {
+              nowcast_10_0 = (50.0 - 0.0) / (54.0 - 0.0) * (pm10 - 0.0) + 0.0;
+            } else if (pm10 < 154.0) {
+              nowcast_10_0 = (100.0 - 51.0) / (154.0 - 55.0) * (pm10 - 55.0) + 51.0;
+            } else if (pm10 < 254.0) {
+              nowcast_10_0 = (150.0 - 101.0) / (254.0 - 155.0) * (pm10 - 155.0) + 101.0;
+            } else if (pm10 < 354.0) {
+              nowcast_10_0 = (200.0 - 151.0) / (354.0 - 255.0) * (pm10 - 255.0) + 151.0;
+            } else if (pm10 < 424.0) {
+              nowcast_10_0 = (300.0 - 201.0) / (424.0 - 355.0) * (pm10 - 355.0) + 201.0;
+            } else if (pm10 < 504.0) {
+              nowcast_10_0 = (400.0 - 301.0) / (504.0 - 425.0) * (pm10 - 425.0) + 301.0;
+            } else if (pm10 < 604) {
+              nowcast_10_0 = (500.0 - 401.0) / (604.0 - 505.0) * (pm10 - 505.0) + 401.0;
+            } else {
+              // everything higher is just counted as 500
+              nowcast_10_0 = 500.0;
+            }
+
+          }
+
+          int nowcast_calc = std::max(nowcast_2_5, nowcast_10_0);
+          if (nowcast_calc > 0) {
+            id(nowcast).publish_state(nowcast_calc);
+            // Just in case we're counting down, make sure we set to zero
+            if (id(nowcast_delay_mins) > 0) {
+              id(nowcast_delay_mins) = 0;
+              id(nowcast_mins_remaining).publish_state(0);
+            }
+          }
+
+  - id: calculate_categories
+    then:
+      - lambda: |
+          float aqi_calc = id(aqi).state;
+          if (isnan(aqi_calc) || aqi_calc < 0.0) {
+            // if (id(aqi_category).state != "Calculating") {
+            //   id(aqi_category).publish_state("Calculating");
+            // }
+          } else if (aqi_calc <= 50.0) {
+            id(aqi_category).publish_state("Good");
+          } else if (aqi_calc <= 100.0) {
+            id(aqi_category).publish_state("Moderate");
+          } else if (aqi_calc <= 150.0) {
+            id(aqi_category).publish_state("Unhealthy for Sensitive Groups");
+          } else if (aqi_calc <= 200.0) {
+            id(aqi_category).publish_state("Unhealthy");
+          } else if (aqi_calc <= 300.0) {
+            id(aqi_category).publish_state("Very Unhealthy");
+          } else if (aqi_calc <= 400.0) {
+            id(aqi_category).publish_state("Hazardous");
+          } else if (aqi_calc <= 500.0) {
+            id(aqi_category).publish_state("Hazardous"); // again
+          } else {
+            id(aqi_category).publish_state("Hazardous"); // and again
+          }
+
+          float nowcast_calc = id(nowcast).state;
+          if (isnan(nowcast_calc) || nowcast_calc < 0.0) {
+            // if (id(nowcast_category).state != "Calculating") {
+            //   id(nowcast_category).publish_state("Calculating");
+            // }
+          } else if (nowcast_calc <= 50.0) {
+            id(nowcast_category).publish_state("Good");
+          } else if (nowcast_calc <= 100.0) {
+            id(nowcast_category).publish_state("Moderate");
+          } else if (nowcast_calc <= 150.0) {
+            id(nowcast_category).publish_state("Unhealthy for Sensitive Groups");
+          } else if (nowcast_calc <= 200.0) {
+            id(nowcast_category).publish_state("Unhealthy");
+          } else if (nowcast_calc <= 300.0) {
+            id(nowcast_category).publish_state("Very Unhealthy");
+          } else if (nowcast_calc <= 400.0) {
+            id(nowcast_category).publish_state("Hazardous");
+          } else if (nowcast_calc <= 500.0) {
+            id(nowcast_category).publish_state("Hazardous"); // again
+          } else {
+            id(nowcast_category).publish_state("Hazardous"); // and again
+          }
+
+
+interval:
+  # Decrement the AQI countdowns once per minute until they reach zero
+  - interval: 1min
+    then:
+      - lambda: |
+          if (id(aqi_delay_mins) > 0) {
+            id(aqi_delay_mins) -= 1;
+            id(aqi_mins_remaining).publish_state(id(aqi_delay_mins));
+          }
+          if (id(nowcast_delay_mins) > 0) {
+            id(nowcast_delay_mins) -= 1;
+            id(nowcast_mins_remaining).publish_state(id(nowcast_delay_mins));
+          }
+
+  # Every hour, attempt to calculate
+  - interval: 1h
+    then:
+      # Give all of the various hourly sensor calculations a moment to finish
+      - delay: 1 min
+      # Then process everything that happens every hour
+      - script.execute: calculate_aqi
+      - script.execute: calculate_nowcast
+      - script.execute: calculate_categories

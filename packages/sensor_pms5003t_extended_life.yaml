@@ -1,3 +1,6 @@
+substitutions:
+  pm_update_interval: "2min"
+
 sensor:
   - platform: pmsx003
     # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
@@ -35,7 +38,7 @@ sensor:
       filters:
           # Compensation algorithm from AirGradient's research
         - lambda: return x * 1.259 + 7.34;
-    update_interval: 2min
+    update_interval: $pm_update_interval
 
 
   - platform: template
