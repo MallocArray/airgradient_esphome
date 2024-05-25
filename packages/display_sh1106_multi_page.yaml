@@ -113,7 +113,6 @@ display:
         lambda: |-
           it.printf(0, 0, id(open_sans_14), " ");
 
-
     on_page_change:
       - to: airgradient_default
         then:
@@ -180,6 +179,7 @@ display:
                 - display.page.show_next: oled_display
                 - component.update: oled_display
       - to: blank
+        # Skip blank page unless it is turned on and the interval: will only display it
         then:
           - if:
               condition:
@@ -200,14 +200,15 @@ interval:
         then:
           switch.turn_off: display_boot_page
   - interval: 5s
-    # Automatically switch to the next page every five seconds
+    # Automatically switch to the next page every five seconds if not set to blank
     then:
       - if:
-          # Always show boot screen if switch is enabled
           condition:
-              switch.is_on: display_boot_page
+            # If the blank page switch is on, only display the blank page, otherwise, rotate to next page
+            switch.is_on: display_blank_page
           then:
-            - display.page.show: boot
+            - display.page.show: blank
+            - component.update: oled_display
           else:
             # Change page on display
             - display.page.show_next: oled_display
@@ -286,6 +287,12 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    on_turn_on:
+      - display.page.show: blank
+      - component.update: oled_display
+    on_turn_off:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
 
 number:
   - platform: template

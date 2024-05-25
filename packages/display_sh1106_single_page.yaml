@@ -22,7 +22,7 @@ display:
     address: 0x3C
     # rotation: 180°
     pages:
-      - id: summary
+      - id: airgradient_default
         # https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328
         lambda: |-
           if (id(display_in_f).state) {
@@ -50,29 +50,58 @@ display:
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
           it.printf(0, 21, id(open_sans_14), "Config Ver: $config_version");
           it.printf(0, 42, id(open_sans_14), "$friendly_name");
+      - id: blank
+        lambda: |-
+          it.printf(0, 0, id(open_sans_14), " ");
 
     on_page_change:
-      to: boot
-      then:
-        - if:
-            # Skip the boot page after initial boot
-            condition:
-                lambda: 'return id(device_uptime).state > 30;'
-            then:
-              - display.page.show_next: oled_display
-              - component.update: oled_display
+      - to: airgradient_default
+        then:
+          - if:
+              condition:
+                switch.is_off: display_ag_default_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: boot
+        then:
+          - if:
+              condition:
+                switch.is_off: display_boot_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: blank
+        # Skip blank page unless it is turned on and the interval: will only display it
+        then:
+          - if:
+              condition:
+                switch.is_off: display_blank_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
 
 
 interval:
+  - interval: 10s
+    startup_delay: 1s
+    # Show boot screen serial number and config version only when first starting up
+    then:
+      if:
+        condition:
+          switch.is_on: display_boot_page
+        then:
+          switch.turn_off: display_boot_page
   - interval: 5s
-    # Automatically switch to the next page every five seconds
+    # Automatically switch to the next page every five seconds if not set to blank
     then:
       - if:
-          # Show boot screen for first 10 seconds with serial number and config version
           condition:
-              lambda: 'return id(device_uptime).state < 10;'
+            # If the blank page switch is on, only display the blank page, otherwise, rotate to next page
+            switch.is_on: display_blank_page
           then:
-            - display.page.show: boot
+            - display.page.show: blank
+            - component.update: oled_display
           else:
             # Change page on display
             - display.page.show_next: oled_display
@@ -82,10 +111,41 @@ interval:
 switch:
   - platform: template
     name: "Display Temperature in °F"
-    icon: "mdi:thermometer"
     id: display_in_f
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
+    entity_category: config
+    icon: "mdi:thermometer"
+
+  - platform: template
+    name: "Display AirGradient Default Page"
+    id: display_ag_default_page
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Boot Page"
+    id: display_boot_page
+    restore_mode: ALWAYS_ON
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Blank Page"
+    id: display_blank_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:monitor"
+    on_turn_on:
+      - display.page.show: blank
+      - component.update: oled_display
+    on_turn_off:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
 
 number:
   - platform: template
