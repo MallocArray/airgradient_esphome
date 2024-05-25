@@ -11,6 +11,7 @@ sensor:
       name: "CO2"
       id: co2
       filters:
+        - skip_initial: 1  # Sometimes returns 0 at first boot instead of valid data
         - offset: $co2_offset
     id: senseair_s8
     uart_id: senseair_s8_uart
