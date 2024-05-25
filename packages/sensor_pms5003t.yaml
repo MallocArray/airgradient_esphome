@@ -38,6 +38,7 @@ sensor:
     temperature:
       name: "Temperature"
       id: temp
+      icon: "mdi:thermometer"
       filters:
           # https://forum.airgradient.com/t/outdoor-temperature-and-humidity-reading-correction/1544/19
         - lambda: !lambda |-
@@ -51,9 +52,14 @@ sensor:
     humidity:
       name: "Humidity"
       id: humidity
+      icon: "mdi:water-percent"
       filters:
-          # Compensation algorithm from AirGradient's research
-        - lambda: return x * 1.259 + 7.34;
+          # Compensation algorithm from AirGradient's research 2024-02-29
+          # Ensuring max is 100% as calculation can exceed
+        - lambda: |-
+            float result = x * 1.259f + 7.34f;
+            if (result > 100) return 100;
+            return result;
         - sliding_window_moving_average:
             window_size: 30
             send_every: 30

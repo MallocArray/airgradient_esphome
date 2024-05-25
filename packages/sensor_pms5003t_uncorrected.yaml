@@ -38,6 +38,7 @@ sensor:
     temperature:
       name: "Temperature"
       id: temp
+      icon: "mdi:thermometer"
       filters:
         - sliding_window_moving_average:
             window_size: 30
@@ -45,6 +46,7 @@ sensor:
     humidity:
       name: "Humidity"
       id: humidity
+      icon: "mdi:water-percent"
       filters:
         - sliding_window_moving_average:
             window_size: 30
