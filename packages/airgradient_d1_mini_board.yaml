@@ -7,7 +7,7 @@ esphome:
   project:
     name: mallocarray.airgradient
     version: "$config_version"
-  min_version: 2023.12.0
+  min_version: 2024.6.0
 
 esp8266:
   board: d1_mini

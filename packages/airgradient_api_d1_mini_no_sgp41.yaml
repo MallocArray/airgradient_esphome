@@ -53,3 +53,4 @@ esphome:
 http_request:
   # Used to support POST request to send data to AirGradient
   # https://esphome.io/components/http_request.html
+  verify_ssl: false  # Must be explicityly set to false when using Arduino framework

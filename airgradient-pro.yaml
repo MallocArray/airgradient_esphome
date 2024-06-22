@@ -10,7 +10,9 @@ substitutions:
 # Enable Home Assistant API
 api:
 
-ota:
+ota:  # Add password as desired
+  platform: esphome
+  # password:
 
 wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
