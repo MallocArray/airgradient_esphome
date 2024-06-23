@@ -1,12 +1,21 @@
+substitutions:
+  # 12, 60, 120, 360, 720 are suggested values from AirGradient (range 1..1000)
+  voc_learning_time_offset_hours: '12'
+  nox_learning_time_offset_hours: '12'
+
 sensor:
   - platform: sgp4x
     # SGP41 https://esphome.io/components/sensor/sgp4x.html
     voc:
       name: "VOC Index"
       id: voc
+      algorithm_tuning:
+        learning_time_offset_hours: $voc_learning_time_offset_hours
     nox:
       name: "NOx Index"
       id: nox
+      algorithm_tuning:
+        learning_time_offset_hours: $nox_learning_time_offset_hours
     compensation:  # Remove this block if no temp/humidity sensor present for compensation
       temperature_source: temp
       humidity_source: humidity
