@@ -13,6 +13,10 @@ esphome:
 
 esp32:
   board: esp32-c3-devkitm-1
+  # Testing upgrading from 5.4.0 which is current default
+  # framework:
+  #   type: arduino
+  #   version: 6.7.0
 
 # esp32_improv:  # Uses around 30% of available flash space due to loading BLE stack
 #   authorizer: none

@@ -1,7 +1,10 @@
 substitutions:
+  config_version: 4.0.0
+  co2_offset: '0'
+  voc_learning_time_offset_hours: '12'
+  nox_learning_time_offset_hours: '12'
   name: ag-open-air-o-1pst
   friendly_name: AG Open Air O-1PST
-  config_version: 2.0.3
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-open-air-o-1pst
@@ -9,8 +12,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.3
-  min_version: 2023.12.0
+    version: 4.0.0
+  min_version: 2024.6.0
   on_boot:
   - priority: 200.0
     then:
@@ -27,7 +30,8 @@ esphome:
             json:
               wifi: !lambda |-
                 return to_string(-50);
-            verify_ssl: true
+            capture_response: false
+            max_response_buffer_size: 1000
             method: POST
   build_path: build/ag-open-air-o-1pst
   area: ''
@@ -62,6 +66,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   tx_pin:
@@ -73,6 +78,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
@@ -90,6 +96,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   tx_pin:
@@ -101,6 +108,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
@@ -114,47 +122,25 @@ i2c:
   scl: 6
   frequency: 400000.0
   scan: true
-button:
-- platform: factory_reset
-  disabled_by_default: true
-  name: Factory Reset ESP
-  id: factory_reset_all
-  icon: mdi:restart-alert
-  entity_category: config
-  device_class: restart
-- platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
-  on_press:
-  - then:
-    - senseair.background_calibration:
-        id: senseair_s8
-    - delay: 70s
-    - senseair.background_calibration_result:
-        id: senseair_s8
-  disabled_by_default: false
-- platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
-  on_press:
-  - then:
-    - senseair.abc_get_period:
-        id: senseair_s8
-  disabled_by_default: false
+wifi:
+  ap:
+    ap_timeout: 1min
+  domain: .local
+  reboot_timeout: 15min
+  power_save_mode: LIGHT
+  fast_connect: false
+  passive_scan: false
+  enable_on_boot: true
+  use_address: ag-open-air-o-1pst.local
 sensor:
 - platform: pmsx003
   type: PMS5003T
   uart_id: pms5003_uart
   pm_2_5:
-    name: PM 2.5
-    id: pm_2_5
+    name: PM 2.5 Raw
+    id: pm_2_5_raw
     device_class: pm25
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
-    disabled_by_default: false
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: µg/m³
     icon: mdi:chemical-weapon
@@ -164,11 +150,6 @@ sensor:
     name: PM 1.0
     id: pm_1_0
     device_class: pm1
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -179,11 +160,6 @@ sensor:
     name: PM 10.0
     id: pm_10_0
     device_class: pm10
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -193,11 +169,6 @@ sensor:
   pm_0_3um:
     name: PM 0.3
     id: pm_0_3um
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: /dL
@@ -205,45 +176,87 @@ sensor:
     accuracy_decimals: 0
     state_class: measurement
   temperature:
-    name: Temperature
-    id: temp
-    filters:
-    - lambda: !lambda |-
-        // Remove line with (x > 6000) once the negative number issue fix is merged in https://github.com/esphome/issues/issues/3814
-        if (x > 6000) return ((x - 6553.6) * 1.327) - 6.738;
-        if (x < 10.0) return (x * 1.327) - 6.738;
-        return (x * 1.181) - 5.113;
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
-    disabled_by_default: false
+    name: Temperature Raw
+    id: temp_raw
+    icon: mdi:thermometer
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: °C
     accuracy_decimals: 1
     device_class: temperature
     state_class: measurement
   humidity:
-    name: Humidity
-    id: humidity
-    filters:
-    - lambda: !lambda |-
-        return x * 1.259 + 7.34;
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
-    disabled_by_default: false
+    name: Humidity Raw
+    id: humidity_raw
+    icon: mdi:water-percent
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: '%'
     accuracy_decimals: 1
     device_class: humidity
     state_class: measurement
-  update_interval: 0s
+  update_interval: 30s
+- platform: copy
+  source_id: temp_raw
+  name: Temperature
+  id: temp
+  filters:
+  - lambda: !lambda |-
+      if (x < 10.0) return (x * 1.327) - 6.738;
+      return (x * 1.181) - 5.113;
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: °C
+  icon: mdi:thermometer
+  accuracy_decimals: 1
+  device_class: temperature
+  state_class: measurement
+- platform: copy
+  source_id: humidity_raw
+  name: Humidity
+  id: humidity
+  filters:
+  - lambda: !lambda |-
+      float result = x * 1.259f + 7.34f;
+      if (result > 100) return 100;
+      return result;
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: '%'
+  icon: mdi:water-percent
+  accuracy_decimals: 1
+  device_class: humidity
+  state_class: measurement
+- platform: template
+  name: PM 2.5
+  id: pm_2_5
+  update_interval: 30s
+  device_class: pm25
+  unit_of_measurement: µg/m³
+  icon: mdi:chemical-weapon
+  accuracy_decimals: 0
+  state_class: measurement
+  lambda: !lambda |-
+    if (id(pm_2_5_raw).state == 0.0) {
+    return 0.0;
+    } else if (id(pm_2_5_raw).state < 30.0) {
+    return((0.524 * id(pm_2_5_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+    } else if (id(pm_2_5_raw).state < 50.0) {
+    return((0.786 * (id(pm_2_5_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_raw).state / 20 - 3/2))) * id(pm_2_5_raw).state - (0.0862 * id(humidity).state) + 5.75);
+    } else if (id(pm_2_5_raw).state < 210.0) {
+    return((0.786 * id(pm_2_5_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+    } else if (id(pm_2_5_raw).state < 260.0) {
+    return((0.69 * (id(pm_2_5_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) * id(pm_2_5_raw).state - (0.0862 * id(humidity).state * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_raw).state,2) * (id(pm_2_5_raw).state / 50 - 21/5)));
+    } else {
+    return(2.966 + (0.69 * id(pm_2_5_raw).state) + (8.84 * pow(10,-4) * pow(id(pm_2_5_raw).state,2)));
+    }
+  disabled_by_default: false
+  force_update: false
 - platform: template
   name: PM 2.5 AQI
   id: pm_2_5_aqi
   update_interval: 5min
+  device_class: aqi
   unit_of_measurement: AQI
   icon: mdi:air-filter
   accuracy_decimals: 0
@@ -283,7 +296,8 @@ sensor:
     name: CO2
     id: co2
     filters:
-    - skip_initial: 2
+    - skip_initial: 1
+    - offset: 0.0
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -298,6 +312,13 @@ sensor:
   voc:
     name: VOC Index
     id: voc
+    algorithm_tuning:
+      learning_time_offset_hours: 12
+      index_offset: 100
+      learning_time_gain_hours: 12
+      gating_max_duration_minutes: 720
+      std_initial: 50
+      gain_factor: 230
     disabled_by_default: false
     force_update: false
     icon: mdi:radiator
@@ -307,6 +328,13 @@ sensor:
   nox:
     name: NOx Index
     id: nox
+    algorithm_tuning:
+      learning_time_offset_hours: 12
+      index_offset: 100
+      learning_time_gain_hours: 12
+      gating_max_duration_minutes: 720
+      std_initial: 50
+      gain_factor: 230
     disabled_by_default: false
     force_update: false
     icon: mdi:radiator
@@ -342,9 +370,29 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
+button:
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Show Calibration Interval
+  id: senseair_s8_show_calibrate_interval
+  on_press:
+  - then:
+    - senseair.abc_get_period:
+        id: senseair_s8
+  disabled_by_default: false
 switch:
 - platform: template
-  name: SenseAir S8 Automatic Background Calibration
+  name: SenseAir S8 Automatic Baseline Correction
   id: senseair_s8_abc_switch
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
@@ -366,12 +414,6 @@ switch:
   optimistic: true
   disabled_by_default: false
   assumed_state: false
-- platform: safe_mode
-  name: Flash Mode (Safe Mode)
-  icon: mdi:cellphone-arrow-down
-  disabled_by_default: false
-  restore_mode: ALWAYS_OFF
-  entity_category: config
 interval:
 - interval: 150s
   then:
@@ -388,25 +430,32 @@ interval:
           json:
             wifi: !lambda |-
               return to_string(id(wifi_dbm).state);
+            rco2: !lambda |-
+              return to_string(id(co2).state);
             pm01: !lambda |-
               return to_string(id(pm_1_0).state);
             pm02: !lambda |-
               return to_string(id(pm_2_5).state);
             pm10: !lambda |-
               return to_string(id(pm_10_0).state);
-            pm003_count: !lambda |-
+            pm003Count: !lambda |-
               return to_string(id(pm_0_3um).state);
-            rco2: !lambda |-
-              return to_string(id(co2).state);
             atmp: !lambda |-
+              return to_string(id(temp_raw).state);
+            atmpCompensated: !lambda |-
               return to_string(id(temp).state);
             rhum: !lambda |-
+              return to_string(id(humidity_raw).state);
+            rhumCompensated: !lambda |-
               return to_string(id(humidity).state);
-            tvoc_index: !lambda |-
+            tvocIndex: !lambda |-
               return to_string(id(voc).state);
-            nox_index: !lambda |-
+            noxIndex: !lambda |-
               return to_string(id(nox).state);
-          verify_ssl: true
+            boot: !lambda |-
+              return to_string(round(id(device_uptime).state/60));
+          capture_response: false
+          max_response_buffer_size: 1000
           method: POST
   startup_delay: 0s
 - interval: 150s
@@ -418,7 +467,9 @@ interval:
       id: watchdog
   startup_delay: 0s
 http_request:
-  useragent: ESPHome
+  verify_ssl: false
+  watchdog_timeout: 30s
+  useragent: ESPHome/2024.6.3 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 5s
@@ -435,27 +486,16 @@ output:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     drive_strength: 20.0
 api:
   port: 6053
   password: \033[5m''\033[6m
   reboot_timeout: 15min
 ota:
-  safe_mode: true
+- platform: esphome
   version: 2
   port: 3232
-  reboot_timeout: 5min
-  num_attempts: 10
-wifi:
-  ap:
-    ap_timeout: 1min
-  domain: .local
-  reboot_timeout: 15min
-  power_save_mode: LIGHT
-  fast_connect: false
-  passive_scan: false
-  enable_on_boot: true
-  use_address: ag-open-air-o-1pst.local
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-open-air-o-1pst.yaml
   import_full_config: false

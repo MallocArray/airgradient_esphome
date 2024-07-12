@@ -1,7 +1,14 @@
 substitutions:
+  config_version: 4.0.0
+  co2_offset: '0'
+  voc_learning_time_offset_hours: '12'
+  nox_learning_time_offset_hours: '12'
+  co2_green: '400'
+  co2_yellow: '1000'
+  co2_red: '2000'
+  co2_purple: '4000'
   name: ag-one
   friendly_name: AG One
-  config_version: 2.0.1
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-one
@@ -9,8 +16,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.1
-  min_version: 2023.12.0
+    version: 4.0.0
+  min_version: 2024.6.0
   on_boot:
   - priority: 200.0
     then:
@@ -27,7 +34,8 @@ esphome:
             json:
               wifi: !lambda |-
                 return to_string(-50);
-            verify_ssl: true
+            capture_response: false
+            max_response_buffer_size: 1000
             method: POST
   build_path: build/ag-one
   area: ''
@@ -62,6 +70,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   tx_pin:
@@ -73,6 +82,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
@@ -90,6 +100,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   tx_pin:
@@ -101,6 +112,7 @@ uart:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
@@ -114,33 +126,16 @@ i2c:
   scl: 6
   frequency: 400000.0
   scan: true
-button:
-- platform: factory_reset
-  disabled_by_default: true
-  name: Factory Reset ESP
-  id: factory_reset_all
-  icon: mdi:restart-alert
-  entity_category: config
-  device_class: restart
-- platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
-  on_press:
-  - then:
-    - senseair.background_calibration:
-        id: senseair_s8
-    - delay: 70s
-    - senseair.background_calibration_result:
-        id: senseair_s8
-  disabled_by_default: false
-- platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
-  on_press:
-  - then:
-    - senseair.abc_get_period:
-        id: senseair_s8
-  disabled_by_default: false
+wifi:
+  ap:
+    ap_timeout: 1min
+  domain: .local
+  reboot_timeout: 15min
+  power_save_mode: LIGHT
+  fast_connect: false
+  passive_scan: false
+  enable_on_boot: true
+  use_address: ag-one.local
 sensor:
 - platform: pmsx003
   type: PMSX003
@@ -150,10 +145,20 @@ sensor:
     id: pm_2_5
     device_class: pm25
     filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
+    - lambda: !lambda |-
+        if (x == 0.0) {
+        return 0.0;
+        } else if (x < 30.0) {
+        return((0.524 * x) - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 50.0) {
+        return((0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 210.0) {
+        return((0.786 * x) - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 260.0) {
+        return((0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5)));
+        } else {
+        return(2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2)));
+        }
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -164,11 +169,6 @@ sensor:
     name: PM 1.0
     id: pm_1_0
     device_class: pm1
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -179,11 +179,6 @@ sensor:
     name: PM 10.0
     id: pm_10_0
     device_class: pm10
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -193,22 +188,19 @@ sensor:
   pm_0_3um:
     name: PM 0.3
     id: pm_0_3um
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
+    filters: []
     disabled_by_default: false
     force_update: false
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-  update_interval: 0s
+  update_interval: 30s
 - platform: template
   name: PM 2.5 AQI
   id: pm_2_5_aqi
   update_interval: 5min
+  device_class: aqi
   unit_of_measurement: AQI
   icon: mdi:air-filter
   accuracy_decimals: 0
@@ -248,7 +240,8 @@ sensor:
     name: CO2
     id: co2
     filters:
-    - skip_initial: 2
+    - skip_initial: 1
+    - offset: 0.0
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -261,9 +254,9 @@ sensor:
   update_interval: 60s
 - platform: sht4x
   temperature:
-    name: Temperature
-    id: temp
-    disabled_by_default: false
+    name: Temperature Raw
+    id: temp_raw
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: °C
     icon: mdi:thermometer
@@ -271,9 +264,9 @@ sensor:
     device_class: temperature
     state_class: measurement
   humidity:
-    name: Humidity
-    id: humidity
-    disabled_by_default: false
+    name: Humidity Raw
+    id: humidity_raw
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: '%'
     icon: mdi:water-percent
@@ -286,10 +279,39 @@ sensor:
   heater_time: Long
   heater_max_duty: 0.0
   update_interval: 60s
+- platform: copy
+  source_id: temp_raw
+  name: Temperature
+  id: temp
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: °C
+  icon: mdi:thermometer
+  accuracy_decimals: 2
+  device_class: temperature
+  state_class: measurement
+- platform: copy
+  source_id: humidity_raw
+  name: Humidity
+  id: humidity
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: '%'
+  icon: mdi:water-percent
+  accuracy_decimals: 2
+  device_class: humidity
+  state_class: measurement
 - platform: sgp4x
   voc:
     name: VOC Index
     id: voc
+    algorithm_tuning:
+      learning_time_offset_hours: 12
+      index_offset: 100
+      learning_time_gain_hours: 12
+      gating_max_duration_minutes: 720
+      std_initial: 50
+      gain_factor: 230
     disabled_by_default: false
     force_update: false
     icon: mdi:radiator
@@ -299,6 +321,13 @@ sensor:
   nox:
     name: NOx Index
     id: nox
+    algorithm_tuning:
+      learning_time_offset_hours: 12
+      index_offset: 100
+      learning_time_gain_hours: 12
+      gating_max_duration_minutes: 720
+      std_initial: 50
+      gain_factor: 230
     disabled_by_default: false
     force_update: false
     icon: mdi:radiator
@@ -334,9 +363,29 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
+button:
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Show Calibration Interval
+  id: senseair_s8_show_calibrate_interval
+  on_press:
+  - then:
+    - senseair.abc_get_period:
+        id: senseair_s8
+  disabled_by_default: false
 switch:
 - platform: template
-  name: SenseAir S8 Automatic Background Calibration
+  name: SenseAir S8 Automatic Baseline Correction
   id: senseair_s8_abc_switch
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
@@ -430,6 +479,18 @@ switch:
   optimistic: true
   entity_category: config
   icon: mdi:monitor
+  on_turn_on:
+  - then:
+    - display.page.show:
+        id: blank
+    - component.update:
+        id: oled_display
+  on_turn_off:
+  - then:
+    - display.page.show_next:
+        id: oled_display
+    - component.update:
+        id: oled_display
   disabled_by_default: false
   assumed_state: false
 - platform: template
@@ -439,12 +500,6 @@ switch:
   optimistic: true
   disabled_by_default: false
   assumed_state: false
-- platform: safe_mode
-  name: Flash Mode (Safe Mode)
-  icon: mdi:cellphone-arrow-down
-  disabled_by_default: false
-  restore_mode: ALWAYS_OFF
-  entity_category: config
 font:
 - file:
     family: Open Sans
@@ -744,7 +799,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 2.0.1");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.0.0");
       it.printf(0, 42, id(open_sans_14), "AG One");
   - id: summary1
     lambda: !lambda |-
@@ -933,17 +988,19 @@ interval:
   - if:
       condition:
         switch.is_on:
-          id: display_boot_page
+          id: display_blank_page
       then:
       - display.page.show:
-          id: boot
+          id: blank
+      - component.update:
+          id: oled_display
       else:
       - display.page.show_next:
           id: oled_display
       - component.update:
           id: oled_display
   startup_delay: 0s
-- interval: 1min
+- interval: 5s
   then:
   - if:
       condition:
@@ -953,81 +1010,94 @@ interval:
       - if:
           condition:
             lambda: !lambda |-
-              return id(co2).state < 800;
+              return !(isnan(id(co2).state));
           then:
-          - light.turn_on:
+          - light.addressable_set:
               id: led_strip
-              brightness: !lambda |-
+              color_brightness: !lambda |-
+                return ((id(led_brightness).state - (id(led_fade).state * 5)) / 100.0);
+              range_from: 0
+              range_to: 10
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
+                return ((id(led_brightness).state - (id(led_fade).state * 4)) / 100.0);
+              range_from: 1
+              range_to: 9
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
+                return ((id(led_brightness).state - (id(led_fade).state * 3)) / 100.0);
+              range_from: 2
+              range_to: 8
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
+                return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);
+              range_from: 3
+              range_to: 7
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
+                return ((id(led_brightness).state - (id(led_fade).state)) / 100.0);
+              range_from: 4
+              range_to: 6
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
                 return id(led_brightness).state / 100.0;
+              range_from: 5
+              range_to: 5
+              red: !lambda |-
+                return (id(co2).state < 400) ? 0 : (id(co2).state <= 1000) ? (id(co2).state - 400) / (1000 - 400) : 1;
+              green: !lambda |-
+                return (id(co2).state < 1000) ? 1 : (id(co2).state <= 2000) ? 1 - (id(co2).state - 1000) / (2000 - 1000) : 0;
+              blue: !lambda |-
+                return (id(co2).state < 2000) ? 0 : (id(co2).state <= 4000) ? (id(co2).state - 2000) / (4000 - 2000) : 1;
+      - if:
+          condition:
+            lambda: !lambda |-
+              return (isnan(id(co2).state));
+          then:
+          - light.addressable_set:
+              id: led_strip
+              color_brightness: !lambda |-
+                return id(led_brightness).state / 100.0;
+              range_from: 0
+              range_to: 10
               red: 0.0
-              green: 1.0
-              blue: 0.0
-              state: true
-      - if:
-          condition:
-            lambda: !lambda |-
-              return id(co2).state >= 800 && id(co2).state < 1000;
-          then:
-          - light.turn_on:
-              id: led_strip
-              brightness: !lambda |-
-                return id(led_brightness).state / 100.0;
-              red: 1.0
-              green: 1.0
-              blue: 0.0
-              state: true
-      - if:
-          condition:
-            lambda: !lambda |-
-              return id(co2).state >= 1000 && id(co2).state < 1500;
-          then:
-          - light.turn_on:
-              id: led_strip
-              brightness: !lambda |-
-                return id(led_brightness).state / 100.0;
-              red: 1.0
-              green: 0.7
-              blue: 0.0
-              state: true
-      - if:
-          condition:
-            lambda: !lambda |-
-              return id(co2).state >= 1500 && id(co2).state < 2000;
-          then:
-          - light.turn_on:
-              id: led_strip
-              brightness: !lambda |-
-                return id(led_brightness).state / 100.0;
-              red: 1.0
               green: 0.0
               blue: 0.0
-              state: true
-      - if:
-          condition:
-            lambda: !lambda |-
-              return id(co2).state >= 2000 && id(co2).state < 3000;
-          then:
-          - light.turn_on:
-              id: led_strip
-              brightness: !lambda |-
-                return id(led_brightness).state / 100.0;
-              red: 0.6
-              green: 0.0
-              blue: 0.6
-              state: true
-      - if:
-          condition:
-            lambda: !lambda |-
-              return id(co2).state >= 3000 && id(co2).state < 10000;
-          then:
-          - light.turn_on:
-              id: led_strip
-              brightness: !lambda |-
-                return id(led_brightness).state / 100.0;
-              red: 0.4
-              green: 0.0
-              blue: 0.0
-              state: true
   startup_delay: 0s
 - interval: 150s
   then:
@@ -1044,25 +1114,32 @@ interval:
           json:
             wifi: !lambda |-
               return to_string(id(wifi_dbm).state);
+            rco2: !lambda |-
+              return to_string(id(co2).state);
             pm01: !lambda |-
               return to_string(id(pm_1_0).state);
             pm02: !lambda |-
               return to_string(id(pm_2_5).state);
             pm10: !lambda |-
               return to_string(id(pm_10_0).state);
-            pm003_count: !lambda |-
+            pm003Count: !lambda |-
               return to_string(id(pm_0_3um).state);
-            rco2: !lambda |-
-              return to_string(id(co2).state);
             atmp: !lambda |-
+              return to_string(id(temp_raw).state);
+            atmpCompensated: !lambda |-
               return to_string(id(temp).state);
             rhum: !lambda |-
+              return to_string(id(humidity_raw).state);
+            rhumCompensated: !lambda |-
               return to_string(id(humidity).state);
-            tvoc_index: !lambda |-
+            tvocIndex: !lambda |-
               return to_string(id(voc).state);
-            nox_index: !lambda |-
+            noxIndex: !lambda |-
               return to_string(id(nox).state);
-          verify_ssl: true
+            boot: !lambda |-
+              return to_string(round(id(device_uptime).state/60));
+          capture_response: false
+          max_response_buffer_size: 1000
           method: POST
   startup_delay: 0s
 - interval: 150s
@@ -1104,6 +1181,19 @@ number:
   mode: SLIDER
   disabled_by_default: false
   update_interval: 60s
+- platform: template
+  name: LED Fade %
+  icon: mdi:lightbulb
+  id: led_fade
+  min_value: 0.0
+  max_value: 100.0
+  step: 1.0
+  initial_value: 20.0
+  optimistic: true
+  restore_value: true
+  mode: BOX
+  disabled_by_default: false
+  update_interval: 60s
 light:
 - platform: esp32_rmt_led_strip
   rgb_order: GRB
@@ -1121,7 +1211,9 @@ light:
   is_rgbw: false
   is_wrgb: false
 http_request:
-  useragent: ESPHome
+  verify_ssl: false
+  watchdog_timeout: 30s
+  useragent: ESPHome/2024.6.3 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 5s
@@ -1138,6 +1230,7 @@ output:
       pullup: false
       pulldown: false
     inverted: false
+    ignore_pin_validation_error: false
     drive_strength: 20.0
 binary_sensor:
 - platform: gpio
@@ -1151,6 +1244,7 @@ binary_sensor:
       pulldown: false
     inverted: true
     ignore_strapping_warning: true
+    ignore_pin_validation_error: false
     drive_strength: 20.0
   internal: true
   name: Configuration Button
@@ -1165,8 +1259,8 @@ binary_sensor:
     then:
     - logger.log:
         format: Toggling display betwen C and F
-        level: DEBUG
         args: []
+        level: DEBUG
         tag: main
     - switch.toggle:
         id: display_in_f
@@ -1180,8 +1274,8 @@ binary_sensor:
     then:
     - logger.log:
         format: Starting manual CO2 calibration
-        level: DEBUG
         args: []
+        level: DEBUG
         tag: main
     - senseair.background_calibration:
         id: senseair_s8
@@ -1195,21 +1289,9 @@ api:
   password: \033[5m''\033[6m
   reboot_timeout: 15min
 ota:
-  safe_mode: true
+- platform: esphome
   version: 2
   port: 3232
-  reboot_timeout: 5min
-  num_attempts: 10
-wifi:
-  ap:
-    ap_timeout: 1min
-  domain: .local
-  reboot_timeout: 15min
-  power_save_mode: LIGHT
-  fast_connect: false
-  passive_scan: false
-  enable_on_boot: true
-  use_address: ag-one.local
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
   import_full_config: false

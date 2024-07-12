@@ -1,7 +1,8 @@
 substitutions:
+  config_version: 4.0.0
+  co2_offset: '0'
   name: ag-basic
   friendly_name: AG Basic
-  config_version: 2.0.1
   name_add_mac_suffix: 'false'
 esphome:
   name: ag-basic
@@ -9,8 +10,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 2.0.1
-  min_version: 2023.12.0
+    version: 4.0.0
+  min_version: 2024.6.0
   on_boot:
   - priority: 200.0
     then:
@@ -27,7 +28,8 @@ esphome:
             json:
               wifi: !lambda |-
                 return to_string(-50);
-            verify_ssl: true
+            capture_response: false
+            max_response_buffer_size: 1000
             method: POST
   build_path: build/ag-basic
   area: ''
@@ -52,7 +54,6 @@ logger:
   hardware_uart: UART0
   level: DEBUG
   esp8266_store_log_strings_in_flash: true
-captive_portal: {}
 uart:
 - rx_pin:
     number: 2
@@ -111,33 +112,18 @@ i2c:
   scl: 5
   frequency: 400000.0
   scan: true
-button:
-- platform: factory_reset
-  disabled_by_default: true
-  name: Factory Reset ESP
-  id: factory_reset_all
-  icon: mdi:restart-alert
-  entity_category: config
-  device_class: restart
-- platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
-  on_press:
-  - then:
-    - senseair.background_calibration:
-        id: senseair_s8
-    - delay: 70s
-    - senseair.background_calibration_result:
-        id: senseair_s8
-  disabled_by_default: false
-- platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
-  on_press:
-  - then:
-    - senseair.abc_get_period:
-        id: senseair_s8
-  disabled_by_default: false
+wifi:
+  ap:
+    ap_timeout: 1min
+  domain: .local
+  reboot_timeout: 15min
+  power_save_mode: NONE
+  fast_connect: false
+  output_power: 20.0
+  passive_scan: false
+  enable_on_boot: true
+  use_address: ag-basic.local
+captive_portal: {}
 sensor:
 - platform: pmsx003
   type: PMSX003
@@ -147,10 +133,20 @@ sensor:
     id: pm_2_5
     device_class: pm25
     filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
+    - lambda: !lambda |-
+        if (x == 0.0) {
+        return 0.0;
+        } else if (x < 30.0) {
+        return((0.524 * x) - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 50.0) {
+        return((0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 210.0) {
+        return((0.786 * x) - (0.0862 * id(humidity).state) + 5.75);
+        } else if (x < 260.0) {
+        return((0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5)));
+        } else {
+        return(2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2)));
+        }
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -161,11 +157,6 @@ sensor:
     name: PM 1.0
     id: pm_1_0
     device_class: pm1
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -176,11 +167,6 @@ sensor:
     name: PM 10.0
     id: pm_10_0
     device_class: pm10
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
     disabled_by_default: false
     force_update: false
     unit_of_measurement: µg/m³
@@ -190,22 +176,19 @@ sensor:
   pm_0_3um:
     name: PM 0.3
     id: pm_0_3um
-    filters:
-    - sliding_window_moving_average:
-        window_size: 30
-        send_every: 30
-        send_first_at: 1
+    filters: []
     disabled_by_default: false
     force_update: false
     unit_of_measurement: /dL
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
-  update_interval: 0s
+  update_interval: 30s
 - platform: template
   name: PM 2.5 AQI
   id: pm_2_5_aqi
   update_interval: 5min
+  device_class: aqi
   unit_of_measurement: AQI
   icon: mdi:air-filter
   accuracy_decimals: 0
@@ -245,7 +228,8 @@ sensor:
     name: CO2
     id: co2
     filters:
-    - skip_initial: 2
+    - skip_initial: 1
+    - offset: 0.0
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -258,18 +242,18 @@ sensor:
   update_interval: 60s
 - platform: sht3xd
   temperature:
-    name: Temperature
-    id: temp
-    disabled_by_default: false
+    name: Temperature Raw
+    id: temp_raw
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: °C
     accuracy_decimals: 1
     device_class: temperature
     state_class: measurement
   humidity:
-    name: Humidity
-    id: humidity
-    disabled_by_default: false
+    name: Humidity Raw
+    id: humidity_raw
+    disabled_by_default: true
     force_update: false
     unit_of_measurement: '%'
     accuracy_decimals: 1
@@ -278,6 +262,26 @@ sensor:
   address: 0x44
   heater_enabled: false
   update_interval: 60s
+- platform: copy
+  source_id: temp_raw
+  name: Temperature
+  id: temp
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: °C
+  accuracy_decimals: 1
+  device_class: temperature
+  state_class: measurement
+- platform: copy
+  source_id: humidity_raw
+  name: Humidity
+  id: humidity
+  disabled_by_default: false
+  force_update: false
+  unit_of_measurement: '%'
+  accuracy_decimals: 1
+  device_class: humidity
+  state_class: measurement
 - platform: wifi_signal
   name: WiFi Signal
   id: wifi_dbm
@@ -301,9 +305,29 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
+button:
+- platform: template
+  name: SenseAir S8 Calibration
+  id: senseair_s8_calibrate_button
+  on_press:
+  - then:
+    - senseair.background_calibration:
+        id: senseair_s8
+    - delay: 70s
+    - senseair.background_calibration_result:
+        id: senseair_s8
+  disabled_by_default: false
+- platform: template
+  name: SenseAir S8 Show Calibration Interval
+  id: senseair_s8_show_calibrate_interval
+  on_press:
+  - then:
+    - senseair.abc_get_period:
+        id: senseair_s8
+  disabled_by_default: false
 switch:
 - platform: template
-  name: SenseAir S8 Automatic Background Calibration
+  name: SenseAir S8 Automatic Baseline Correction
   id: senseair_s8_abc_switch
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
@@ -327,24 +351,30 @@ switch:
   disabled_by_default: false
   assumed_state: false
 - platform: template
+  name: Display Boot Page
+  id: display_boot_page
+  restore_mode: ALWAYS_ON
+  optimistic: true
+  entity_category: config
+  icon: mdi:monitor
+  disabled_by_default: false
+  assumed_state: false
+- platform: template
   name: Upload to AirGradient Dashboard
   id: upload_airgradient
   restore_mode: RESTORE_DEFAULT_OFF
   optimistic: true
   disabled_by_default: false
   assumed_state: false
-- platform: safe_mode
-  name: Flash Mode (Safe Mode)
-  icon: mdi:cellphone-arrow-down
-  disabled_by_default: false
-  restore_mode: ALWAYS_OFF
-  entity_category: config
 font:
 - file:
-    path: ./fonts/liberation_sans/LiberationSans-Regular.ttf
-    type: local
+    family: Open Sans
+    weight: 700
+    italic: false
+    refresh: 1d
+    type: gfonts
   id: font1
-  size: 24
+  size: 22
   glyphs:
   - ' '
   - '!'
@@ -369,7 +399,6 @@ font:
   - '9'
   - ':'
   - '='
-  - '?'
   - A
   - B
   - C
@@ -424,6 +453,8 @@ font:
   - y
   - z
   - °
+  - ³
+  - µ
   bpp: 1
 display:
 - platform: ssd1306_i2c
@@ -448,25 +479,31 @@ display:
   - id: display_co2
     lambda: !lambda |-
       it.print(0, 0, id(font1), "CO2");
-      it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
-  - id: display_tempf
+      it.printf(64, 22, id(font1), TextAlign::TOP_RIGHT, "%.0f",id(co2).state);
+  - id: display_temp
     lambda: !lambda |-
-      it.print(0, 0, id(font1), "°F");
-      it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.1f",id(temp).state*9/5+32);
+      if (id(display_in_f).state) {
+          it.print(0, 0, id(font1), "°F");
+          it.printf(64, 22, id(font1), TextAlign::TOP_RIGHT, "%.1f", id(temp).state*9/5+32);
+        } else {
+          it.print(0, 0, id(font1), "°C");
+          it.printf(64, 22, id(font1), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
+        }
   - id: display_humidity
     lambda: !lambda |-
       it.print(0, 0, id(font1), "HUM");
-      it.printf(64, 24, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
+      it.printf(64, 22, id(font1), TextAlign::TOP_RIGHT, "%.0f%%",id(humidity).state);
   - id: boot
     lambda: !lambda |-
-      it.printf(0, 0, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(6,11).c_str());
+      it.printf(64, 0, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(6,8).c_str());
+      it.printf(64, 22, id(font1), TextAlign::TOP_RIGHT, "%s", get_mac_address().substr(9,11).c_str());
   on_page_change:
   - to: boot
     then:
     - if:
         condition:
-          lambda: !lambda |-
-            return id(device_uptime).state > 30;
+          switch.is_off:
+            id: display_boot_page
         then:
         - display.page.show_next:
             id: oled_display
@@ -482,20 +519,22 @@ display:
   invert: false
   update_interval: 1s
 interval:
-- interval: 5s
+- interval: 10s
+  startup_delay: 1s
   then:
   - if:
       condition:
-        lambda: !lambda |-
-          return id(device_uptime).state < 10;
+        switch.is_on:
+          id: display_boot_page
       then:
-      - display.page.show:
-          id: boot
-      else:
-      - display.page.show_next:
-          id: oled_display
-      - component.update:
-          id: oled_display
+      - switch.turn_off:
+          id: display_boot_page
+- interval: 5s
+  then:
+  - display.page.show_next:
+      id: oled_display
+  - component.update:
+      id: oled_display
   startup_delay: 0s
 - interval: 150s
   then:
@@ -512,50 +551,45 @@ interval:
           json:
             wifi: !lambda |-
               return to_string(id(wifi_dbm).state);
+            rco2: !lambda |-
+              return to_string(id(co2).state);
             pm01: !lambda |-
               return to_string(id(pm_1_0).state);
             pm02: !lambda |-
               return to_string(id(pm_2_5).state);
             pm10: !lambda |-
               return to_string(id(pm_10_0).state);
-            pm003_count: !lambda |-
+            pm003Count: !lambda |-
               return to_string(id(pm_0_3um).state);
-            rco2: !lambda |-
-              return to_string(id(co2).state);
             atmp: !lambda |-
+              return to_string(id(temp_raw).state);
+            atmpCompensated: !lambda |-
               return to_string(id(temp).state);
             rhum: !lambda |-
+              return to_string(id(humidity_raw).state);
+            rhumCompensated: !lambda |-
               return to_string(id(humidity).state);
-          verify_ssl: true
+            boot: !lambda |-
+              return to_string(round(id(device_uptime).state/60));
+          capture_response: false
+          max_response_buffer_size: 1000
           method: POST
   startup_delay: 0s
 http_request:
-  useragent: ESPHome
+  timeout: 1s
+  verify_ssl: false
+  useragent: ESPHome/2024.6.3 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
-  timeout: 5s
   esp8266_disable_ssl_support: false
 api:
   port: 6053
   password: \033[5m''\033[6m
   reboot_timeout: 15min
 ota:
-  safe_mode: true
+- platform: esphome
   version: 2
   port: 8266
-  reboot_timeout: 5min
-  num_attempts: 10
-wifi:
-  ap:
-    ap_timeout: 1min
-  domain: .local
-  reboot_timeout: 15min
-  power_save_mode: NONE
-  fast_connect: false
-  output_power: 20.0
-  passive_scan: false
-  enable_on_boot: true
-  use_address: ag-basic.local
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
   import_full_config: false
