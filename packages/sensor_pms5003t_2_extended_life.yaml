@@ -8,9 +8,10 @@ sensor:
     type: PMS5003T
     uart_id: senseair_s8_uart
     pm_2_5:
-      name: "PM 2.5 (2)"
-      id: pm_2_5_2
+      name: "PM 2.5 (2) Raw"
+      id: pm_2_5_2_raw
       device_class: pm25  # Added to report properly to HomeKit
+      disabled_by_default: true
     pm_1_0:
       name: "PM 1.0 (2)"
       id: pm_1_0_2
@@ -23,26 +24,66 @@ sensor:
       name: "PM 0.3 (2)"
       id: pm_0_3um_2
     temperature:
-      name: "Temperature (2)"
-      id: temp_2
+      name: "Temperature (2) Raw"
+      id: temp_2_raw
       icon: "mdi:thermometer"
-      filters:
-          # https://forum.airgradient.com/t/outdoor-temperature-and-humidity-reading-correction/1544/19
-        - lambda: !lambda |-
-            if (x < 10.0) return (x * 1.327) - 6.738;
-            return (x * 1.181) - 5.113;
+      disabled_by_default: true
     humidity:
-      name: "Humidity (2)"
-      id: humidity_2
+      name: "Humidity (2) Raw"
+      id: humidity_2_raw
       icon: "mdi:water-percent"
-      filters:
-          # Compensation algorithm from AirGradient's research 2024-02-29
-          # Ensuring max is 100% as calculation can exceed
-        - lambda: |-
-            float result = x * 1.259f + 7.34f;
-            if (result > 100) return 100;
-            return result;
+      disabled_by_default: true
     update_interval: $pm_update_interval
+
+
+  - platform: copy
+    source_id: temp_2_raw
+    name: "Temperature (2)"
+    id: temp
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    filters:
+      - lambda: |-
+          if (x < 10.0) return (x * 1.327) - 6.738;
+          return (x * 1.181) - 5.113;
+
+  - platform: copy
+    source_id: humidity_2_raw
+    name: "Humidity (2)"
+    id: humidity
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    # Ensuring max is 100% as calculation can exceed
+    filters:
+      - lambda: |-
+          float result = x * 1.259f + 7.34f;
+          if (result > 100) return 100;
+          return result;
+
+  - platform: template
+    # Impliments PM2.5 correction algorithm supported by AirGradient from EPA
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    # https://document.airnow.gov/airnow-fire-and-smoke-map-questions-and-answers.pdf
+    name: "PM 2.5 (2)"
+    id: pm_2_5_2
+    update_interval: 30s
+    device_class: pm25  # Added to report properly to HomeKit
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    lambda: |-
+      if (id(pm_2_5_2_raw).state == 0.0) {
+      return 0.0;
+      } else if (id(pm_2_5_2_raw).state < 30.0) {
+      return((0.524 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+      } else if (id(pm_2_5_2_raw).state < 50.0) {
+      return((0.786 * (id(pm_2_5_2_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_2_raw).state / 20 - 3/2))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state) + 5.75);
+      } else if (id(pm_2_5_2_raw).state < 210.0) {
+      return((0.786 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+      } else if (id(pm_2_5_2_raw).state < 260.0) {
+      return((0.69 * (id(pm_2_5_2_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_2_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2) * (id(pm_2_5_2_raw).state / 50 - 21/5)));
+      } else {
+      return(2.966 + (0.69 * id(pm_2_5_2_raw).state) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2)));
+      }
 
 # Average the readings from both sensors to return a value
   - platform: template

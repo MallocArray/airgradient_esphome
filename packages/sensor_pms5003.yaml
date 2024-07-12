@@ -1,6 +1,10 @@
+---
+# Impliments PM2.5 correction algorithm supported by AirGradient from EPA
+# https://www.airgradient.com/documentation/correction-algorithms/
+# https://document.airnow.gov/airnow-fire-and-smoke-map-questions-and-answers.pdf
 sensor:
   - platform: pmsx003
-    # Default interval of updating every second, but using an average over the last 30 seconds/readings
+    # Default interval of updating every second, but changing to 30 seconds to extend life but keep fan spinning
     # PMS5003 https://esphome.io/components/sensor/pmsx003.html
     type: PMSX003
     uart_id: pms5003_uart
@@ -9,32 +13,33 @@ sensor:
       id: pm_2_5
       device_class: pm25  # Added to report properly to HomeKit
       filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
+        - lambda: |-
+            if (x == 0.0) {
+            return 0.0;
+            } else if (x < 30.0) {
+            return((0.524 * x) - (0.0862 * id(humidity).state) + 5.75);
+            } else if (x < 50.0) {
+            return((0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity).state) + 5.75);
+            } else if (x < 210.0) {
+            return((0.786 * x) - (0.0862 * id(humidity).state) + 5.75);
+            } else if (x < 260.0) {
+            return((0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5)));
+            } else {
+            return(2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2)));
+            }
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
       device_class: pm1  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
       device_class: pm10  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
       filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
+    update_interval: 30s
 
 
   - platform: template
@@ -42,6 +47,7 @@ sensor:
     name: "PM 2.5 AQI"
     id: pm_2_5_aqi
     update_interval: 5 min
+    device_class: aqi
     unit_of_measurement: "AQI"
     icon: "mdi:air-filter"
     accuracy_decimals: 0

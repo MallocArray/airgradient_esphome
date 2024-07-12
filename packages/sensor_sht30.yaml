@@ -2,9 +2,25 @@ sensor:
   - platform: sht3xd
     # SHT30 https://esphome.io/components/sensor/sht3xd.html
     temperature:
-      name: "Temperature"
-      id: temp
+      name: "Temperature Raw"
+      id: temp_raw
+      disabled_by_default: true
     humidity:
-      name: "Humidity"
-      id: humidity
+      name: "Humidity Raw"
+      id: humidity_raw
+      disabled_by_default: true
     address: 0x44
+
+  - platform: copy
+    source_id: temp_raw
+    name: "Temperature"
+    id: temp
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    # No current correction for indoor devices, but structure in place if developed
+
+  - platform: copy
+    source_id: humidity_raw
+    name: "Humidity"
+    id: humidity
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    # No current correction for indoor devices, but structure in place if developed

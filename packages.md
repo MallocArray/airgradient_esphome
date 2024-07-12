@@ -26,6 +26,16 @@ Board configuration for devices based on the D1 Mini chip (AG Basic and AG Pro)
 
 Board configuration for devices based on the ESP32-C3 chip (AG ONE and OpenAir)
 
+## button_factory_reset.yaml
+
+Enables a button to reset device to factory resets, which erases all nvram and erases all stored preferences.
+
+Useful if warning messages about being unable to save preferences appear
+
+## captive_portal.yaml
+
+Configures the device to provide a captive portal to create a hotspot if wifi is not connected, so it can be connected to a new wifi network without reconfiguring the config file
+
 ## config_button.yaml
 
 Enables the configuration button on the AirGradient device.  Default configuration is for devices based on ESP32-C3 chip, but additional configuration can be added to change the pin to support D1 Mini if the device has a physical button installed (Already part of the config file for AG Pro v4.2)
@@ -197,9 +207,19 @@ Configures a Plantower PMS5003T sensor.  Reports PM 2.5, Temperature, and Humidi
 
 Also applies a compensation algorithm from AirGradient to correct temperature and humidity readings when used inside of the Open Air enclosure
 
+## sensor_pms5003_uncorrected.yaml
+
+Configures a Plantower PMS5003 sensor using raw values from the sensor
+
+Reports PM 2.5, PM 10, PM 1.0, PM 0.3, and Air Quality Index based on the current readings.
+
 ## sensor_pms5003.yaml
 
 Configures a Plantower PMS5003 sensor.
+
+Applies correction algorithms provided by AirGradient
+
+https://www.airgradient.com/documentation/correction-algorithms/
 
 Reports PM 2.5, PM 10, PM 1.0, PM 0.3, and Air Quality Index based on the current readings.
 
@@ -223,6 +243,15 @@ substitutions:
 Configures a Sensirion SGP41 sensor.
 
 Reports VOC and NOx Index values.
+
+Now supports modifying VOC and NOx learning time offset hours by adding the substitutions
+
+```yaml
+substitutions:
+  # 12, 60, 120, 360, 720 are suggested values from AirGradient (range 1..1000)
+  voc_learning_time_offset_hours: '12'
+  nox_learning_time_offset_hours: '12'
+```
 
 ## sensor_sht30.yaml
 

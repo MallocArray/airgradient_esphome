@@ -4,17 +4,23 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 
 ## Breaking Changes
 
-Due to renaming of the Automatic Background Calibration switch to the proper name of Automatic Baseline Correction, this switch will default to being enabled, even if previously you had disabled it.  After installing, disable again if desired
+* Remove substitution line such as `config_version: 2.0.5` from the main file, as this has been moved into the board package file
+* Updated to 4.0.0 versions, skipping 3.x to avoid confusion with current AirGradient official firmware
 
 ## Changes
 
-* Added Display Contrast slider to dim the display
-* Added device_class to the PMSx005 sensors to have them properly reflect in the HomeKit integration if supported ([Forum Link](https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328/7?u=mallocarray))
-* Added optional Factory Reset switch that is disabled by default. Can be enabled in HomeAssistant and used if desired
-* LED combo package. Left 5 LEDs reflect CO2 levels, middle 5 LEDs reflect PM2.5 levels, far right indicates VOC. (Same as display)
-* LED bar configs feature a "LED Fade" parameter that controls the percentage that the LED bar dims out from the center
-  ![1715467068556](image/README/1715467068556.png)
-* CO2 package supports optional substitution `co2_offset` to offset reported readings by a set amount.  Useful if sensor is known to be off by a certain amount, or if wanting to override default calibration of 400 ppm
+* Support for ESPHome 2024.6 and later
+* Added extended timeout for API upload on ONE and OpenAir models to reduce reboots
+* Applied correction algorithms for PM2.5 provided by AirGradient
+  * https://www.airgradient.com/documentation/correction-algorithms/
+* Updated API upload to follow current structure including both raw and corrected values
+* Moved config_version substitution into the board package so it can be updated without manual change to main config file.  Please remove the line starting with `config_version:` from your personal files
+* Split captive portal config to a separate package.  Can be removed if not using the portal or if defining wifi networks in your config file, which results in a small memory savings
+* Removed safe_mode package by default.  Very few use cases for it
+* Added commented out packages for extended_life configs to make it easier to enable if desired
+* Added commented out package for SHT30 temp sensor in AG Pro file to make it easier to switch to if desired
+* Added new sensor options for raw values for PM2.5, temp, and humidity in some device configurations, and added AirGradient provided correction algorithms to the standard sensors
+* AG DIY Basic display config changed to same font as other models, downloading from gfonts instead of using local file
 
 ## Features
 
@@ -48,7 +54,7 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
   - Short press (Less than 1 second) - Toggle between F and C on display
   - Long press (More than 1 second, less than 5) - Trigger manual CO2 calibration
-- Leverage automations in HomeAssistant to turn on the "Blank" page and turn off all other pages to effectively disable the display output.  Could also turn off the LED strip or set Brightness to 0 to eliminate output while still collecting sensor data
+- Leverage automation in HomeAssistant to turn on the "Blank" page and turn off all other pages to effectively disable the display output.  Could also turn off the LED strip or set Brightness to 0 to eliminate output while still collecting sensor data
 
 ## Installation
 
@@ -162,14 +168,5 @@ MQTT support has been mentioned in the AirGradient forums several times.  ESPHom
 
 Several more features are planned to be added to this repo
 
-- [X] Support for Open Air without CO2 sensor (Model: O-1PPT)
-- [ ] Explore options for disabling display/LED during certain times (May be differed to HomeAssistant Automations)
-- [ ] Standardize font on AirGradient Basic display to match Pro
-- [X] Reduce number of fonts used in the multi_page package
-  - [X] Open Sans displays a consistent height, but some characters, such as F and 0 are mismatched, the left side is double line thick while right is single line
-  - [X] Poppins Light is consistent thickness, but numbers are taller than letters, giving a mismatched height
-- [ ] Add GitHub actions to automatically build updated .bin files as needed
-- [X] Add support for esp32_improv and improv_serial (improv_serial not supported with this board and used pins.  esp32_improv uses 30% of available flash memory and is nearly full)
-  - [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
-- [X] Add support for dashboard_import and project information
-  - [X] [https://esphome.io/guides/creators.html](https://esphome.io/guides/creators.html "https://esphome.io/guides/creators.html")
+- [ ] Explore options for disabling display/LED during certain times (May be differed to HomeAssistant Automation)
+- [X] Standardize font on AirGradient Basic display to match Pro

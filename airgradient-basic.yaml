@@ -5,7 +5,6 @@
 substitutions:
   name: "ag-basic"
   friendly_name: "AG Basic"
-  config_version: 2.0.5
   name_add_mac_suffix: "false"  # Must have quotes around value
 
 # Enable Home Assistant API
@@ -16,8 +15,6 @@ ota:  # Add password as desired
   # password:
 
 wifi:
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
 
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
@@ -25,11 +22,12 @@ dashboard_import:
 
 packages:
   board: github://MallocArray/airgradient_esphome/packages/airgradient_d1_mini_board.yaml
+  captive_portal: !include github://MallocArray/airgradient_esphome/packages/captive_portal.yaml
   pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003.yaml
   co2: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml
+  # temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht40.yaml
   temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht30.yaml
   display: github://MallocArray/airgradient_esphome/packages/display_ssd1306.yaml
   airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_d1_mini_no_sgp41.yaml
   wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml
   uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml
-  safe_mode: github://MallocArray/airgradient_esphome/packages/switch_safe_mode.yaml

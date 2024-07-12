@@ -4,7 +4,6 @@
 substitutions:
   name: "ag-one"
   friendly_name: "AG One"
-  config_version: 2.0.5
   name_add_mac_suffix: "false"  # Must have quotes around value
 
 # Enable Home Assistant API
@@ -15,8 +14,6 @@ ota:  # Add password as desired
   # password:
 
 wifi:
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
 
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
@@ -24,6 +21,7 @@ dashboard_import:
 
 packages:
   board: github://MallocArray/airgradient_esphome/packages/airgradient_esp32-c3_board.yaml
+  captive_portal: !include github://MallocArray/airgradient_esphome/packages/captive_portal.yaml
   pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003.yaml
   co2: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml
   temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht40.yaml
@@ -36,7 +34,6 @@ packages:
   config_button: github://MallocArray/airgradient_esphome/packages/config_button.yaml
   wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml
   uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml
-  safe_mode: github://MallocArray/airgradient_esphome/packages/switch_safe_mode.yaml
 
 binary_sensor:
   - id: !extend config_button

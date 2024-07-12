@@ -1,3 +1,5 @@
+substitutions:
+  config_version: 4.0.0
 
 esphome:
   name: "${name}"
@@ -19,10 +21,6 @@ logger:
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
 
-# The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
-# https://esphome.io/components/captive_portal.html
-captive_portal:
-
 # web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
 
 uart:
@@ -42,9 +40,3 @@ i2c:
   sda: D2
   scl: D1
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
-
-button:
-  - platform: factory_reset
-    disabled_by_default: true
-    name: "Factory Reset ESP"
-    id: factory_reset_all

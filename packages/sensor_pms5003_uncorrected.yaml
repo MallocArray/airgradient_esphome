@@ -1,64 +1,35 @@
+---
 sensor:
   - platform: pmsx003
-    # Default interval of updating every second, but using an average over the last 30 seconds/readings
-    # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
-    type: PMS5003T
+    # Default interval of updating every second, but changing to 30 seconds to extend life but keep fan spinning
+    # PMS5003 https://esphome.io/components/sensor/pmsx003.html
+    type: PMSX003
     uart_id: pms5003_uart
     pm_2_5:
       name: "PM 2.5"
       id: pm_2_5
       device_class: pm25  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
       device_class: pm1  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
       device_class: pm10  # Added to report properly to HomeKit
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
       filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
-    temperature:
-      name: "Temperature"
-      id: temp
-      icon: "mdi:thermometer"
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
-    humidity:
-      name: "Humidity"
-      id: humidity
-      icon: "mdi:water-percent"
-      filters:
-        - sliding_window_moving_average:
-            window_size: 30
-            send_every: 30
+    update_interval: 30s
 
 
   - platform: template
     # Depends on another sensor providing an ID of pm_2_5 such as a pms5003
     name: "PM 2.5 AQI"
     id: pm_2_5_aqi
-    update_interval: 5 min
     device_class: aqi
+    update_interval: 5 min
     unit_of_measurement: "AQI"
     icon: "mdi:air-filter"
     accuracy_decimals: 0

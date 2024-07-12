@@ -20,8 +20,10 @@ interval:
                 pm02: !lambda return to_string(id(pm_2_5).state);
                 pm10: !lambda return to_string(id(pm_10_0).state);
                 pm003Count: !lambda return to_string(id(pm_0_3um).state);
-                atmp: !lambda return to_string(id(temp).state);
-                rhum: !lambda return to_string(id(humidity).state);
+                atmp: !lambda return to_string(id(temp_raw).state);
+                atmpCompensated: !lambda return to_string(id(temp).state);
+                rhum: !lambda return to_string(id(humidity_raw).state);
+                rhumCompensated: !lambda return to_string(id(humidity).state);
                 # Uptime in minutes as the boot value
                 boot: !lambda return to_string(round(id(device_uptime).state/60));
 

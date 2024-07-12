@@ -1,3 +1,5 @@
+substitutions:
+  config_version: 4.0.0
 
 esphome:
   name: "${name}"
@@ -45,9 +47,3 @@ i2c:
   sda: GPIO7 # Pin 21
   scl: GPIO6 # Pin 20
   frequency: 400kHz  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
-
-button:
-  - platform: factory_reset
-    disabled_by_default: true
-    name: "Factory Reset ESP"
-    id: factory_reset_all

@@ -1,0 +1,4 @@
+# https://esphome.io/components/button/factory_reset.html
+button:
+  - platform: factory_reset
+    name: Restart with Factory Default Settings
