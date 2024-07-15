@@ -68,20 +68,25 @@ sensor:
     accuracy_decimals: 0
     state_class: measurement
     lambda: |-
+      float result = 0.0;
       if (id(pm_2_5_2_raw).state == 0.0) {
-      return 0.0;
+        result = 0.0;
       } else if (id(pm_2_5_2_raw).state < 30.0) {
-      return((0.524 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+        result = (0.524 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75;
       } else if (id(pm_2_5_2_raw).state < 50.0) {
-      return((0.786 * (id(pm_2_5_2_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_2_raw).state / 20 - 3/2))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state) + 5.75);
+        result = (0.786 * (id(pm_2_5_2_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_2_raw).state / 20 - 3/2))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state) + 5.75;
       } else if (id(pm_2_5_2_raw).state < 210.0) {
-      return((0.786 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75);
+        result = (0.786 * id(pm_2_5_2_raw).state) - (0.0862 * id(humidity).state) + 5.75;
       } else if (id(pm_2_5_2_raw).state < 260.0) {
-      return((0.69 * (id(pm_2_5_2_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_2_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2) * (id(pm_2_5_2_raw).state / 50 - 21/5)));
+        result = (0.69 * (id(pm_2_5_2_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) * id(pm_2_5_2_raw).state - (0.0862 * id(humidity).state * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_2_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_2_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2) * (id(pm_2_5_2_raw).state / 50 - 21/5));
       } else {
-      return(2.966 + (0.69 * id(pm_2_5_2_raw).state) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2)));
+        result = 2.966 + (0.69 * id(pm_2_5_2_raw).state) + (8.84 * pow(10,-4) * pow(id(pm_2_5_2_raw).state,2));
       }
-
+      if (result <= 0.0) {
+        return 0.0;
+      } else {
+        return result;
+      }
 
 # Average the readings from both sensors to return a value
   - platform: template

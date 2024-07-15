@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.0
+  config_version: 4.0.1
 
 esphome:
   name: "${name}"
