@@ -10,7 +10,7 @@ interval:
               # https://api.airgradient.com/public/docs/api/v1/
               # AirGradient URL with the last 6 of MAC address all lower case
               url: !lambda |-
-                return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+                return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
               headers:
                   Content-Type: application/json
               json:
@@ -46,7 +46,7 @@ esphome:
             # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
             # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
             url: !lambda |-
-              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+              return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
             headers:
                 Content-Type: application/json
             json:
