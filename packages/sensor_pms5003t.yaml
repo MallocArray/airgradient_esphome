@@ -9,27 +9,39 @@ sensor:
       id: pm_2_5_raw
       device_class: pm25  # Added to report properly to HomeKit
       disabled_by_default: true
+      filters:
+        - debounce: 0.33s
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
       device_class: pm1  # Added to report properly to HomeKit
+      filters:
+        - debounce: 0.33s
     pm_10_0:
       name: "PM 10.0"
       id: pm_10_0
       device_class: pm10  # Added to report properly to HomeKit
+      filters:
+        - debounce: 0.33s
     pm_0_3um:
       name: "PM 0.3"
       id: pm_0_3um
+      filters:
+        - debounce: 0.33s
     temperature:
       name: "Temperature Raw"
       id: temp_raw
       icon: "mdi:thermometer"
       disabled_by_default: true
+      filters:
+        - debounce: 0.33s
     humidity:
       name: "Humidity Raw"
       id: humidity_raw
       icon: "mdi:water-percent"
       disabled_by_default: true
+      filters:
+        - debounce: 0.33s
     update_interval: 30s
 
   - platform: copy
