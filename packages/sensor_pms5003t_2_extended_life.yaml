@@ -39,7 +39,7 @@ sensor:
   - platform: copy
     source_id: temp_2_raw
     name: "Temperature (2)"
-    id: temp
+    id: temp_2
     # https://www.airgradient.com/documentation/correction-algorithms/
     filters:
       - lambda: |-
@@ -49,7 +49,7 @@ sensor:
   - platform: copy
     source_id: humidity_2_raw
     name: "Humidity (2)"
-    id: humidity
+    id: humidity_2
     # https://www.airgradient.com/documentation/correction-algorithms/
     # Ensuring max is 100% as calculation can exceed
     filters:
