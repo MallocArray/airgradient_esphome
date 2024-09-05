@@ -10,6 +10,12 @@ Uploads sensor data to the [AirGradient Dashboard](https://app.airgradient.com/d
 
 Uploads sensor data to the [AirGradient Dashboard](https://app.airgradient.com/dashboard). This file is for devices based on the D1 Mini chip (AG Basic and AG Pro) with all current sensors, including SGP41
 
+# airgradient_api_d1_mini_insecure.yaml
+
+Uploads sensor data to the [AirGradient Dashboard](https://app.airgradient.com/dashboard) using http instead of https.  Some boards, such as the ESP8266 D1 Mini can sometimes go into a reboot loop when communicating over https.  Original firmware used http without issue, so offering this as an alternative for devices that require it.
+
+ This file is for devices based on the D1 Mini chip (AG Basic and AG Pro) with all current sensors, including SGP41
+
 ## airgradient_api_esp32-c3_dual_pms5003t.yaml
 
 Uploads sensor data to the [AirGradient Dashboard](https://app.airgradient.com/dashboard). This file is for devices based on the ESP32-C3 chip (AG ONE and OpenAir) with dual PMS5003t sensors.  Designed for the Outdoor OpenAir model O-PPT1

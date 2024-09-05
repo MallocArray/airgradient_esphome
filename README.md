@@ -6,6 +6,7 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 
 * Remove substitution line such as `config_version: 2.0.5` from the main file, as this has been moved into the board package file
 * Updated to 4.0.0 versions, skipping 3.x to avoid confusion with current AirGradient official firmware
+* Now defaulting to https for AirGradient API communication.  If older devices (DIY and Pro models) go into constant reboots, switch to the api package `airgradient_api_d1_mini_insecure.yaml` to revert to the original communication method
 
 ## Changes
 
