@@ -59,7 +59,6 @@ sensor:
     id: pm_2_5_aqi
     update_interval: 5 min
     device_class: aqi
-    unit_of_measurement: "AQI"
     icon: "mdi:air-filter"
     accuracy_decimals: 0
     filters:
