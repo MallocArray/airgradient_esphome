@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.1
+  config_version: 4.0.6
   co2_offset: '0'
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
@@ -16,7 +16,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.1
+    version: 4.0.6
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
@@ -28,7 +28,7 @@ esphome:
         then:
         - http_request.post:
             url: !lambda |-
-              return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+              return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
             headers:
               Content-Type: application/json
             json:
@@ -207,35 +207,32 @@ sensor:
   id: pm_2_5_aqi
   update_interval: 5min
   device_class: aqi
-  unit_of_measurement: AQI
   icon: mdi:air-filter
   accuracy_decimals: 0
   filters:
   - skip_initial: 1
   lambda: !lambda |-
+    // 2024 update from EPA https://www.epa.gov/system/files/documents/2024-02/pm-naaqs-air-quality-index-fact-sheet.pdf
     // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
     // Borrowed from https://github.com/kylemanna/sniffer/blob/master/esphome/sniffer_common.yaml
-    if (id(pm_2_5).state <= 12.0) {
+    if (id(pm_2_5).state <= 9.0) {
     // good
-    return((50.0 - 0.0) / (12.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
+    return((50.0 - 0.0) / (9.0 - 0.0) * (id(pm_2_5).state - 0.0) + 0.0);
     } else if (id(pm_2_5).state <= 35.4) {
     // moderate
-    return((100.0 - 51.0) / (35.4 - 12.1) * (id(pm_2_5).state - 12.1) + 51.0);
+    return((100.0 - 51.0) / (35.4 - 9.1) * (id(pm_2_5).state - 9.1) + 51.0);
     } else if (id(pm_2_5).state <= 55.4) {
     // usg
     return((150.0 - 101.0) / (55.4 - 35.5) * (id(pm_2_5).state - 35.5) + 101.0);
-    } else if (id(pm_2_5).state <= 150.4) {
+    } else if (id(pm_2_5).state <= 125.4) {
     // unhealthy
-    return((200.0 - 151.0) / (150.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
-    } else if (id(pm_2_5).state <= 250.4) {
+    return((200.0 - 151.0) / (125.4 - 55.5) * (id(pm_2_5).state - 55.5) + 151.0);
+    } else if (id(pm_2_5).state <= 225.4) {
     // very unhealthy
-    return((300.0 - 201.0) / (250.4 - 150.5) * (id(pm_2_5).state - 150.5) + 201.0);
-    } else if (id(pm_2_5).state <= 350.4) {
+    return((300.0 - 201.0) / (225.4 - 125.5) * (id(pm_2_5).state - 125.5) + 201.0);
+    } else if (id(pm_2_5).state <= 325.4) {
     // hazardous
-    return((400.0 - 301.0) / (350.4 - 250.5) * (id(pm_2_5).state - 250.5) + 301.0);
-    } else if (id(pm_2_5).state <= 500.4) {
-    // hazardous 2
-    return((500.0 - 401.0) / (500.4 - 350.5) * (id(pm_2_5).state - 350.5) + 401.0);
+    return((500.0 - 301.0) / (325.4 - 225.5) * (id(pm_2_5).state - 225.5) + 301.0);
     } else {
     return(500);
     }
@@ -805,7 +802,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.0.1");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.0.6");
       it.printf(0, 42, id(open_sans_14), "AG One");
   - id: summary1
     lambda: !lambda |-
@@ -1114,7 +1111,7 @@ interval:
       then:
       - http_request.post:
           url: !lambda |-
-            return "http://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
+            return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
           headers:
             Content-Type: application/json
           json:
@@ -1151,10 +1148,10 @@ interval:
 - interval: 150s
   then:
   - output.turn_on:
-      id: watchdog
+      id: external_watchdog
   - delay: 20ms
   - output.turn_off:
-      id: watchdog
+      id: external_watchdog
   startup_delay: 0s
 number:
 - platform: template
@@ -1225,7 +1222,7 @@ http_request:
   timeout: 5s
 output:
 - platform: gpio
-  id: watchdog
+  id: external_watchdog
   pin:
     number: 2
     ignore_strapping_warning: true
@@ -1265,9 +1262,9 @@ binary_sensor:
     then:
     - logger.log:
         format: Toggling display betwen C and F
+        tag: main
         args: []
         level: DEBUG
-        tag: main
     - switch.toggle:
         id: display_in_f
     invalid_cooldown: 1s
@@ -1280,9 +1277,9 @@ binary_sensor:
     then:
     - logger.log:
         format: Starting manual CO2 calibration
+        tag: main
         args: []
         level: DEBUG
-        tag: main
     - senseair.background_calibration:
         id: senseair_s8
     - delay: 70s
