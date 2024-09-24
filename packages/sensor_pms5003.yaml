@@ -18,13 +18,13 @@ sensor:
             if (x == 0.0) {
               result = 0.0;
             } else if (x < 30.0) {
-              result = (0.524 * x) - (0.0862 * id(humidity).state) + 5.75;
+              result = (0.524 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
             } else if (x < 50.0) {
-              result = (0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity).state) + 5.75;
+              result = (0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity_raw).state) + 5.75;
             } else if (x < 210.0) {
-              result = (0.786 * x) - (0.0862 * id(humidity).state) + 5.75;
+              result = (0.786 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
             } else if (x < 260.0) {
-              result = (0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5));
+              result = (0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity_raw).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5));
             } else {
               result = 2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2));
             }
