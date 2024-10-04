@@ -1,14 +1,14 @@
 substitutions:
-  config_version: 4.0.6
-  co2_offset: '0'
-  voc_learning_time_offset_hours: '12'
-  nox_learning_time_offset_hours: '12'
+  config_version: 4.0.7
+  co2_offset: 0.0
+  voc_learning_time_offset_hours: 12
+  nox_learning_time_offset_hours: 12
   name: ag-pro
   friendly_name: AG Pro
   name_add_mac_suffix: 'false'
 esphome:
-  name: ag-pro
-  friendly_name: AG Pro
+  name: ${name}
+  friendly_name: ${friendly_name}
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
@@ -234,7 +234,7 @@ sensor:
     id: co2
     filters:
     - skip_initial: 1
-    - offset: 0.0
+    - offset: ${co2_offset}
     disabled_by_default: false
     force_update: false
     unit_of_measurement: ppm
@@ -299,7 +299,7 @@ sensor:
     name: VOC Index
     id: voc
     algorithm_tuning:
-      learning_time_offset_hours: 12
+      learning_time_offset_hours: ${voc_learning_time_offset_hours}
       index_offset: 100
       learning_time_gain_hours: 12
       gating_max_duration_minutes: 720
@@ -315,7 +315,7 @@ sensor:
     name: NOx Index
     id: nox
     algorithm_tuning:
-      learning_time_offset_hours: 12
+      learning_time_offset_hours: ${nox_learning_time_offset_hours}
       index_offset: 100
       learning_time_gain_hours: 12
       gating_max_duration_minutes: 720
@@ -952,4 +952,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-pro.yaml
   import_full_config: false
-
