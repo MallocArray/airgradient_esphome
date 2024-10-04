@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.7
+  config_version: 4.0.6
   co2_offset: 0.0
   voc_learning_time_offset_hours: 12
   nox_learning_time_offset_hours: 12
@@ -12,7 +12,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.6
+    version: ${config_version}
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
