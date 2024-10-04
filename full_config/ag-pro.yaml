@@ -124,7 +124,7 @@ wifi:
   output_power: 20.0
   passive_scan: false
   enable_on_boot: true
-  use_address: ag-pro.local
+  use_address: ${name}.local
 captive_portal: {}
 sensor:
 - platform: pmsx003
