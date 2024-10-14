@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.6
+  config_version: 4.0.7
   co2_offset: '0'
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
@@ -12,7 +12,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.6
+    version: 4.0.7
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
@@ -140,13 +140,13 @@ sensor:
         if (x == 0.0) {
           result = 0.0;
         } else if (x < 30.0) {
-          result = (0.524 * x) - (0.0862 * id(humidity).state) + 5.75;
+          result = (0.524 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
         } else if (x < 50.0) {
-          result = (0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity).state) + 5.75;
+          result = (0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity_raw).state) + 5.75;
         } else if (x < 210.0) {
-          result = (0.786 * x) - (0.0862 * id(humidity).state) + 5.75;
+          result = (0.786 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
         } else if (x < 260.0) {
-          result = (0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5));
+          result = (0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity_raw).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5));
         } else {
           result = 2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2));
         }
@@ -747,7 +747,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.0.6");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.0.7");
       it.printf(0, 42, id(open_sans_14), "AG Pro");
   - id: blank
     lambda: !lambda |-
