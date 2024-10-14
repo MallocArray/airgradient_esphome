@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.6
+  config_version: 4.0.7
   co2_offset: '0'
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
@@ -12,7 +12,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.6
+    version: 4.0.7
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
@@ -241,13 +241,13 @@ sensor:
     if (id(pm_2_5_raw).state == 0.0) {
       result = 0.0;
     } else if (id(pm_2_5_raw).state < 30.0) {
-      result = (0.524 * id(pm_2_5_raw).state) - (0.0862 * id(humidity).state) + 5.75;
+      result = (0.524 * id(pm_2_5_raw).state) - (0.0862 * id(humidity_raw).state) + 5.75;
     } else if (id(pm_2_5_raw).state < 50.0) {
-      result = (0.786 * (id(pm_2_5_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_raw).state / 20 - 3/2))) * id(pm_2_5_raw).state - (0.0862 * id(humidity).state) + 5.75;
+      result = (0.786 * (id(pm_2_5_raw).state / 20 - 3/2) + 0.524 * (1 - (id(pm_2_5_raw).state / 20 - 3/2))) * id(pm_2_5_raw).state - (0.0862 * id(humidity_raw).state) + 5.75;
     } else if (id(pm_2_5_raw).state < 210.0) {
-      result = (0.786 * id(pm_2_5_raw).state) - (0.0862 * id(humidity).state) + 5.75;
+      result = (0.786 * id(pm_2_5_raw).state) - (0.0862 * id(humidity_raw).state) + 5.75;
     } else if (id(pm_2_5_raw).state < 260.0) {
-      result = (0.69 * (id(pm_2_5_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) * id(pm_2_5_raw).state - (0.0862 * id(humidity).state * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_raw).state,2) * (id(pm_2_5_raw).state / 50 - 21/5));
+      result = (0.69 * (id(pm_2_5_raw).state / 50 - 21/5) + 0.786 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) * id(pm_2_5_raw).state - (0.0862 * id(humidity_raw).state * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (2.966 * (id(pm_2_5_raw).state / 50 - 21/5)) + (5.75 * (1 - (id(pm_2_5_raw).state / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(id(pm_2_5_raw).state,2) * (id(pm_2_5_raw).state / 50 - 21/5));
     } else {
       result = 2.966 + (0.69 * id(pm_2_5_raw).state) + (8.84 * pow(10,-4) * pow(id(pm_2_5_raw).state,2));
     }
