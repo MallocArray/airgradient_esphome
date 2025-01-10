@@ -26,11 +26,11 @@ Uploads sensor data to the [AirGradient Dashboard](https://app.airgradient.com/d
 
 ## airgradient_d1_mini_board.yaml
 
-Board configuration for devices based on the D1 Mini chip (AG Basic and AG Pro)
+Board configuration for devices based on the D1 Mini chip (AG Basic and AG Pro), now using the esp-idf framework which reduces some memory usage and allow for newer features to be enabled
 
-## airgradient_esp32-c3_board.yaml
+## airgradient_esp32-c3_board_arduino.yaml
 
-Board configuration for devices based on the ESP32-C3 chip (AG ONE and OpenAir)
+Board configuration for devices based on the ESP32-C3 chip (AG ONE and OpenAir) using the original Arduino framework
 
 ## button_factory_reset.yaml
 
