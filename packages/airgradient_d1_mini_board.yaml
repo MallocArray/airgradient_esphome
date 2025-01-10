@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.7
+  config_version: 4.0.8
 
 esphome:
   name: "${name}"
@@ -20,8 +20,6 @@ esp8266:
 logger:
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
-
-# web_server:  # Please note that enabling this component will take up a lot of memory and may decrease stability, especially on ESP8266.
 
 uart:
   # https://esphome.io/components/uart.html#uart
