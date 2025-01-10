@@ -13,8 +13,6 @@ esphome:
 
 esp32:
   board: esp32-c3-devkitm-1
-  framework:
-    type: esp-idf
 
 # Enable logging
 # https://esphome.io/components/logger.html
