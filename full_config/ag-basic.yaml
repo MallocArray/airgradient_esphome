@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.7
+  config_version: 4.1.0
   co2_offset: '0'
   name: ag-basic
   friendly_name: AG Basic
@@ -10,7 +10,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.7
+    version: 4.1.0
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
