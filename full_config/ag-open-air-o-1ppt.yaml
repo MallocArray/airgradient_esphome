@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.0.7
+  config_version: 4.1.0
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
   name: ag-open-air-o-1ppt
@@ -11,7 +11,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.0.7
+    version: 4.1.0
   min_version: 2024.6.0
   on_boot:
   - priority: 200.0
@@ -39,12 +39,16 @@ esphome:
   libraries: []
 esp32:
   board: esp32-c3-devkitm-1
-  flash_size: 4MB
   framework:
-    version: 2.0.5
-    source: ~3.20005.0
+    version: 4.4.7
+    sdkconfig_options: {}
+    advanced:
+      ignore_efuse_mac_crc: false
+    components: []
+    source: ~3.40407.0
     platform_version: platformio/espressif32@5.4.0
-    type: arduino
+    type: esp-idf
+  flash_size: 4MB
   variant: ESP32C3
 logger:
   baud_rate: 0
@@ -52,7 +56,7 @@ logger:
     component: ERROR
   tx_buffer_size: 512
   deassert_rts_dtr: false
-  hardware_uart: USB_CDC
+  hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
 captive_portal: {}
 uart:
@@ -120,6 +124,8 @@ i2c:
 - sda: 7
   scl: 6
   frequency: 400000.0
+  sda_pullup_enabled: true
+  scl_pullup_enabled: true
   scan: true
 wifi:
   ap:
@@ -128,6 +134,8 @@ wifi:
   reboot_timeout: 15min
   power_save_mode: LIGHT
   fast_connect: false
+  enable_btm: false
+  enable_rrm: false
   passive_scan: false
   enable_on_boot: true
   use_address: ag-open-air-o-1ppt.local
