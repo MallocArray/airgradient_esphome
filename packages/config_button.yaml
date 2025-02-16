@@ -14,7 +14,7 @@ binary_sensor:
           - ON for at most 1s
           - OFF for at least 0.5s
         then:
-          - logger.log: "Toggling display betwen C and F"
+          - logger.log: "Toggling display between C and F"
           - switch.toggle: display_in_f
       - timing:  # Press and hold up to 5 seconds
           - ON for 1s to 5s
