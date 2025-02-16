@@ -6,6 +6,12 @@ binary_sensor:
       number: GPIO9
       mode: INPUT_PULLUP
       inverted: true
+
+      # Acknowledging that this is a strapping pin. The way that Airgradient
+      # uses GPIO09 in their PCB design is fine and does not cause an issue.
+      # https://esphome.io/guides/faq.html#why-am-i-getting-a-warning-about-strapping-pins
+      ignore_strapping_warning: true
+
     internal: true  # Hide from displaying in HomeAssistant
     name: "Configuration Button"
     id: config_button
