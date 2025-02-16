@@ -13,36 +13,36 @@ sensor:
       filters:
         - skip_initial: 1  # Sometimes returns 0 at first boot instead of valid data
         - offset: $co2_offset
-    id: senseair_s8
-    uart_id: senseair_s8_uart
+    id: senseair_co2
+    uart_id: senseair_co2_uart
 
 button:
   # https://github.com/esphome/issues/issues/2444
   - platform: template
-    name: SenseAir S8 Calibration
-    id: senseair_s8_calibrate_button
+    name: SenseAir CO2 Calibration
+    id: senseair_co2_calibrate_button
     on_press:
       then:
-        - senseair.background_calibration: senseair_s8
+        - senseair.background_calibration: senseair_co2
         - delay: 70s
-        - senseair.background_calibration_result: senseair_s8
+        - senseair.background_calibration_result: senseair_co2
 
   - platform: template
     # Displays the current ABC interval in the ESPhome logs to verify status
-    name: SenseAir S8 Show Calibration Interval
-    id: senseair_s8_show_calibrate_interval
+    name: SenseAir CO2 Write Calibration Interval To Log
+    id: senseair_co2_abc_get_period
     on_press:
       then:
-        - senseair.abc_get_period: senseair_s8
+        - senseair.abc_get_period: senseair_co2
 
 switch:
   - platform: template
-    name: SenseAir S8 Automatic Baseline Correction
-    id: senseair_s8_abc_switch
+    name: SenseAir CO2 Automatic Baseline Correction
+    id: senseair_co2_abc_switch
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
     entity_category: config
     turn_on_action:
-      - senseair.abc_enable: senseair_s8
+      - senseair.abc_enable: senseair_co2
     turn_off_action:
-      - senseair.abc_disable: senseair_s8
+      - senseair.abc_disable: senseair_co2
