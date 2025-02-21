@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.1.0
+  config_version: 5.0.0
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
   name: ag-open-air-o-1ppt
@@ -11,8 +11,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.1.0
-  min_version: 2024.6.0
+    version: 5.0.0
+  min_version: 2025.2.0
   on_boot:
   - priority: 200.0
     then:
@@ -40,13 +40,13 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 4.4.7
+    version: 5.1.5
     sdkconfig_options: {}
     advanced:
-      ignore_efuse_mac_crc: false
+      ignore_efuse_custom_mac: false
     components: []
-    source: ~3.40407.0
-    platform_version: platformio/espressif32@5.4.0
+    platform_version: https://github.com/pioarduino/platform-espressif32.git#51.03.07
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.5/esp-idf-v5.1.5.zip
     type: esp-idf
   flash_size: 4MB
   variant: ESP32C3
@@ -595,6 +595,7 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
+  type: seconds
 interval:
 - interval: 150s
   then:
@@ -674,10 +675,12 @@ switch:
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2024.6.3 (https://esphome.io)
+  useragent: ESPHome/2025.2.0 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
-  timeout: 5s
+  timeout: 4500ms
+  buffer_size_rx: 512
+  buffer_size_tx: 512
 output:
 - platform: gpio
   id: external_watchdog
@@ -704,4 +707,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-open-air-o-1ppt.yaml
   import_full_config: false
-

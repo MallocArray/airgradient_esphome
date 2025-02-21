@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 4.1.0
+  config_version: 5.0.0
   co2_offset: '0'
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
@@ -16,8 +16,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 4.1.0
-  min_version: 2024.6.0
+    version: 5.0.0
+  min_version: 2025.2.0
   on_boot:
   - priority: 200.0
     then:
@@ -45,13 +45,13 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 4.4.7
+    version: 5.1.5
     sdkconfig_options: {}
     advanced:
-      ignore_efuse_mac_crc: false
+      ignore_efuse_custom_mac: false
     components: []
-    source: ~3.40407.0
-    platform_version: platformio/espressif32@5.4.0
+    platform_version: https://github.com/pioarduino/platform-espressif32.git#51.03.07
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.5/esp-idf-v5.1.5.zip
     type: esp-idf
   flash_size: 4MB
   variant: ESP32C3
@@ -374,6 +374,7 @@ sensor:
   state_class: total_increasing
   entity_category: diagnostic
   update_interval: 60s
+  type: seconds
 button:
 - platform: template
   name: SenseAir S8 Calibration
@@ -513,272 +514,38 @@ switch:
   assumed_state: false
 font:
 - file:
-    family: Open Sans
-    weight: 400
-    italic: false
-    refresh: 1d
+    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
     type: gfonts
   id: open_sans_14
   size: 14
   glyphs:
-  - ' '
-  - '!'
-  - '"'
-  - '%'
-  - (
-  - )
-  - +
-  - ','
-  - '-'
-  - .
-  - /
-  - '0'
-  - '1'
-  - '2'
-  - '3'
-  - '4'
-  - '5'
-  - '6'
-  - '7'
-  - '8'
-  - '9'
-  - ':'
-  - '='
-  - A
-  - B
-  - C
-  - D
-  - E
-  - F
-  - G
-  - H
-  - I
-  - J
-  - K
-  - L
-  - M
-  - N
-  - O
-  - P
-  - Q
-  - R
-  - S
-  - T
-  - U
-  - V
-  - W
-  - X
-  - Y
-  - Z
-  - _
-  - a
-  - b
-  - c
-  - d
-  - e
-  - f
-  - g
-  - h
-  - i
-  - j
-  - k
-  - l
-  - m
-  - n
-  - o
-  - p
-  - q
-  - r
-  - s
-  - t
-  - u
-  - v
-  - w
-  - x
-  - y
-  - z
-  - °
-  - ³
-  - µ
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
   bpp: 1
+  extras: []
 - file:
-    family: Open Sans
-    weight: 400
-    italic: false
-    refresh: 1d
+    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
     type: gfonts
   id: open_sans_9
   size: 9
   glyphs:
-  - ' '
-  - '!'
-  - '"'
-  - '%'
-  - (
-  - )
-  - +
-  - ','
-  - '-'
-  - .
-  - /
-  - '0'
-  - '1'
-  - '2'
-  - '3'
-  - '4'
-  - '5'
-  - '6'
-  - '7'
-  - '8'
-  - '9'
-  - ':'
-  - '='
-  - A
-  - B
-  - C
-  - D
-  - E
-  - F
-  - G
-  - H
-  - I
-  - J
-  - K
-  - L
-  - M
-  - N
-  - O
-  - P
-  - Q
-  - R
-  - S
-  - T
-  - U
-  - V
-  - W
-  - X
-  - Y
-  - Z
-  - _
-  - a
-  - b
-  - c
-  - d
-  - e
-  - f
-  - g
-  - h
-  - i
-  - j
-  - k
-  - l
-  - m
-  - n
-  - o
-  - p
-  - q
-  - r
-  - s
-  - t
-  - u
-  - v
-  - w
-  - x
-  - y
-  - z
-  - °
-  - ³
-  - µ
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
   bpp: 1
+  extras: []
 - file:
-    family: Open Sans
-    weight: 400
-    italic: false
-    refresh: 1d
+    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
     type: gfonts
   id: open_sans_20
   size: 20
   glyphs:
-  - ' '
-  - '!'
-  - '"'
-  - '%'
-  - (
-  - )
-  - +
-  - ','
-  - '-'
-  - .
-  - /
-  - '0'
-  - '1'
-  - '2'
-  - '3'
-  - '4'
-  - '5'
-  - '6'
-  - '7'
-  - '8'
-  - '9'
-  - ':'
-  - '='
-  - A
-  - B
-  - C
-  - D
-  - E
-  - F
-  - G
-  - H
-  - I
-  - J
-  - K
-  - L
-  - M
-  - N
-  - O
-  - P
-  - Q
-  - R
-  - S
-  - T
-  - U
-  - V
-  - W
-  - X
-  - Y
-  - Z
-  - _
-  - a
-  - b
-  - c
-  - d
-  - e
-  - f
-  - g
-  - h
-  - i
-  - j
-  - k
-  - l
-  - m
-  - n
-  - o
-  - p
-  - q
-  - r
-  - s
-  - t
-  - u
-  - v
-  - w
-  - x
-  - y
-  - z
-  - °
-  - ³
-  - µ
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
   bpp: 1
+  extras: []
 display:
 - platform: ssd1306_i2c
   model: SH1106_128X64
@@ -810,7 +577,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 4.1.0");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 5.0.0");
       it.printf(0, 42, id(open_sans_14), "AG One");
   - id: summary1
     lambda: !lambda |-
@@ -974,7 +741,7 @@ display:
             id: oled_display
         - component.update:
             id: oled_display
-  auto_clear_enabled: true
+  auto_clear_enabled: unspecified
   brightness: 1.0
   contrast: 1.0
   flip_x: true
@@ -1210,7 +977,6 @@ light:
   rgb_order: GRB
   pin: 10
   num_leds: 11
-  rmt_channel: 0
   chipset: WS2812
   name: LED Strip
   id: led_strip
@@ -1219,15 +985,21 @@ light:
   gamma_correct: 2.8
   default_transition_length: 1s
   flash_transition_length: 0s
+  rmt_symbols: 96
   is_rgbw: false
   is_wrgb: false
+  use_psram: true
+  reset_high: 0us
+  reset_low: 0us
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2024.6.3 (https://esphome.io)
+  useragent: ESPHome/2025.2.0 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
-  timeout: 5s
+  timeout: 4500ms
+  buffer_size_rx: 512
+  buffer_size_tx: 512
 output:
 - platform: gpio
   id: external_watchdog
@@ -1306,4 +1078,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
   import_full_config: false
-
