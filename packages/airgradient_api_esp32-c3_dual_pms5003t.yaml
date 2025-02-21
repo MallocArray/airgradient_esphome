@@ -91,5 +91,5 @@ esphome:
 http_request:
   # Used to support POST request to send data to AirGradient
   # https://esphome.io/components/http_request.html
-  verify_ssl: false  # Must be explicityly set to false when using Arduino framework
+  verify_ssl: false  # Must be explicitly set to false when using Arduino framework
   watchdog_timeout: 30s  # Slow response from API server can cause watchdog to reboot device
