@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: "0 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  # yamllint disable-line rule:line-length
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TEST_RELEASE_SUMMARY: |-
+    Test "release" summary
+    * Multiple lines
+
+jobs:
+  build:
+    name: Build test configuration for esphome:${{ matrix.esphome-version }} with ${{ matrix.manifest }} manifest
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        esphome-version:
+          - stable
+          - beta
+          - dev
+        manifest:
+          - complete
+          - partial
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - name: Run action
+        uses: ./
+        id: esphome-build
+        with:
+          yaml-file: tests/test.yaml
+          version: ${{ matrix.esphome-version }}
+          platform: linux/amd64
+          cache: true
+          release-summary: ${{ env.TEST_RELEASE_SUMMARY }}
+          release-url: "https://github.com/esphome/build-action"
+          complete-manifest: ${{ matrix.manifest == 'complete' }}
+      - name: Write version to file
+        run: echo ${{ steps.esphome-build.outputs.version }} > ${{ steps.esphome-build.outputs.name }}/version
+      - name: Upload ESPHome binary
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: build-output-files-${{ matrix.esphome-version }}-${{ matrix.manifest }}
+          path: ${{ steps.esphome-build.outputs.name }}
