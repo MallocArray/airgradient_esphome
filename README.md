@@ -4,14 +4,21 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 
 ## Breaking Changes
 
+* 5.0.0 is a major version upgrade as switching to esp-idf is not fully supported via OTA. Highly recommend doing one USB flash of 4.1.0 and later to the AirGradient ONE and OpenAir devices to reformat the storage to support esp-idf.  Future updates can be done Over-The-Air without issue.
+  * It not done, the device is likely to reboot at some point and switch to the standby partition, returning to a version prior to 4.1.0
+  * [Seeing an Old Firmware Version After Update? Here&#39;s Why &amp; How to Fix It · Issue #1821 · Blackymas/NSPanel_HA_Blueprint](https://github.com/Blackymas/NSPanel_HA_Blueprint/issues/1821)
+  * [Read/Write bootloader, partition table and any partition via OTA by angelnu · Pull Request #5535 · esphome/esphome](https://github.com/esphome/esphome/pull/5535)
+* Aware of errors in the logs stating `esp_task_wdt_reconfigure(615): Invalid arguments`
+  * Tracking [Watchdog config hardcoded core mask · Issue #6767 · esphome/issues](https://github.com/esphome/issues/issues/6767)
 * 4.1.0 switches ONE and OpenAir models (based on ESP32) to the esp-idf framework, freeing up some memory and allowing other advanced features such as bluetooth_proxy and esp32_improv.  If the previous Arduino framework is desired, change the board to `airgradient_esp32-c3_board-arduino.yaml`
+* If attempting to add BT and BLE support, may need to remove the captive_portal package to free up enough space [Issue #115](https://github.com/MallocArray/airgradient_esphome/issues/115)
 * Remove substitution line such as `config_version: 2.0.5` from the main file, as this has been moved into the board package file
 * Updated to 4.0.0 versions, skipping 3.x to avoid confusion with current AirGradient official firmware
 * Now defaulting to https for AirGradient API communication.  If older devices (DIY and Pro models) go into constant reboots, switch to the api package `airgradient_api_d1_mini_insecure.yaml` to revert to the original communication method
 
 ## Changes
 
-* Support for ESPHome 2024.6 and later
+* Support for ESPHome 2025.2 and later due to changes to esp32_rmt_led_strip
 * Added extended timeout for API upload on ONE and OpenAir models to reduce reboots
 * Applied correction algorithms for PM2.5 provided by AirGradient
   * https://www.airgradient.com/documentation/correction-algorithms/

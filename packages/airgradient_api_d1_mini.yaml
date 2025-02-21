@@ -58,4 +58,4 @@ http_request:
   timeout: 1s  # Setting short to try to prevent watchdog reboots https://github.com/esphome/issues/issues/2853
   # Used to support POST request to send data to AirGradient
   # https://esphome.io/components/http_request.html
-  verify_ssl: false  # Must be explicityly set to false when using Arduino framework
+  verify_ssl: false  # Must be explicitly set to false when using Arduino framework
