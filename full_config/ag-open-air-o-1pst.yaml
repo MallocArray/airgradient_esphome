@@ -513,4 +513,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-open-air-o-1pst.yaml
   import_full_config: false
-

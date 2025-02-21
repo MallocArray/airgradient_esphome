@@ -519,4 +519,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
   import_full_config: false
-

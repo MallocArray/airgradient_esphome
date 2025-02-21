@@ -1078,4 +1078,3 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
   import_full_config: false
-
