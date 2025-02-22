@@ -1,3 +1,4 @@
+# https://github.com/esphome/esphome-project-template/blob/main/.github/workflows/publish-firmware.yml
 name: Publish Firmware
 
 on:
@@ -13,10 +14,9 @@ jobs:
     with:
       #### Modify below here to match your project ####
       files: |
-        ag-one.yaml
-        ag-open-air-o-1pst.yaml
-        project-template-esp32-s3.factory.yaml
-      esphome-version: 2024.10.3
+        airgradient-one.yaml
+        airgradient-open-air-o-1pst.yaml
+      esphome-version: 2025.02.0
       combined-name: project-template
       #### Modify above here to match your project ####
 
