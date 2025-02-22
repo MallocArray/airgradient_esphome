@@ -16,7 +16,7 @@ jobs:
       files: |
         airgradient-one.yaml
         airgradient-open-air-o-1pst.yaml
-      esphome-version: 2025.02.0
+      esphome-version: latest
       combined-name: project-template
       #### Modify above here to match your project ####
 
