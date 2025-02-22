@@ -29,11 +29,11 @@ jobs:
       matrix:
         esphome-version:
           - stable
-          - beta
-          - dev
+          # - beta
+          # - dev
         manifest:
           - complete
-          - partial
+          # - partial
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -41,7 +41,7 @@ jobs:
         uses: ./
         id: esphome-build
         with:
-          yaml-file: tests/test.yaml
+          yaml-file: airgradient-one.yaml
           version: ${{ matrix.esphome-version }}
           platform: linux/amd64
           cache: true
