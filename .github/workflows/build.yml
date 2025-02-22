@@ -68,3 +68,8 @@ jobs:
       #   with:
       #     name: build-output-files-${{ matrix.esphome-version }}-${{ matrix.manifest }}
       #     path: ${{ steps.esphome-build.outputs.name }}
+      - name: Upload ESPHome binary
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: ag-one.bin
+          path: ag-one-esp32c3/ag-one-esp32c3.factory.bin
