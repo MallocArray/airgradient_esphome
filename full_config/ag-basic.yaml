@@ -371,17 +371,13 @@ switch:
   disabled_by_default: false
   assumed_state: false
 font:
-- file:
-    path: /config/.esphome/font/Open Sans@700@False@v1.ttf
-    type: gfonts
-  id: font1
-  size: 22
-  glyphs:
-  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  glyphsets: []
-  ignore_missing_glyphs: false
-  bpp: 1
-  extras: []
+  - file:
+      type: gfonts
+      family: Open Sans
+      weight: bold
+    id: font1
+    size: 22
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 display:
 - platform: ssd1306_i2c
   model: SSD1306_64X48
