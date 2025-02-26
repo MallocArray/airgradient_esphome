@@ -450,39 +450,18 @@ switch:
   disabled_by_default: false
   assumed_state: false
 font:
-- file:
-    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
-    type: gfonts
-  id: open_sans_14
-  size: 14
-  glyphs:
-  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  glyphsets: []
-  ignore_missing_glyphs: false
-  bpp: 1
-  extras: []
-- file:
-    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
-    type: gfonts
-  id: open_sans_9
-  size: 9
-  glyphs:
-  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  glyphsets: []
-  ignore_missing_glyphs: false
-  bpp: 1
-  extras: []
-- file:
-    path: /config/.esphome/font/Open Sans@400@False@v1.ttf
-    type: gfonts
-  id: open_sans_20
-  size: 20
-  glyphs:
-  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  bpp: 2
-  glyphsets: []
-  ignore_missing_glyphs: false
-  extras: []
+  - file: "gfonts://Open Sans"
+    id: open_sans_14
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_9
+    size: 9
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_20
+    size: 20
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 display:
 - platform: ssd1306_i2c
   model: SH1106_128X64
