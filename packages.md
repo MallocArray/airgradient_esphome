@@ -142,6 +142,21 @@ substitutions:
   pm_2_5_purple: '201'
 ```
 
+## led_tvoc.yaml
+
+LED bar in AG ONE reflects VOC levels.
+
+Mixes colors from blue>green>purple based on numbers provided by AirGradient. The values for each color can be modified by adding a substitution section to your config.
+
+```yaml
+substitutions:
+  voc_green: '100'
+  voc_yellow: '150'
+  voc_red: '250'
+  voc_purple: '400'
+  voc_blue: '50'
+```
+
 ## led.yaml
 
 Configures the 11 segment LED bar in AG ONE models.
@@ -166,7 +181,7 @@ Configures the Plantower PMS5003 sensor.
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
 
 ## sensor_pms5003t_2_extended_life.yaml
@@ -179,7 +194,7 @@ In addition to enabling sensors from the second device, also creates sensors tha
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
 
 ## sensor_pms5003t_2.yaml
@@ -198,7 +213,7 @@ Also applies a compensation algorithm from AirGradient to correct temperature an
 
 By default collects readings every second. Since this device has a limited lifespan, it is possible to extend the life by collecting readings less frequently.  Could introduce a new failure mode as the fan shuts down, allowing insects to get inside past the fan that is no longer spinning after 30 seconds.
 
-Collects readings every 2 minutes by default, but can be modifed by adding an entry under substitutions, ensuring the value is surrounded by double quotes
+Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
 
 ## sensor_pms5003t_uncorrected.yaml
