@@ -1,0 +1,147 @@
+# Sets the full LED bar to a color relative to VOC levels
+# https://app.airgradient.com/dashboard/about
+
+substitutions:
+  voc_green: '100'
+  voc_yellow: '150'
+  voc_red: '250'
+  voc_purple: '400'
+  voc_blue: '50'
+
+interval:
+  - interval: 5s
+    then:
+      - if:
+          condition:
+            light.is_on: led_strip
+          then:
+            - if:
+                condition:
+                  # Fade to purple as Index goes above 100
+                  lambda: 'return id(voc).state >= 100;'
+                then:
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 5)) / 100.0);'
+                      range_from: 0
+                      range_to: 10
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 4)) / 100.0);'
+                      range_from: 1
+                      range_to: 9
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 3)) / 100.0);'
+                      range_from: 2
+                      range_to: 8
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);'
+                      range_from: 3
+                      range_to: 7
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 1)) / 100.0);'
+                      range_from: 4
+                      range_to: 6
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      range_from: 5
+                      range_to: 5
+                      red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
+                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
+            - if:
+                condition:
+                  # Fade to blue as Index goes below 100
+                  lambda: 'return id(voc).state < 100;'
+                then:
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 5)) / 100.0);'
+                      range_from: 0
+                      range_to: 10
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 4)) / 100.0);'
+                      range_from: 1
+                      range_to: 9
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 3)) / 100.0);'
+                      range_from: 2
+                      range_to: 8
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);'
+                      range_from: 3
+                      range_to: 7
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 1)) / 100.0);'
+                      range_from: 4
+                      range_to: 6
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+                  - light.addressable_set:
+                      id: led_strip
+                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
+                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
+                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      range_from: 5
+                      range_to: 5
+                      red: 0%
+                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
+                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
+            - if:
+                condition:
+                  lambda: 'return (isnan(id(voc).state));'  # No data from sensor yet
+                then:
+                  - light.addressable_set:
+                      id: led_strip
+                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
+                      range_from: 0
+                      range_to: 10
+                      red: 0%
+                      green: 0%
+                      blue: 0%
