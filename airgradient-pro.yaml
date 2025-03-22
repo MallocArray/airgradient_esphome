@@ -23,6 +23,7 @@ packages:
   board: github://MallocArray/airgradient_esphome/packages/airgradient_d1_mini_board.yaml
   captive_portal: github://MallocArray/airgradient_esphome/packages/captive_portal.yaml
   pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003.yaml
+  # pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003_extended_life.yaml
   co2: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml
   temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht40.yaml
   # temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht30.yaml
