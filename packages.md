@@ -56,6 +56,20 @@ binary_sensor:
 * Short press - Toggle temperature display between C and F
 * Press and hold up to 5 seconds - Initiate Senseair S8 CO2 manual calibration.  Ensure device is already outdoors or near an open window for 5+ minutes before initiating
 
+## cpu_clock_speed_80_mhz.yaml
+
+For devices that use the ESP32-C3 the CPU clock can be lowered from default 160
+MHz to 80 MHz to save power. The higher default clock is not needed for the
+calculations that even the AirGradient One by default has to do to interact
+with all the sernsors, display, LEDs and so on. If you suspect this causes
+problems, look at the ESPHome log or enable the `diagnostic_esp32.yaml` package
+and look at "Loop Time".
+
+It is currently not included by default for any AirGradient ESPHome config. If
+you want to use it, you must include the package yourself.
+
+For more details refer to the [Video from Andreas Spiess #410 Unknown ESP32 saving: Light Sleep, Clock Reduction, Modem Sleep, Hibernation, and a few tricks](https://www.youtube.com/watch?v=JFDiqPHw3Vc)
+
 ## diagnostic_esp32.yaml
 
 Enables debug sensor information for the ESP32-C3 chip that is very verbose.
