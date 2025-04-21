@@ -31,7 +31,7 @@ board: !include packages/sensor_s8.yaml
 
 ### Using Extend feature
 
-Rather than download an individual package and update the reference to it, you may also use the [Extend](https://esphome.io/guides/configuration-types.html#extend) option to make minor modifications without editing the packages file.  This only works for items with and `id:` defined
+Rather than download an individual package and update the reference to it, you may also use the [Extend](https://esphome.io/guides/configuration-types.html#extend) option to make minor modifications without editing the packages file.  This only works for items with an `id:` defined
 
 > Example: adding this to the main file for your device will change the pin number in the config_button package, while maintaining all other settings defined in the package
 
