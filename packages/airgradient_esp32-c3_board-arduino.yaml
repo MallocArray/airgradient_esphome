@@ -17,7 +17,6 @@ esp32:
 # Enable logging
 # https://esphome.io/components/logger.html
 logger:
-  baud_rate: 0  # Must disable serial logging as it conflicts with pms5003 uart pins and ESP32-C3 only has 2 hardware UART
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
 
