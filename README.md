@@ -11,7 +11,7 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 ## Breaking Changes
 
 * 5.0.0 is a major version upgrade as switching to esp-idf is not fully supported via OTA. Highly recommend doing one USB flash of 5.0.0 and later to the AirGradient ONE and OpenAir devices to reformat the storage to support esp-idf.  Future updates can be done Over-The-Air without issue.
-  * It not done, the device is likely to reboot at some point and switch to the standby partition, returning to a version prior to 5.0.0
+  * If not done, the device is likely to reboot at some point and switch to the standby partition, returning to a version prior to 5.0.0
   * [Seeing an Old Firmware Version After Update? Here&#39;s Why &amp; How to Fix It · Issue #1821 · Blackymas/NSPanel_HA_Blueprint](https://github.com/Blackymas/NSPanel_HA_Blueprint/issues/1821)
   * [Read/Write bootloader, partition table and any partition via OTA by angelnu · Pull Request #5535 · esphome/esphome](https://github.com/esphome/esphome/pull/5535)
 * Aware of errors in the logs stating `esp_task_wdt_reconfigure(615): Invalid arguments`
