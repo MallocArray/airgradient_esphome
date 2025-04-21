@@ -23,10 +23,6 @@ logger:
   logs:
     component: ERROR  # Hiding warning messages about component taking a long time https://github.com/esphome/issues/issues/4717
 
-# The captive portal is a fallback mechanism for when connecting to the configured WiFi fails.
-# https://esphome.io/components/captive_portal.html
-captive_portal:
-
 uart:
   # https://esphome.io/components/uart.html#uart
   - rx_pin: GPIO0  # Pin 12
