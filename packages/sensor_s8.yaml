@@ -21,6 +21,7 @@ button:
   - platform: template
     name: SenseAir CO2 Calibration
     id: senseair_co2_calibrate_button
+    entity_category: config
     on_press:
       then:
         - senseair.background_calibration: senseair_co2
@@ -31,6 +32,7 @@ button:
     # Displays the current ABC interval in the ESPhome logs to verify status
     name: SenseAir CO2 Write Calibration Interval To Log
     id: senseair_co2_abc_get_period
+    entity_category: config
     on_press:
       then:
         - senseair.abc_get_period: senseair_co2
