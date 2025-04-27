@@ -74,6 +74,7 @@ Consumes more RAM than the single page config.  If having trouble with devices, 
 
 * AirGradient default page
 * Summary pages with larger font
+* Measurement values without units page with huge font: Top line: CO2, Humidity; Bottom line: PM2.5, Temperature
 * Air quality with only CO2 and PM2.5 values
 * Air temp and humidity
 * VOC and NOx values

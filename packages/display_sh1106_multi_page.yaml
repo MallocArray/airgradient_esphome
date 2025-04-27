@@ -11,6 +11,11 @@ font:
     id: open_sans_20
     size: 20
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Open Sans"
+    id: open_sans_34
+    # Biggest font size possible for a two line layout.
+    size: 34
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 
 
 display:
@@ -74,6 +79,16 @@ display:
           it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
           it.printf(0, 48, id(open_sans_14), "NOx:");
           it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+      - id: huge_no_units
+        lambda: |-
+          it.printf(0, 0 - 8, id(open_sans_34), TextAlign::TOP_LEFT, "%.0f", id(co2).state);
+          it.printf(it.get_width(), 0 - 8, id(open_sans_34), TextAlign::TOP_RIGHT, "%.0f", id(humidity).state);
+          it.printf(0, 64 + 8, id(open_sans_34), TextAlign::BOTTOM_LEFT, "%.0f", id(pm_2_5).state);
+          if (id(display_in_f).state) {
+            it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state*9/5+32);
+          } else {
+            it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state);
+          }
       - id: air_quality
         lambda: |-
           it.printf(0, 13, id(open_sans_14), "CO2");
@@ -143,6 +158,14 @@ display:
           - if:
               condition:
                 switch.is_off: display_air_quality_page
+              then:
+                - display.page.show_next: oled_display
+                - component.update: oled_display
+      - to: huge_no_units
+        then:
+          - if:
+              condition:
+                switch.is_off: display_huge_no_units_page
               then:
                 - display.page.show_next: oled_display
                 - component.update: oled_display
@@ -239,6 +262,14 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+
+  - platform: template
+    name: "Display Huge No Units Page"
+    id: display_huge_no_units_page
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: True
+    entity_category: config
+    icon: "mdi:numeric"
 
   - platform: template
     name: "Display Air Quality Page"
