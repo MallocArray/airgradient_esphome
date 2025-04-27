@@ -1,0 +1,21 @@
+# Save power by reducing CPU clock speed.
+esphome:
+  platformio_options:
+    board_build.f_cpu: 80000000L
+
+  # This would only work with Arduino framework. Prefer the board_build.f_cpu
+  # option which works on both frameworks.
+  #
+  # on_boot:
+  #   - priority: 1100  # Everything is initialized.
+  #
+  #     # The advantage would be faster boot time (not measured) by running the boot
+  #     # procedure with the fasted clock speed and lowering the clock when booting
+  #     # is done.
+  #
+  #     # ESP-IDF does not provide setCpuFrequencyMhz and instead expects that
+  #     # https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/power_management.html
+  #     # is used.
+  #     then:
+  #       - lambda: |-
+  #           setCpuFrequencyMhz(80);
