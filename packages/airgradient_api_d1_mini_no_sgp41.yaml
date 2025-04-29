@@ -36,21 +36,21 @@ switch:
 
 esphome:
   on_boot:
-    priority: 200  # Network connections setup
-    then:
-      if:
-        condition:
-          switch.is_on: upload_airgradient
-        then:
-        - http_request.post:
-            # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
-            # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
-            url: !lambda |-
-              return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-            headers:
-                Content-Type: application/json
-            json:
-              wifi: !lambda return to_string(-50);
+    - priority: 200  # Network connections setup
+      then:
+        if:
+          condition:
+            switch.is_on: upload_airgradient
+          then:
+          - http_request.post:
+              # Return wifi signal -50 as soon as device boots to show activity on AirGradient Dashboard site
+              # Using -50 instead of actual value as the wifi_signal sensor has not reported a value at this point in boot process
+              url: !lambda |-
+                return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
+              headers:
+                  Content-Type: application/json
+              json:
+                wifi: !lambda return to_string(-50);
 
 http_request:
   timeout: 1s  # Setting short to try to prevent watchdog reboots https://github.com/esphome/issues/issues/2853
