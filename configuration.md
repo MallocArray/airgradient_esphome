@@ -55,6 +55,8 @@ Several additional packages are available in the `packages` folder that can be a
 MQTT support has been mentioned in the AirGradient forums several times.  ESPHome supports this by adding a few lines to the main yaml file. Add the relevant information for your configuration. Read more about it here:
 [https://esphome.io/components/mqtt.html](https://esphome.io/components/mqtt.html)
 
+After extensive discussion on the [AirGradient forum](https://forum.airgradient.com/t/concern-about-hijackable-wifi-connection/3845), it may be a good idea to remove the Captive Portal package after initial configuration, as leaving it in will default to enabling the Access Point Mode if WiFi is not available, potentially allowing an external source to reconfigure the device to a new network or upload another firmware file.  Can also add a password to the ap if this functionality is desired, but want to secure it.
+
 # Home Assistant Automation
 
 Pairing ESPHome with Home Assistant opens a multitude of opportunities to create custom actions tailored to your liking
