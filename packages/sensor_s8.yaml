@@ -21,6 +21,7 @@ button:
   - platform: template
     name: SenseAir S8 Calibration
     id: senseair_s8_calibrate_button
+    entity_category: config
     on_press:
       then:
         - senseair.background_calibration: senseair_s8
@@ -31,6 +32,7 @@ button:
     # Displays the current ABC interval in the ESPhome logs to verify status
     name: SenseAir S8 Show Calibration Interval
     id: senseair_s8_show_calibrate_interval
+    entity_category: config
     on_press:
       then:
         - senseair.abc_get_period: senseair_s8

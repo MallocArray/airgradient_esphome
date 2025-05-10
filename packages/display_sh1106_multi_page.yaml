@@ -342,3 +342,4 @@ number:
       then:
         # https://www.reddit.com/r/Esphome/comments/sy1d1s/how_to_write_a_lamba_to_change_the_contrast_of/
         lambda: id(oled_display).set_contrast(id(display_contrast).state / 100.0);
+    entity_category: config

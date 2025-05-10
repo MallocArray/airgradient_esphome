@@ -69,6 +69,7 @@ switch:
     id: upload_airgradient
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
+    entity_category: config
 
 esphome:
   on_boot:

@@ -8,6 +8,9 @@ light:
     name: "LED Strip"
     id: led_strip
     restore_mode: RESTORE_DEFAULT_OFF
+    # Classify this as primary entity so that it shows up on the Home Assistant
+    # pre-populated default dashboard so `entity_category` is intentionally not
+    # set.
 
 number:
   - platform: template
@@ -22,6 +25,7 @@ number:
     optimistic: true
     restore_value: true
     mode: slider
+    entity_category: config
 
   - platform: template
     # https://esphome.io/components/number/template.html
@@ -35,3 +39,4 @@ number:
     optimistic: true
     restore_value: true
     mode: box
+    entity_category: config
