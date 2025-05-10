@@ -6,7 +6,7 @@ sensor:
   - platform: pmsx003
     # PMS5003T with temperature and humidity https://esphome.io/components/sensor/pmsx003.html
     type: PMS5003T
-    uart_id: senseair_s8_uart
+    uart_id: senseair_co2_uart
     pm_2_5:
       name: "PM 2.5 (2) Raw"
       id: pm_2_5_2_raw

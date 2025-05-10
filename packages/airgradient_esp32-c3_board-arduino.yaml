@@ -25,7 +25,7 @@ uart:
   - rx_pin: GPIO0  # Pin 12
     tx_pin: GPIO1  # Pin 13
     baud_rate: 9600
-    id: senseair_s8_uart
+    id: senseair_co2_uart
 
   - rx_pin: GPIO20  # Pin 30 or RX
     tx_pin: GPIO21  # Pin 31 or TX

@@ -21,6 +21,6 @@ binary_sensor:
           - OFF for at least 0.5s
         then:
           - logger.log: "Starting manual CO2 calibration"
-          - senseair.background_calibration: senseair_s8
+          - senseair.background_calibration: senseair_co2
           - delay: 70s
-          - senseair.background_calibration_result: senseair_s8
+          - senseair.background_calibration_result: senseair_co2
