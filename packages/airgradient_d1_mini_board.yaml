@@ -26,7 +26,7 @@ uart:
   - rx_pin: D4
     tx_pin: D3
     baud_rate: 9600
-    id: senseair_s8_uart
+    id: senseair_co2_uart
 
   - rx_pin: D5
     tx_pin: D6
