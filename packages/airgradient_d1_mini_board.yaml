@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.1.1
+  config_version: 5.2.1
 
 esphome:
   name: "${name}"
@@ -9,7 +9,7 @@ esphome:
   project:
     name: mallocarray.airgradient
     version: "$config_version"
-  min_version: 2024.6.0
+  min_version: 2025.5.0
 
 esp8266:
   board: d1_mini
