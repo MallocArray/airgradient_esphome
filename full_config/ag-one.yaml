@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.0.0
+  config_version: 5.2.1
   co2_offset: '0'
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
@@ -16,8 +16,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.0.0
-  min_version: 2025.2.0
+    version: 5.2.1
+  min_version: 2025.5.0
   on_boot:
   - priority: 200.0
     then:
@@ -29,7 +29,7 @@ esphome:
         - http_request.post:
             url: !lambda |-
               return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
-            headers:
+            request_headers:
               Content-Type: application/json
             json:
               wifi: !lambda |-
@@ -42,28 +42,30 @@ esphome:
   platformio_options: {}
   includes: []
   libraries: []
+  debug_scheduler: false
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 5.1.5
+    version: 5.1.6
     sdkconfig_options: {}
     advanced:
       ignore_efuse_custom_mac: false
     components: []
     platform_version: https://github.com/pioarduino/platform-espressif32.git#51.03.07
-    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.5/esp-idf-v5.1.5.zip
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.6/esp-idf-v5.1.6.zip
     type: esp-idf
   flash_size: 4MB
   variant: ESP32C3
+  cpu_frequency: 160MHZ
 logger:
-  baud_rate: 0
   logs:
     component: ERROR
+  baud_rate: 115200
   tx_buffer_size: 512
   deassert_rts_dtr: false
+  task_log_buffer_size: 768
   hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
-captive_portal: {}
 uart:
 - rx_pin:
     number: 0
@@ -90,7 +92,7 @@ uart:
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
-  id: senseair_s8_uart
+  id: senseair_co2_uart
   rx_buffer_size: 256
   stop_bits: 1
   data_bits: 8
@@ -144,6 +146,7 @@ wifi:
   passive_scan: false
   enable_on_boot: true
   use_address: ag-one.local
+captive_portal: {}
 sensor:
 - platform: pmsx003
   type: PMSX003
@@ -260,8 +263,8 @@ sensor:
     accuracy_decimals: 0
     device_class: carbon_dioxide
     state_class: measurement
-  id: senseair_s8
-  uart_id: senseair_s8_uart
+  id: senseair_co2
+  uart_id: senseair_co2_uart
   update_interval: 60s
 - platform: sht4x
   temperature:
@@ -377,39 +380,41 @@ sensor:
   type: seconds
 button:
 - platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
+  name: SenseAir CO2 Calibration
+  id: senseair_co2_calibrate_button
+  entity_category: config
   on_press:
   - then:
     - senseair.background_calibration:
-        id: senseair_s8
+        id: senseair_co2
     - delay: 70s
     - senseair.background_calibration_result:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
 - platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
+  name: SenseAir CO2 Write Calibration Interval To Log
+  id: senseair_co2_abc_get_period
+  entity_category: config
   on_press:
   - then:
     - senseair.abc_get_period:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
 switch:
 - platform: template
-  name: SenseAir S8 Automatic Baseline Correction
-  id: senseair_s8_abc_switch
+  name: SenseAir CO2 Automatic Baseline Correction
+  id: senseair_co2_abc_switch
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
   entity_category: config
   turn_on_action:
     then:
     - senseair.abc_enable:
-        id: senseair_s8
+        id: senseair_co2
   turn_off_action:
     then:
     - senseair.abc_disable:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
   assumed_state: false
 - platform: template
@@ -437,6 +442,15 @@ switch:
   optimistic: true
   entity_category: config
   icon: mdi:monitor
+  disabled_by_default: false
+  assumed_state: false
+- platform: template
+  name: Display Huge No Units Page
+  id: display_huge_no_units_page
+  restore_mode: RESTORE_DEFAULT_OFF
+  optimistic: true
+  entity_category: config
+  icon: mdi:numeric
   disabled_by_default: false
   assumed_state: false
 - platform: template
@@ -510,21 +524,66 @@ switch:
   id: upload_airgradient
   restore_mode: RESTORE_DEFAULT_OFF
   optimistic: true
+  entity_category: config
   disabled_by_default: false
   assumed_state: false
 font:
-  - file: "gfonts://Open Sans"
-    id: open_sans_14
-    size: 14
-    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  - file: "gfonts://Open Sans"
-    id: open_sans_9
-    size: 9
-    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  - file: "gfonts://Open Sans"
-    id: open_sans_20
-    size: 20
-    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+- file:
+    family: Open Sans
+    weight: 400
+    italic: false
+    refresh: 1d
+    type: gfonts
+  id: open_sans_14
+  size: 14
+  glyphs:
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
+  bpp: 1
+  extras: []
+- file:
+    family: Open Sans
+    weight: 400
+    italic: false
+    refresh: 1d
+    type: gfonts
+  id: open_sans_9
+  size: 9
+  glyphs:
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
+  bpp: 1
+  extras: []
+- file:
+    family: Open Sans
+    weight: 400
+    italic: false
+    refresh: 1d
+    type: gfonts
+  id: open_sans_20
+  size: 20
+  glyphs:
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
+  bpp: 1
+  extras: []
+- file:
+    family: Open Sans
+    weight: 400
+    italic: false
+    refresh: 1d
+    type: gfonts
+  id: open_sans_34
+  size: 34
+  glyphs:
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
+  bpp: 1
+  extras: []
 display:
 - platform: ssd1306_i2c
   model: SH1106_128X64
@@ -556,7 +615,7 @@ display:
     lambda: !lambda |-
       it.printf(0, 0, id(open_sans_14), "ID:");
       it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-      it.printf(0, 21, id(open_sans_14), "Config Ver: 5.0.0");
+      it.printf(0, 21, id(open_sans_14), "Config Ver: 5.2.1");
       it.printf(0, 42, id(open_sans_14), "AG One");
   - id: summary1
     lambda: !lambda |-
@@ -582,6 +641,16 @@ display:
       it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
       it.printf(0, 48, id(open_sans_14), "NOx:");
       it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+  - id: huge_no_units
+    lambda: !lambda |-
+      it.printf(0, 0 - 8, id(open_sans_34), TextAlign::TOP_LEFT, "%.0f", id(co2).state);
+      it.printf(it.get_width(), 0 - 8, id(open_sans_34), TextAlign::TOP_RIGHT, "%.0f", id(humidity).state);
+      it.printf(0, 64 + 8, id(open_sans_34), TextAlign::BOTTOM_LEFT, "%.0f", id(pm_2_5).state);
+      if (id(display_in_f).state) {
+        it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state*9/5+32);
+      } else {
+        it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state);
+      }
   - id: air_quality
     lambda: !lambda |-
       it.printf(0, 13, id(open_sans_14), "CO2");
@@ -660,6 +729,17 @@ display:
         condition:
           switch.is_off:
             id: display_air_quality_page
+        then:
+        - display.page.show_next:
+            id: oled_display
+        - component.update:
+            id: oled_display
+  - to: huge_no_units
+    then:
+    - if:
+        condition:
+          switch.is_off:
+            id: display_huge_no_units_page
         then:
         - display.page.show_next:
             id: oled_display
@@ -866,7 +946,7 @@ interval:
       - http_request.post:
           url: !lambda |-
             return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
-          headers:
+          request_headers:
             Content-Type: application/json
           json:
             wifi: !lambda |-
@@ -923,6 +1003,7 @@ number:
   - then:
     - lambda: !lambda |-
         id(oled_display).set_contrast(id(display_contrast).state / 100.0);
+  entity_category: config
   disabled_by_default: false
   update_interval: 60s
 - platform: template
@@ -936,6 +1017,7 @@ number:
   optimistic: true
   restore_value: true
   mode: SLIDER
+  entity_category: config
   disabled_by_default: false
   update_interval: 60s
 - platform: template
@@ -949,6 +1031,7 @@ number:
   optimistic: true
   restore_value: true
   mode: BOX
+  entity_category: config
   disabled_by_default: false
   update_interval: 60s
 light:
@@ -973,7 +1056,7 @@ light:
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2025.2.0 (https://esphome.io)
+  useragent: ESPHome/2025.5.0 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 4500ms
@@ -1020,10 +1103,10 @@ binary_sensor:
       min_length: 500ms
     then:
     - logger.log:
-        format: Toggling display betwen C and F
+        format: Toggling display between C and F
         level: DEBUG
-        tag: main
         args: []
+        tag: main
     - switch.toggle:
         id: display_in_f
     invalid_cooldown: 1s
@@ -1037,13 +1120,13 @@ binary_sensor:
     - logger.log:
         format: Starting manual CO2 calibration
         level: DEBUG
-        tag: main
         args: []
+        tag: main
     - senseair.background_calibration:
-        id: senseair_s8
+        id: senseair_co2
     - delay: 70s
     - senseair.background_calibration_result:
-        id: senseair_s8
+        id: senseair_co2
     invalid_cooldown: 1s
   disabled_by_default: false
 api:
@@ -1057,3 +1140,4 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
   import_full_config: false
+
