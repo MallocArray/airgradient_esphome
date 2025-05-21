@@ -1,4 +1,4 @@
-# Sets the full LED bar to a color relative to VOC levels
+# Sets the full LED bar to a color relative to TVOC levels
 # https://app.airgradient.com/dashboard/about
 
 substitutions:
