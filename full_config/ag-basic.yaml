@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.0.0
+  config_version: 5.2.1
   co2_offset: '0'
   name: ag-basic
   friendly_name: AG Basic
@@ -10,8 +10,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.0.0
-  min_version: 2024.6.0
+    version: 5.2.1
+  min_version: 2025.5.0
   on_boot:
   - priority: 200.0
     then:
@@ -23,7 +23,7 @@ esphome:
         - http_request.post:
             url: !lambda |-
               return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-            headers:
+            request_headers:
               Content-Type: application/json
             json:
               wifi: !lambda |-
@@ -36,6 +36,7 @@ esphome:
   platformio_options: {}
   includes: []
   libraries: []
+  debug_scheduler: false
 esp8266:
   board: d1_mini
   restore_from_flash: true
@@ -76,7 +77,7 @@ uart:
       analog: false
     inverted: false
   baud_rate: 9600
-  id: senseair_s8_uart
+  id: senseair_co2_uart
   rx_buffer_size: 256
   stop_bits: 1
   data_bits: 8
@@ -240,8 +241,8 @@ sensor:
     accuracy_decimals: 0
     device_class: carbon_dioxide
     state_class: measurement
-  id: senseair_s8
-  uart_id: senseair_s8_uart
+  id: senseair_co2
+  uart_id: senseair_co2_uart
   update_interval: 60s
 - platform: sht3xd
   temperature:
@@ -311,39 +312,41 @@ sensor:
   type: seconds
 button:
 - platform: template
-  name: SenseAir S8 Calibration
-  id: senseair_s8_calibrate_button
+  name: SenseAir CO2 Calibration
+  id: senseair_co2_calibrate_button
+  entity_category: config
   on_press:
   - then:
     - senseair.background_calibration:
-        id: senseair_s8
+        id: senseair_co2
     - delay: 70s
     - senseair.background_calibration_result:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
 - platform: template
-  name: SenseAir S8 Show Calibration Interval
-  id: senseair_s8_show_calibrate_interval
+  name: SenseAir CO2 Write Calibration Interval To Log
+  id: senseair_co2_abc_get_period
+  entity_category: config
   on_press:
   - then:
     - senseair.abc_get_period:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
 switch:
 - platform: template
-  name: SenseAir S8 Automatic Baseline Correction
-  id: senseair_s8_abc_switch
+  name: SenseAir CO2 Automatic Baseline Correction
+  id: senseair_co2_abc_switch
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
   entity_category: config
   turn_on_action:
     then:
     - senseair.abc_enable:
-        id: senseair_s8
+        id: senseair_co2
   turn_off_action:
     then:
     - senseair.abc_disable:
-        id: senseair_s8
+        id: senseair_co2
   disabled_by_default: false
   assumed_state: false
 - platform: template
@@ -368,16 +371,24 @@ switch:
   id: upload_airgradient
   restore_mode: RESTORE_DEFAULT_OFF
   optimistic: true
+  entity_category: config
   disabled_by_default: false
   assumed_state: false
 font:
-  - file:
-      type: gfonts
-      family: Open Sans
-      weight: bold
-    id: font1
-    size: 22
-    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+- file:
+    family: Open Sans
+    weight: 700
+    italic: false
+    refresh: 1d
+    type: gfonts
+  id: font1
+  size: 22
+  glyphs:
+  - '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  glyphsets: []
+  ignore_missing_glyphs: false
+  bpp: 1
+  extras: []
 display:
 - platform: ssd1306_i2c
   model: SSD1306_64X48
@@ -468,7 +479,7 @@ interval:
       - http_request.post:
           url: !lambda |-
             return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address().substr(6,11) + "/measures";
-          headers:
+          request_headers:
             Content-Type: application/json
           json:
             wifi: !lambda |-
@@ -500,7 +511,7 @@ interval:
 http_request:
   timeout: 1s
   verify_ssl: false
-  useragent: ESPHome/2025.2.0 (https://esphome.io)
+  useragent: ESPHome/2025.5.0 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   esp8266_disable_ssl_support: false
@@ -515,3 +526,4 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-basic.yaml
   import_full_config: false
+

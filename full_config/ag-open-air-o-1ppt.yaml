@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.0.0
+  config_version: 5.2.1
   voc_learning_time_offset_hours: '12'
   nox_learning_time_offset_hours: '12'
   name: ag-open-air-o-1ppt
@@ -11,8 +11,8 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.0.0
-  min_version: 2025.2.0
+    version: 5.2.1
+  min_version: 2025.5.0
   on_boot:
   - priority: 200.0
     then:
@@ -24,7 +24,7 @@ esphome:
         - http_request.post:
             url: !lambda |-
               return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
-            headers:
+            request_headers:
               Content-Type: application/json
             json:
               wifi: !lambda |-
@@ -37,28 +37,30 @@ esphome:
   platformio_options: {}
   includes: []
   libraries: []
+  debug_scheduler: false
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 5.1.5
+    version: 5.1.6
     sdkconfig_options: {}
     advanced:
       ignore_efuse_custom_mac: false
     components: []
     platform_version: https://github.com/pioarduino/platform-espressif32.git#51.03.07
-    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.5/esp-idf-v5.1.5.zip
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.1.6/esp-idf-v5.1.6.zip
     type: esp-idf
   flash_size: 4MB
   variant: ESP32C3
+  cpu_frequency: 160MHZ
 logger:
-  baud_rate: 0
   logs:
     component: ERROR
+  baud_rate: 115200
   tx_buffer_size: 512
   deassert_rts_dtr: false
+  task_log_buffer_size: 768
   hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
-captive_portal: {}
 uart:
 - rx_pin:
     number: 0
@@ -85,7 +87,7 @@ uart:
     ignore_strapping_warning: false
     drive_strength: 20.0
   baud_rate: 9600
-  id: senseair_s8_uart
+  id: senseair_co2_uart
   rx_buffer_size: 256
   stop_bits: 1
   data_bits: 8
@@ -139,6 +141,7 @@ wifi:
   passive_scan: false
   enable_on_boot: true
   use_address: ag-open-air-o-1ppt.local
+captive_portal: {}
 sensor:
 - platform: pmsx003
   type: PMS5003T
@@ -303,7 +306,7 @@ sensor:
   force_update: false
 - platform: pmsx003
   type: PMS5003T
-  uart_id: senseair_s8_uart
+  uart_id: senseair_co2_uart
   pm_2_5:
     name: PM 2.5 (2) Raw
     id: pm_2_5_2_raw
@@ -607,7 +610,7 @@ interval:
       - http_request.post:
           url: !lambda |-
             return "https://hw.airgradient.com/sensors/airgradient:" + get_mac_address() + "/measures";
-          headers:
+          request_headers:
             Content-Type: application/json
           body: !lambda |
             String jsonString;
@@ -670,12 +673,13 @@ switch:
   id: upload_airgradient
   restore_mode: RESTORE_DEFAULT_ON
   optimistic: true
+  entity_category: config
   disabled_by_default: false
   assumed_state: false
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2025.2.0 (https://esphome.io)
+  useragent: ESPHome/2025.5.0 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 4500ms
@@ -707,3 +711,4 @@ ota:
 dashboard_import:
   package_import_url: github://MallocArray/airgradient_esphome/airgradient-open-air-o-1ppt.yaml
   import_full_config: false
+
