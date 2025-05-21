@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.1.0
+  config_version: 5.2.0
 
 esphome:
   name: "${name}"
@@ -9,7 +9,7 @@ esphome:
   project:
     name: mallocarray.airgradient
     version: "$config_version"
-  min_version: 2025.2.0
+  min_version: 2025.5.0
 
 esp32:
   board: esp32-c3-devkitm-1
