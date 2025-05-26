@@ -8,6 +8,8 @@ ESPHome yaml files for AirGradient devices to maintain the research and accuracy
 
 ## [Configuration](/configuration.md)
 
+## [Calibration](/calibration.md)
+
 ## Breaking Changes
 
 * 5.0.0 is a major version upgrade as switching to esp-idf is not fully supported via OTA. Highly recommend doing one USB flash of 5.0.0 and later to the AirGradient ONE and OpenAir devices to reformat the storage to support esp-idf.  Future updates can be done Over-The-Air without issue.
@@ -68,4 +70,5 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
 More features are planned to be added to this repo
 
-- [ ] PMS5003 model specific correction algorithms
+- [X] PMS5003 model specific correction algorithms
+- [ ] Deprecate Extended Life packages and use a substitution to allow for adjusting update_interval
