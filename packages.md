@@ -61,7 +61,7 @@ binary_sensor:
 For devices that use the ESP32-C3 the CPU clock can be lowered from default 160
 MHz to 80 MHz to save power. The higher default clock is not needed for the
 calculations that even the AirGradient One by default has to do to interact
-with all the sernsors, display, LEDs and so on. If you suspect this causes
+with all the sensors, display, LEDs and so on. If you suspect this causes
 problems, look at the ESPHome log or enable the `diagnostic_esp32.yaml` package
 and look at "Loop Time".
 
@@ -199,6 +199,14 @@ By default collects readings every second. Since this device has a limited lifes
 Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
 
+Can also apply batch or device specific correction formulas. See [calibration.md](calibration.md) for more details.
+
+```yaml
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+```
+
 ## sensor_pms5003t_2_extended_life.yaml
 
 Configures a second Plantower PMS5003T sensor when 2 are installed, such as the Open Air Model O-1PPT.  Reports PM2.5, Temperature, and Humidity.
@@ -211,6 +219,14 @@ By default collects readings every second. Since this device has a limited lifes
 
 Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
+
+Can also apply batch or device specific correction formulas. See [calibration.md](calibration.md) for more details.
+
+```yaml
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+```
 
 ## sensor_pms5003t_2.yaml
 
@@ -231,6 +247,14 @@ By default collects readings every second. Since this device has a limited lifes
 Collects readings every 2 minutes by default, but can be modified by adding an entry under substitutions, ensuring the value is surrounded by double quotes
 `pm_update_interval: "2min"`
 
+Can also apply batch or device specific correction formulas. See [calibration.md](calibration.md) for more details.
+
+```yaml
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+```
+
 ## sensor_pms5003t_uncorrected.yaml
 
 Configures a Plantower PMS5003T sensor.  Reports PM 2.5, Temperature, and Humidity.
@@ -242,6 +266,14 @@ Does not apply a compensation algorithm to provide values directly from the sens
 Configures a Plantower PMS5003T sensor.  Reports PM 2.5, Temperature, and Humidity.
 
 Also applies a compensation algorithm from AirGradient to correct temperature and humidity readings when used inside of the Open Air enclosure
+
+Can also apply batch or device specific correction formulas. See [calibration.md](calibration.md) for more details.
+
+```yaml
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+```
 
 ## sensor_pms5003_uncorrected.yaml
 
@@ -258,6 +290,14 @@ Applies correction algorithms provided by AirGradient
 https://www.airgradient.com/documentation/correction-algorithms/
 
 Reports PM 2.5, PM 10, PM 1.0, PM 0.3, and Air Quality Index based on the current readings.
+
+Can also apply batch or device specific correction formulas. See [calibration.md](calibration.md) for more details.
+
+```yaml
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+```
 
 ## sensor_s8.yaml
 
