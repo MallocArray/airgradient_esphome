@@ -26,7 +26,7 @@ packages:
   pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t.yaml
   # pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_extended_life.yaml
   pm_2.5_2: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_2.yaml
-  # pm_2.5_2: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_2extended_life.yaml
+  # pm_2.5_2: github://MallocArray/airgradient_esphome/packages/sensor_pms5003t_2_extended_life.yaml
   tvoc: github://MallocArray/airgradient_esphome/packages/sensor_sgp41.yaml
   airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_esp32-c3_dual_pms5003t.yaml
   hardware_watchdog: github://MallocArray/airgradient_esphome/packages/watchdog.yaml
