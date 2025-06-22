@@ -113,7 +113,7 @@ switch:
   - platform: template
     name: "Display Temperature in °F"
     id: display_in_f
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True
     entity_category: config
     icon: "mdi:thermometer"
