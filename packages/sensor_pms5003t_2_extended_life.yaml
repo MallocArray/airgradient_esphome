@@ -74,9 +74,10 @@ sensor:
     lambda: |-
       // https://www.airgradient.com/blog/low-readings-from-pms5003/
       // Correction for sensor batches after 20231030
-      float pm_2_5_calibrated_low = $pm_2_5_scaling_factor * id(pm_0_3um_2).state + $pm_2_5_intercept;
+      // Only use the batch/individual calibration if the default scaling and intercept are changed
+      float pm_2_5_calibrated_low = $pm_2_5_scaling_factor * id(pm_0_3um).state + $pm_2_5_intercept;
       float pm_2_5_calibrated = 0;
-      if (pm_2_5_calibrated_low < 31) {
+      if (pm_2_5_calibrated_low < 31 && ($pm_2_5_scaling_factor != 1 || $pm_2_5_intercept != 0)) {
         pm_2_5_calibrated = pm_2_5_calibrated_low;
       } else {
         pm_2_5_calibrated = id(pm_2_5_2_raw).state;
