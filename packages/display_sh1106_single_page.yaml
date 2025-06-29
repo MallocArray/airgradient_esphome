@@ -31,7 +31,7 @@ display:
           } else {
             it.printf(0, 0, id(open_sans_14), "%.1f°C", id(temp).state);
           }
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%% RH", id(humidity).state);
           it.line(0,17,128,17);
           it.printf(0,19, id(open_sans_9), "CO2");
           it.printf(0,27, id(open_sans_20), "%.0f", id(co2).state);
