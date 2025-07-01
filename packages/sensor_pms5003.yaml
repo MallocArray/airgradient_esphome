@@ -1,7 +1,8 @@
 ---
-# Impliments PM2.5 correction algorithm supported by AirGradient from EPA
-# https://www.airgradient.com/documentation/correction-algorithms/
-# https://document.airnow.gov/airnow-fire-and-smoke-map-questions-and-answers.pdf
+substitutions:
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
+
 sensor:
   - platform: pmsx003
     # Default interval of updating every second, but changing to 30 seconds to extend life but keep fan spinning
@@ -9,30 +10,10 @@ sensor:
     type: PMSX003
     uart_id: pms5003_uart
     pm_2_5:
-      name: "PM 2.5"
-      id: pm_2_5
+      name: "PM 2.5 Raw"
+      id: pm_2_5_raw
       device_class: pm25  # Added to report properly to HomeKit
-      filters:
-        - lambda: |-
-            float result = 0.0;
-            if (x == 0.0) {
-              result = 0.0;
-            } else if (x < 30.0) {
-              result = (0.524 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
-            } else if (x < 50.0) {
-              result = (0.786 * (x / 20 - 3/2) + 0.524 * (1 - (x / 20 - 3/2))) * x - (0.0862 * id(humidity_raw).state) + 5.75;
-            } else if (x < 210.0) {
-              result = (0.786 * x) - (0.0862 * id(humidity_raw).state) + 5.75;
-            } else if (x < 260.0) {
-              result = (0.69 * (x / 50 - 21/5) + 0.786 * (1 - (x / 50 - 21/5))) * x - (0.0862 * id(humidity_raw).state * (1 - (x / 50 - 21/5))) + (2.966 * (x / 50 - 21/5)) + (5.75 * (1 - (x / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(x,2) * (x / 50 - 21/5));
-            } else {
-              result = 2.966 + (0.69 * x) + (8.84 * pow(10,-4) * pow(x,2));
-            }
-            if (result <= 0.0) {
-              return 0.0;
-            } else {
-              return result;
-            }
+      disabled_by_default: true
     pm_1_0:
       name: "PM 1.0"
       id: pm_1_0
@@ -47,6 +28,52 @@ sensor:
       filters:
     update_interval: 30s
 
+  - platform: template
+    # Implements PM2.5 correction algorithm supported by AirGradient from EPA and optionally batch specific corrections
+    # https://www.airgradient.com/documentation/correction-algorithms/
+    # https://document.airnow.gov/airnow-fire-and-smoke-map-questions-and-answers.pdf
+    name: "PM 2.5"
+    id: pm_2_5
+    update_interval: 30s
+    device_class: pm25  # Added to report properly to HomeKit
+    unit_of_measurement: µg/m³
+    icon: mdi:chemical-weapon
+    accuracy_decimals: 0
+    state_class: measurement
+    lambda: |-
+      // https://www.airgradient.com/blog/low-readings-from-pms5003/
+      // Correction for sensor batches after 20231030
+      // Only use the batch/individual calibration if the default scaling and intercept are changed
+      float pm_2_5_calibrated_low = $pm_2_5_scaling_factor * id(pm_0_3um).state + $pm_2_5_intercept;
+      float pm_2_5_calibrated = 0;
+      if (pm_2_5_calibrated_low < 31 && ($pm_2_5_scaling_factor != 1 || $pm_2_5_intercept != 0)) {
+        pm_2_5_calibrated = pm_2_5_calibrated_low;
+      } else {
+        pm_2_5_calibrated = id(pm_2_5_raw).state;
+      }
+      if (pm_2_5_calibrated < 0) {
+        pm_2_5_calibrated = 0;
+      }
+      // EPA Formula
+      float result = 0.0;
+      if (pm_2_5_calibrated == 0.0) {
+        result = 0.0;
+      } else if (pm_2_5_calibrated < 30.0) {
+        result = (0.524 * pm_2_5_calibrated) - (0.0862 * id(humidity_raw).state) + 5.75;
+      } else if (pm_2_5_calibrated < 50.0) {
+        result = (0.786 * (pm_2_5_calibrated / 20 - 3/2) + 0.524 * (1 - (pm_2_5_calibrated / 20 - 3/2))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state) + 5.75;
+      } else if (pm_2_5_calibrated < 210.0) {
+        result = (0.786 * pm_2_5_calibrated) - (0.0862 * id(humidity_raw).state) + 5.75;
+      } else if (pm_2_5_calibrated < 260.0) {
+        result = (0.69 * (pm_2_5_calibrated / 50 - 21/5) + 0.786 * (1 - (pm_2_5_calibrated / 50 - 21/5))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state * (1 - (pm_2_5_calibrated / 50 - 21/5))) + (2.966 * (pm_2_5_calibrated / 50 - 21/5)) + (5.75 * (1 - (pm_2_5_calibrated / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(pm_2_5_calibrated,2) * (pm_2_5_calibrated / 50 - 21/5));
+      } else {
+        result = 2.966 + (0.69 * pm_2_5_calibrated) + (8.84 * pow(10,-4) * pow(pm_2_5_calibrated,2));
+      }
+      if (result <= 0.0) {
+        return 0.0;
+      } else {
+        return result;
+      }
 
   - platform: template
     # Depends on another sensor providing an ID of pm_2_5 such as a pms5003
