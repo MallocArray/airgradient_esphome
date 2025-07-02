@@ -13,6 +13,9 @@ ota:  # Add password as desired
   platform: esphome
   # password:
 
+network:
+    enable_ipv6: true
+
 wifi:
 
 dashboard_import:
