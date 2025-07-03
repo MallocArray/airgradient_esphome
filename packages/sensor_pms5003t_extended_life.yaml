@@ -1,5 +1,7 @@
 substitutions:
   pm_update_interval: "2min"
+  pm_2_5_scaling_factor: '1'
+  pm_2_5_intercept: '0'
 
 sensor:
   - platform: pmsx003
