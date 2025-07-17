@@ -10,7 +10,7 @@ sensor:
     type: PMS5003T
     uart_id: pms5003_uart
     pm_2_5:
-      name: "PM 2.5"
+      name: "PM 2.5 Raw"
       id: pm_2_5_raw
       device_class: pm25  # Added to report properly to HomeKit
       disabled_by_default: true
