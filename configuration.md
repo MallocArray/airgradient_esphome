@@ -1,6 +1,6 @@
 # Configuration
 
-If all original sensors (PMS5003, Senseair S8, SHT4x) are connected, configuration files should be ready for use.
+If all original sensors (PMS5003, Senseair S8, SHT4x) are connected, configuration files should be ready for use. To prevent the LED bar from flashing on boot, it is disabled by default.  Once added to Home Assistant, toggle the "LED Strip" switch to enable the bar.
 
 If some sensors are not installed, comment or remove the associated sections under `packages:`
 
@@ -14,6 +14,13 @@ To add your WiFi SSID and password, add your SSID and password information, per 
 wifi:
   ssid: NachoWiFi
   password: 123456123456
+```
+
+To use IPv6, add the following to the main YAML file for your device
+
+```yaml
+network:
+    enable_ipv6: true
 ```
 
 # Modification
@@ -59,9 +66,11 @@ After extensive discussion on the [AirGradient forum](https://forum.airgradient.
 
 # Home Assistant Automation
 
-Pairing ESPHome with Home Assistant opens a multitude of opportunities to create custom actions tailored to your liking
+Pairing ESPHome with Home Assistant opens a multitude of opportunities to create custom actions tailored to your liking.
 
 ## Disable Display and LED based on time
+
+Enabling the "Blank Page" switch will disable output on the display.  It is not necessary to turn off any existing pages, and disabling all pages will result in the device rebooting
 
 1. In Home Assistant, navigate to Settings>Automations and scenes
 2. Click "Create Automation" button, then "Create new automation"
