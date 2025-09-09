@@ -221,7 +221,7 @@ script:
             // Calculate the weight factor
             float range = max - min;
             float rate = range / max;
-            float weight_factor = 1.0 - range;
+            float weight_factor = 1.0 - rate;
             if (weight_factor < 0.5) {
               weight_factor = 0.5;
             } else if (weight_factor > 1.0) {
@@ -274,7 +274,7 @@ script:
             // Calculate the weight factor
             float range = max - min;
             float rate = range / max;
-            float weight_factor = 1.0 - range;
+            float weight_factor = 1.0 - rate;
             if (weight_factor < 0.5) {
               weight_factor = 0.5;
             } else if (weight_factor > 1.0) {
