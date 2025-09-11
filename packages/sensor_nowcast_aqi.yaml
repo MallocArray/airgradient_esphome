@@ -139,23 +139,27 @@ script:
           if (size_2_5 >= 18) {
 
             float pm25 = sum_2_5 / (float)size_2_5;
-            if (pm25 < 12.0) {
-              aqi_2_5 = (50.0 - 0.0) / (12.0 - 0.0) * (pm25 - 0.0) + 0.0;
+            pm25 = static_cast<int>(pm25 * 10) / 10.0; // pm25 is truncated to the nearest 0.1
+
+            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+            // 2024 EPA breakpoints: https://document.airnow.gov/technical-assistance-document-for-the-reporting-of-daily-air-quailty.pdf
+            if (pm25 < 9.0) {
+              aqi_2_5 = (50.0 - 0.0) / (9.0 - 0.0) * (pm25 - 0.0) + 0.0;
             } else if (pm25 < 35.4) {
-              aqi_2_5 = (100.0 - 51.0) / (35.4 - 12.1) * (pm25 - 12.1) + 51.0;
+              aqi_2_5 = (100.0 - 51.0) / (35.4 - 9.1) * (pm25 - 9.1) + 51.0;
             } else if (pm25 < 55.4) {
               aqi_2_5 = (150.0 - 101.0) / (55.4 - 35.5) * (pm25 - 35.5) + 101.0;
-            } else if (pm25 < 150.4) {
-              aqi_2_5 = (200.0 - 151.0) / (150.4 - 55.5) * (pm25 - 55.5) + 151.0;
-            } else if (pm25 < 250.4) {
-              aqi_2_5 = (300.0 - 201.0) / (250.4 - 150.5) * (pm25 - 150.5) + 201.0;
-            } else if (pm25 < 350.4) {
-              aqi_2_5 = (400.0 - 301.0) / (350.4 - 250.5) * (pm25 - 250.5) + 301.0;
-            } else if (pm25 < 500.4) {
-              aqi_2_5 = (500.0 - 401.0) / (500.4 - 350.5) * (pm25 - 350.5) + 401.0;
+            } else if (pm25 < 125.4) {
+              aqi_2_5 = (200.0 - 151.0) / (125.4 - 55.5) * (pm25 - 55.5) + 151.0;
+            } else if (pm25 < 225.4) {
+              aqi_2_5 = (300.0 - 201.0) / (225.4 - 125.5) * (pm25 - 125.5) + 201.0;
+            } else if (pm25 < 500.0) {
+              aqi_2_5 = (500.0 - 301.0) / (500.0 - 225.5) * (pm25 - 225.5) + 301.0;
             } else {
-              aqi_2_5 = 500; // everything higher is just counted as 500
+              // everything higher is just counted as 500
+              aqi_2_5 = 500;
             }
+
           }
 
           int size_10_0 = 0;
@@ -172,6 +176,10 @@ script:
           if (size_10_0 >= 18) {
 
             float pm10 = sum_10_0 / (float)size_10_0;
+            pm10 = static_cast<int>(pm10); // pm10 is truncated to the nearest whole number
+
+            // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+            // 2024 EPA breakpoints: https://document.airnow.gov/technical-assistance-document-for-the-reporting-of-daily-air-quailty.pdf
             if (pm10 < 54.0) {
               aqi_10_0 = (50.0 - 0.0) / (54.0 - 0.0) * (pm10 - 0.0) + 0.0;
             } else if (pm10 < 154.0) {
@@ -182,12 +190,11 @@ script:
               aqi_10_0 = (200.0 - 151.0) / (354.0 - 255.0) * (pm10 - 255.0) + 151.0;
             } else if (pm10 < 424.0) {
               aqi_10_0 = (300.0 - 201.0) / (424.0 - 355.0) * (pm10 - 355.0) + 201.0;
-            } else if (pm10 < 504.0) {
-              aqi_10_0 = (400.0 - 301.0) / (504.0 - 425.0) * (pm10 - 425.0) + 301.0;
-            } else if (pm10 < 604) {
-              aqi_10_0 = (500.0 - 401.0) / (604.0 - 505.0) * (pm10 - 505.0) + 401.0;
+            } else if (pm10 < 500.0) {
+              aqi_10_0 = (500.0 - 301.0) / (500.0 - 425.0) * (pm10 - 425.0) + 301.0;
             } else {
-              aqi_10_0 = 500; // everything higher is just counted as 500
+              // everything higher is just counted as 500
+              aqi_10_0 = 500.0;
             }
           }
 
@@ -253,20 +260,19 @@ script:
               pm25 = static_cast<int>(pm25 * 10) / 10.0; // pm25 is truncated to the nearest 0.1
 
               // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
-              if (pm25 < 12.0) {
-                nowcast_2_5 = (50.0 - 0.0) / (12.0 - 0.0) * (pm25 - 0.0) + 0.0;
+              // 2024 EPA breakpoints: https://document.airnow.gov/technical-assistance-document-for-the-reporting-of-daily-air-quailty.pdf
+              if (pm25 < 9.0) {
+                nowcast_2_5 = (50.0 - 0.0) / (9.0 - 0.0) * (pm25 - 0.0) + 0.0;
               } else if (pm25 < 35.4) {
-                nowcast_2_5 = (100.0 - 51.0) / (35.4 - 12.1) * (pm25 - 12.1) + 51.0;
+                nowcast_2_5 = (100.0 - 51.0) / (35.4 - 9.1) * (pm25 - 9.1) + 51.0;
               } else if (pm25 < 55.4) {
                 nowcast_2_5 = (150.0 - 101.0) / (55.4 - 35.5) * (pm25 - 35.5) + 101.0;
-              } else if (pm25 < 150.4) {
-                nowcast_2_5 = (200.0 - 151.0) / (150.4 - 55.5) * (pm25 - 55.5) + 151.0;
-              } else if (pm25 < 250.4) {
-                nowcast_2_5 = (300.0 - 201.0) / (250.4 - 150.5) * (pm25 - 150.5) + 201.0;
-              } else if (pm25 < 350.4) {
-                nowcast_2_5 = (400.0 - 301.0) / (350.4 - 250.5) * (pm25 - 250.5) + 301.0;
-              } else if (pm25 < 500.4) {
-                nowcast_2_5 = (500.0 - 401.0) / (500.4 - 350.5) * (pm25 - 350.5) + 401.0;
+              } else if (pm25 < 125.4) {
+                nowcast_2_5 = (200.0 - 151.0) / (125.4 - 55.5) * (pm25 - 55.5) + 151.0;
+              } else if (pm25 < 225.4) {
+                nowcast_2_5 = (300.0 - 201.0) / (225.4 - 125.5) * (pm25 - 125.5) + 201.0;
+              } else if (pm25 < 500.0) {
+                nowcast_2_5 = (500.0 - 301.0) / (500.0 - 225.5) * (pm25 - 225.5) + 301.0;
               } else {
                 // everything higher is just counted as 500
                 nowcast_2_5 = 500;
@@ -313,10 +319,12 @@ script:
                   weight_sum += weight_pow;
                 }
               }
+
               float pm10 = pm_sum / weight_sum;
               pm10 = static_cast<int>(pm10); // pm10 is truncated to the nearest whole number
 
               // https://en.wikipedia.org/wiki/Air_quality_index#Computing_the_AQI
+              // 2024 EPA breakpoints: https://document.airnow.gov/technical-assistance-document-for-the-reporting-of-daily-air-quailty.pdf
               if (pm10 < 54.0) {
                 nowcast_10_0 = (50.0 - 0.0) / (54.0 - 0.0) * (pm10 - 0.0) + 0.0;
               } else if (pm10 < 154.0) {
@@ -327,10 +335,8 @@ script:
                 nowcast_10_0 = (200.0 - 151.0) / (354.0 - 255.0) * (pm10 - 255.0) + 151.0;
               } else if (pm10 < 424.0) {
                 nowcast_10_0 = (300.0 - 201.0) / (424.0 - 355.0) * (pm10 - 355.0) + 201.0;
-              } else if (pm10 < 504.0) {
-                nowcast_10_0 = (400.0 - 301.0) / (504.0 - 425.0) * (pm10 - 425.0) + 301.0;
-              } else if (pm10 < 604) {
-                nowcast_10_0 = (500.0 - 401.0) / (604.0 - 505.0) * (pm10 - 505.0) + 401.0;
+              } else if (pm10 < 500.0) {
+                nowcast_10_0 = (500.0 - 301.0) / (500.0 - 425.0) * (pm10 - 425.0) + 301.0;
               } else {
                 // everything higher is just counted as 500
                 nowcast_10_0 = 500.0;
