@@ -31,6 +31,8 @@ https://app.airgradient.com/settings/hardware
 | PMS5003_20231030    | 0.02838          | 0      |
 | PMS5003_20231218    | 0.03525          | 0      |
 | PMS5003_20240104    | 0.02896          | 0      |
+| PMS5003_20240826    | 0.03863          | 0      |
+| PMS5003_20250116    | 0.02983          | 0      |
 
 https://www.airgradient.com/blog/update-on-pms5003-calibration/
 
