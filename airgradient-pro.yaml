@@ -37,3 +37,10 @@ binary_sensor:
   - id: !extend config_button
     pin:
       number: D7
+
+# Uncomment this block to default to displaying in Celsius
+#switch:
+#- platform: template
+#  id: !extend display_in_f
+#  restore_mode: RESTORE_DEFAULT_OFF
+#  optimistic: True

@@ -39,3 +39,10 @@ binary_sensor:
   - id: !extend config_button
     pin:
       ignore_strapping_warning: true  # Acknowledging that this is a strapping pin and should not have external pullup/down resistors  https://esphome.io/guides/faq.html#why-am-i-getting-a-warning-about-strapping-pins
+
+# Uncomment this block to default to displaying in Celsius
+#switch:
+#- platform: template
+#  id: !extend display_in_f
+#  restore_mode: RESTORE_DEFAULT_OFF
+#  optimistic: True
