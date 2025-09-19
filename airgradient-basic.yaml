@@ -31,3 +31,10 @@ packages:
   airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_d1_mini_no_sgp41.yaml
   wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml
   uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml
+
+# Uncomment this block to default to displaying in Celsius
+#switch:
+#- platform: template
+#  id: !extend display_in_f
+#  restore_mode: RESTORE_DEFAULT_OFF
+#  optimistic: True
