@@ -64,6 +64,17 @@ MQTT support has been mentioned in the AirGradient forums several times.  ESPHom
 
 After extensive discussion on the [AirGradient forum](https://forum.airgradient.com/t/concern-about-hijackable-wifi-connection/3845), it may be a good idea to remove the Captive Portal package after initial configuration, as leaving it in will default to enabling the Access Point Mode if WiFi is not available, potentially allowing an external source to reconfigure the device to a new network or upload another firmware file.  Can also add a password to the ap if this functionality is desired, but want to secure it.
 
+### Using a lolin-d3-mini in an AG Pro board
+
+The lolin-d3-mini has a similar enough pin configuration that we're able to replace the stock D1 mini
+and make some minor config changes and get the benefits of an ESP32-c3 based device without buying a
+whole new motherboard.
+
+1. Start with the airgradient-pro.yaml file
+2. Under packages, replace 'airgradient_d1_mini_board.yaml' with 'airgradient_lolin-c3-mini_board.yaml'
+3. change the `!extend config_button` section to use pin number `4` instead of `D7`
+
+
 # Home Assistant Automation
 
 Pairing ESPHome with Home Assistant opens a multitude of opportunities to create custom actions tailored to your liking.

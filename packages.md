@@ -32,6 +32,12 @@ Board configuration for devices based on the D1 Mini chip (AG Basic and AG Pro),
 
 Board configuration for devices based on the ESP32-C3 chip (AG ONE and OpenAir) using the original Arduino framework
 
+## airgradient_lolin-c3-mini_board.yaml
+
+Board configuration for the AG Pro that has been user upgraded to use a lolin-c3-mini
+
+The board is close enough pin configuration that you can directly replace the d1 mini and replace the `board` package in airgradient-pro.yaml, and replace the `D7` under the `!extend config_button` with `4`.
+
 ## button_factory_reset.yaml
 
 Enables a button to reset device to factory resets, which erases all nvram and erases all stored preferences.
@@ -52,6 +58,8 @@ binary_sensor:
     pin:
       number: D7
 ```
+
+If using an AG Pro v4.2 with a user lolin-d3-mini upgrade use pin 4 instead of D7
 
 * Short press - Toggle temperature display between C and F
 * Press and hold up to 5 seconds - Initiate Senseair S8 CO2 manual calibration.  Ensure device is already outdoors or near an open window for 5+ minutes before initiating
