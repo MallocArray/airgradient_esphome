@@ -36,7 +36,7 @@ Board configuration for devices based on the ESP32-C3 chip (AG ONE and OpenAir) 
 
 Board configuration for the AG Pro that has been user upgraded to use a lolin-c3-mini
 
-You should be able to drop this in as a direct replacement in the airgradient-pro.yaml for the `airgradient_d1_mini_board.yaml` package.
+The board is close enough pin configuration that you can directly replace the d1 mini and replace the `board` package in airgradient-pro.yaml, and replace the `D7` under the `!extend config_button` with `4`.
 
 ## button_factory_reset.yaml
 
