@@ -86,3 +86,9 @@ Enabling the "Blank Page" switch will disable output on the display.  It is not 
    3. Click the Save button and give it a name, such as "AirGradient Night Mode"
 3. Repeat with a new Automation, with the actions reversed (Turn off Display Blank Page and turn on LED Strip), at the desired time with a name such as "AirGradient Night Mode Off"
    ![automation](image/configuration/2025-03-20-205242.png)
+
+## Using a lolin-d3-mini in an AG Pro board
+
+1. Start with the airgradient-pro.yaml file
+2. Under packages, replace 'airgradient_d1_mini_board.yaml' with 'airgradient_lolin-c3-mini_board.yaml'
+3. change the `!extend config_button` section to use pin number `4` instead of `D7`
