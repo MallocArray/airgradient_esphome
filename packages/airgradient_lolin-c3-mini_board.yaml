@@ -1,0 +1,48 @@
+# This is for use with the AirGradient Pro replacing the default
+# D1 Mini esp8266 board with a Lolin C3 Mini esp32 board
+
+substitutions:
+  config_version: 5.3.2
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: ${name_add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
+  platform: ESP32
+
+  project:
+    name: mallocarray.airgradient
+    version: "$config_version"
+  min_version: 2025.5.0
+
+esp32:
+  board: lolin_c3_mini
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+# Enable logging
+# https://esphome.io/components/logger.html
+logger:
+
+uart:
+  - rx_pin: 1
+    tx_pin: 0
+    baud_rate: 9600
+    id: pms5003_uart
+
+  - rx_pin: 6
+    tx_pin: 7
+    baud_rate: 9600
+    id: senseair_co2_uart
+
+i2c:
+  # https://esphome.io/components/i2c.html
+  sda:
+    number: 8
+    # Acknowledging that this is a strapping pin and should not have external pullup/down resistors
+    # https://esphome.io/guides/faq.html#why-am-i-getting-a-warning-about-strapping-pins
+    ignore_strapping_warning: true
+  scl: 10
+  # 400kHz eliminates warnings about components taking a long time other than SGP40 component: https://github.com/esphome/issues/issues/4717
+  frequency: 400kHz
