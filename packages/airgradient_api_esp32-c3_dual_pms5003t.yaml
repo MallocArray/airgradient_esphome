@@ -19,8 +19,8 @@ interval:
               # https://github.com/ajfriesen/ESPHome-AirGradient/blob/main/air-gradient-open-air.yaml
               # https://arduinojson.org/v7/assistant
               body: !lambda |
-                String jsonString;
-                StaticJsonDocument<1024> doc;
+                std::string jsonString;
+                JsonDocument doc;
 
                 doc["wifi"] = id(wifi_dbm).state;
 
@@ -36,9 +36,9 @@ interval:
                 // Uptime in minutes as the boot value
                 doc["boot"] = to_string(round(id(device_uptime).state/60));
 
-                JsonObject channels = doc.createNestedObject("channels");
+                JsonObject channels = doc["channels"].to<JsonObject>();
 
-                JsonObject channels_1 = channels.createNestedObject("1");
+                JsonObject channels_1 = channels["1"].to<JsonObject>();
                 channels_1["pm01"] = to_string(id(pm_1_0).state);
                 channels_1["pm02"] = to_string(id(pm_2_5).state);
                 channels_1["pm10"] = to_string(id(pm_10_0).state);
@@ -46,7 +46,7 @@ interval:
                 channels_1["atmp"] = to_string(id(temp).state);
                 channels_1["rhum"] = to_string(id(humidity).state);
 
-                JsonObject channels_2 = channels.createNestedObject("2");
+                JsonObject channels_2 = channels["2"].to<JsonObject>();
                 channels_2["pm01"] = to_string(id(pm_1_0_2).state);
                 channels_2["pm02"] = to_string(id(pm_2_5_2).state);
                 channels_2["pm10"] = to_string(id(pm_10_0_2).state);
@@ -57,10 +57,7 @@ interval:
                 // Serialize the JSON document into the string
                 serializeJson(doc, jsonString);
 
-                // Convert String to std::string
-                std::string stdJsonString(jsonString.c_str());
-
-                return stdJsonString;
+                return jsonString;
 
 
 switch:
