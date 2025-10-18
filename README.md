@@ -1,6 +1,6 @@
 # AirGradient ESPHome Configurations
 
-ESPHome yaml files for AirGradient devices to maintain the research and accuracy of AirGradient sensors, while also gaining the benefits of ESPHome/HomeAssistant for easy to use switches, buttons, configurations, and dashboards.  Maintains the ability to also send data to the AirGradient Dashboard, which can also be disabled/removed to keep all data local.
+ESPHome yaml files for AirGradient devices to maintain the research and accuracy of AirGradient sensors, while also gaining the benefits of ESPHome/HomeAssistant for easy to use switches, buttons, configurations, and dashboards, all controlled locally.  Maintains the ability to also send data to the AirGradient Dashboard, which can also be disabled/removed to keep all data local.
 
 <img src="image/README/1715467068556.png" width=25% height=25%>
 
@@ -26,8 +26,11 @@ List of available packages to customize your device and gain additional features
 * Added optional substitutions to implement batch-specific PM2.5 corrections using values provided by AirGradient
   [See details in the packages.md file under the PMS5003 section.](packages.md#sensor_pms5003yaml)
 * Restored logging to default values as it no longer repeats messages about components taking too long to complete
+* New package for upgrading DIY and Pro models to Lolin C3 Mini
 
 ## Features
+
+Replacing the line that starts with `led_co2` with `  led_combo: !include packages/led_combo.yaml` enables combo LED bar.  For more information, look at the Packages file.
 
 Many added features can be found in HomeAssistant by going to Settings>Devices and selecting the AirGradient device.  Alternatively, add `web_server:` to the config file to enable a built-in web server on the AirGradient device (Not recommended for devices based on the D1 Mini ESP8266)
 
@@ -59,7 +62,7 @@ Many added features can be found in HomeAssistant by going to Settings>Devices a
 
   - Short press (Less than 1 second) - Toggle between F and C on display
   - Long press (More than 1 second, less than 5) - Trigger manual CO2 calibration
-- Leverage automation in HomeAssistant to turn on the "Blank" page and turn off all other pages to effectively disable the display output.  Could also turn off the LED strip or set Brightness to 0 to eliminate output while still collecting sensor data
+- Leverage automation in HomeAssistant to turn on the "Blank" page to effectively disable the display output.  Could also turn off the LED strip or set Brightness to 0 to eliminate output while still collecting sensor data
 
 ## Support me
 
