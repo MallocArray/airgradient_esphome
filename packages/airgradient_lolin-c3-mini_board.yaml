@@ -2,13 +2,12 @@
 # D1 Mini esp8266 board with a Lolin C3 Mini esp32 board
 
 substitutions:
-  config_version: 5.3.3
+  config_version: 5.3.4
 
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: ${name_add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
-  platform: ESP32
 
   project:
     name: mallocarray.airgradient
