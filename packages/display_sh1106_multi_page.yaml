@@ -35,7 +35,7 @@ display:
           } else {
             it.printf(0, 0, id(open_sans_14), "%.1f°C", id(temp).state);
           }
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%% RH", id(humidity).state);
           it.line(0,17,128,17);
           it.printf(0,19, id(open_sans_9), "CO2");
           it.printf(0,27, id(open_sans_20), "%.0f", id(co2).state);
@@ -118,7 +118,7 @@ display:
           } else {
             it.printf(0, 0, id(open_sans_14), "%.1f °C", id(temp).state);
           }
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%% RH", id(humidity).state);
           it.printf(0, 16, id(open_sans_14), "%.0f µg/m³", id(pm_2_5).state);
           it.printf(128, 16, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
           it.printf(0, 32, id(open_sans_14), "VOC: %.0f", id(voc).state);
