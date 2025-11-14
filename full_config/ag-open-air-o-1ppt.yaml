@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.3.0
+  config_version: 5.3.3
   pm_2_5_scaling_factor: '1'
   pm_2_5_intercept: '0'
   voc_learning_time_offset_hours: '12'
@@ -13,7 +13,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.3.0
+    version: 5.3.3
   min_version: 2025.5.0
   on_boot:
     - priority: 200.0
@@ -35,26 +35,30 @@ esphome:
                   max_response_buffer_size: 1000
                   method: POST
   build_path: build/ag-open-air-o-1ppt
-  area: ''
   platformio_options: {}
   includes: []
   libraries: []
   debug_scheduler: false
+  areas: []
+  devices: []
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 5.3.2
+    type: esp-idf
+    version: 5.4.2
     sdkconfig_options: {}
+    log_level: ERROR
     advanced:
       compiler_optimization: SIZE
       enable_lwip_assert: true
       ignore_efuse_custom_mac: false
       enable_lwip_mdns_queries: true
       enable_lwip_bridge_interface: false
+      enable_lwip_tcpip_core_locking: true
+      enable_lwip_check_thread_safety: true
     components: []
-    platform_version: https://github.com/pioarduino/platform-espressif32/releases/download/53.03.13/platform-espressif32.zip
-    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.3.2/esp-idf-v5.3.2.zip
-    type: esp-idf
+    platform_version: https://github.com/pioarduino/platform-espressif32/releases/download/54.03.21-2/platform-espressif32.zip
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.4.2/esp-idf-v5.4.2.zip
   flash_size: 4MB
   variant: ESP32C3
   cpu_frequency: 160MHZ
@@ -66,6 +70,7 @@ logger:
   hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
   logs: {}
+  runtime_tag_levels: false
 uart:
   - rx_pin:
       number: 0
@@ -94,6 +99,7 @@ uart:
     baud_rate: 9600
     id: senseair_co2_uart
     rx_buffer_size: 256
+    rx_timeout: 2
     stop_bits: 1
     data_bits: 8
     parity: NONE
@@ -124,6 +130,7 @@ uart:
     baud_rate: 9600
     id: pms5003_uart
     rx_buffer_size: 256
+    rx_timeout: 2
     stop_bits: 1
     data_bits: 8
     parity: NONE
@@ -646,8 +653,8 @@ interval:
                 request_headers:
                   Content-Type: application/json
                 body: !lambda |
-                  String jsonString;
-                  StaticJsonDocument<1024> doc;
+                  std::string jsonString;
+                  JsonDocument doc;
 
                   doc["wifi"] = id(wifi_dbm).state;
 
@@ -663,9 +670,9 @@ interval:
                   // Uptime in minutes as the boot value
                   doc["boot"] = to_string(round(id(device_uptime).state/60));
 
-                  JsonObject channels = doc.createNestedObject("channels");
+                  JsonObject channels = doc["channels"].to<JsonObject>();
 
-                  JsonObject channels_1 = channels.createNestedObject("1");
+                  JsonObject channels_1 = channels["1"].to<JsonObject>();
                   channels_1["pm01"] = to_string(id(pm_1_0).state);
                   channels_1["pm02"] = to_string(id(pm_2_5).state);
                   channels_1["pm10"] = to_string(id(pm_10_0).state);
@@ -673,7 +680,7 @@ interval:
                   channels_1["atmp"] = to_string(id(temp).state);
                   channels_1["rhum"] = to_string(id(humidity).state);
 
-                  JsonObject channels_2 = channels.createNestedObject("2");
+                  JsonObject channels_2 = channels["2"].to<JsonObject>();
                   channels_2["pm01"] = to_string(id(pm_1_0_2).state);
                   channels_2["pm02"] = to_string(id(pm_2_5_2).state);
                   channels_2["pm10"] = to_string(id(pm_10_0_2).state);
@@ -684,10 +691,7 @@ interval:
                   // Serialize the JSON document into the string
                   serializeJson(doc, jsonString);
 
-                  // Convert String to std::string
-                  std::string stdJsonString(jsonString.c_str());
-
-                  return stdJsonString;
+                  return jsonString;
                 capture_response: false
                 max_response_buffer_size: 1000
                 method: POST
@@ -712,7 +716,7 @@ switch:
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2025.6.2 (https://esphome.io)
+  useragent: ESPHome/2025.10.5 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 4500ms
@@ -738,7 +742,14 @@ api:
   password: \033[5m''\033[6m
   reboot_timeout: 15min
   batch_delay: 100ms
+  custom_services: false
+  homeassistant_services: false
+  homeassistant_states: false
+  listen_backlog: 4
+  max_connections: 8
+  max_send_queue: 8
 ota:
+  - platform: web_server
   - platform: esphome
     version: 2
     port: 3232

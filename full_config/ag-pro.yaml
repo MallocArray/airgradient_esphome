@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.3.0
+  config_version: 5.3.3
   pm_2_5_scaling_factor: '1'
   pm_2_5_intercept: '0'
   co2_offset: '0'
@@ -14,7 +14,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.3.0
+    version: 5.3.3
   min_version: 2025.5.0
   on_boot:
     - priority: 200.0
@@ -36,11 +36,12 @@ esphome:
                   max_response_buffer_size: 1000
                   method: POST
   build_path: build/ag-pro
-  area: ''
   platformio_options: {}
   includes: []
   libraries: []
   debug_scheduler: false
+  areas: []
+  devices: []
 esp8266:
   board: d1_mini
   restore_from_flash: true
@@ -57,6 +58,7 @@ logger:
   hardware_uart: UART0
   level: DEBUG
   logs: {}
+  runtime_tag_levels: false
   esp8266_store_log_strings_in_flash: true
 uart:
   - rx_pin:
@@ -552,7 +554,7 @@ display:
         lambda: !lambda |-
           it.printf(0, 0, id(open_sans_14), "ID:");
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-          it.printf(0, 21, id(open_sans_14), "Config Ver: 5.3.0");
+          it.printf(0, 21, id(open_sans_14), "Config Ver: 5.3.3");
           it.printf(0, 42, id(open_sans_14), "AG Pro");
       - id: blank
         lambda: !lambda |-
@@ -694,7 +696,7 @@ number:
 http_request:
   timeout: 1s
   verify_ssl: false
-  useragent: ESPHome/2025.6.2 (https://esphome.io)
+  useragent: ESPHome/2025.10.5 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   esp8266_disable_ssl_support: false
@@ -723,9 +725,9 @@ binary_sensor:
         then:
           - logger.log:
               format: Toggling display between C and F
-              tag: main
               args: []
               level: DEBUG
+              tag: main
           - switch.toggle:
               id: display_in_f
         invalid_cooldown: 1s
@@ -738,9 +740,9 @@ binary_sensor:
         then:
           - logger.log:
               format: Starting manual CO2 calibration
-              tag: main
               args: []
               level: DEBUG
+              tag: main
           - senseair.background_calibration:
               id: senseair_co2
           - delay: 70s
@@ -748,12 +750,21 @@ binary_sensor:
               id: senseair_co2
         invalid_cooldown: 1s
     disabled_by_default: false
+    use_interrupt: true
+    interrupt_type: ANY
 api:
   port: 6053
   password: \033[5m''\033[6m
   reboot_timeout: 15min
   batch_delay: 100ms
+  custom_services: false
+  homeassistant_services: false
+  homeassistant_states: false
+  listen_backlog: 1
+  max_connections: 4
+  max_send_queue: 5
 ota:
+  - platform: web_server
   - platform: esphome
     version: 2
     port: 8266
