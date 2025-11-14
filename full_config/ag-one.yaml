@@ -1,5 +1,5 @@
 substitutions:
-  config_version: 5.3.0
+  config_version: 5.3.3
   pm_2_5_scaling_factor: '1'
   pm_2_5_intercept: '0'
   co2_offset: '0'
@@ -18,7 +18,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: mallocarray.airgradient
-    version: 5.3.0
+    version: 5.3.3
   min_version: 2025.5.0
   on_boot:
     - priority: 200.0
@@ -40,26 +40,30 @@ esphome:
                   max_response_buffer_size: 1000
                   method: POST
   build_path: build/ag-one
-  area: ''
   platformio_options: {}
   includes: []
   libraries: []
   debug_scheduler: false
+  areas: []
+  devices: []
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: 5.3.2
+    type: esp-idf
+    version: 5.4.2
     sdkconfig_options: {}
+    log_level: ERROR
     advanced:
       compiler_optimization: SIZE
       enable_lwip_assert: true
       ignore_efuse_custom_mac: false
       enable_lwip_mdns_queries: true
       enable_lwip_bridge_interface: false
+      enable_lwip_tcpip_core_locking: true
+      enable_lwip_check_thread_safety: true
     components: []
-    platform_version: https://github.com/pioarduino/platform-espressif32/releases/download/53.03.13/platform-espressif32.zip
-    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.3.2/esp-idf-v5.3.2.zip
-    type: esp-idf
+    platform_version: https://github.com/pioarduino/platform-espressif32/releases/download/54.03.21-2/platform-espressif32.zip
+    source: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.4.2/esp-idf-v5.4.2.zip
   flash_size: 4MB
   variant: ESP32C3
   cpu_frequency: 160MHZ
@@ -71,6 +75,7 @@ logger:
   hardware_uart: USB_SERIAL_JTAG
   level: DEBUG
   logs: {}
+  runtime_tag_levels: false
 uart:
   - rx_pin:
       number: 0
@@ -99,6 +104,7 @@ uart:
     baud_rate: 9600
     id: senseair_co2_uart
     rx_buffer_size: 256
+    rx_timeout: 2
     stop_bits: 1
     data_bits: 8
     parity: NONE
@@ -129,6 +135,7 @@ uart:
     baud_rate: 9600
     id: pms5003_uart
     rx_buffer_size: 256
+    rx_timeout: 2
     stop_bits: 1
     data_bits: 8
     parity: NONE
@@ -644,7 +651,7 @@ display:
         lambda: !lambda |-
           it.printf(0, 0, id(open_sans_14), "ID:");
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
-          it.printf(0, 21, id(open_sans_14), "Config Ver: 5.3.0");
+          it.printf(0, 21, id(open_sans_14), "Config Ver: 5.3.3");
           it.printf(0, 42, id(open_sans_14), "AG One");
       - id: summary1
         lambda: !lambda |-
@@ -1087,7 +1094,7 @@ light:
 http_request:
   verify_ssl: false
   watchdog_timeout: 30s
-  useragent: ESPHome/2025.6.2 (https://esphome.io)
+  useragent: ESPHome/2025.10.5 (https://esphome.io)
   follow_redirects: true
   redirect_limit: 3
   timeout: 4500ms
@@ -1160,12 +1167,21 @@ binary_sensor:
               id: senseair_co2
         invalid_cooldown: 1s
     disabled_by_default: false
+    use_interrupt: true
+    interrupt_type: ANY
 api:
   port: 6053
   password: \033[5m''\033[6m
   reboot_timeout: 15min
   batch_delay: 100ms
+  custom_services: false
+  homeassistant_services: false
+  homeassistant_states: false
+  listen_backlog: 4
+  max_connections: 8
+  max_send_queue: 8
 ota:
+  - platform: web_server
   - platform: esphome
     version: 2
     port: 3232
