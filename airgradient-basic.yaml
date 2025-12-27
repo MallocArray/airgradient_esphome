@@ -6,6 +6,7 @@ substitutions:
   name: "ag-basic"
   friendly_name: "AG Basic"
   name_add_mac_suffix: "false"  # Must have quotes around value
+  flip_pms5003_uart_pins: True
 
 # Enable Home Assistant API
 api:  # Add encryption key as desired
