@@ -89,11 +89,11 @@ sensor:
       } else if (pm_2_5_calibrated < 30.0) {
         result = (0.524 * pm_2_5_calibrated) - (0.0862 * id(humidity_raw).state) + 5.75;
       } else if (pm_2_5_calibrated < 50.0) {
-        result = (0.786 * (pm_2_5_calibrated / 20 - 3/2) + 0.524 * (1 - (pm_2_5_calibrated / 20 - 3/2))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state) + 5.75;
+        result = (0.786 * (pm_2_5_calibrated / 20 - 3.0/2.0) + 0.524 * (1 - (pm_2_5_calibrated / 20 - 3.0/2.0))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state) + 5.75;
       } else if (pm_2_5_calibrated < 210.0) {
         result = (0.786 * pm_2_5_calibrated) - (0.0862 * id(humidity_raw).state) + 5.75;
       } else if (pm_2_5_calibrated < 260.0) {
-        result = (0.69 * (pm_2_5_calibrated / 50 - 21/5) + 0.786 * (1 - (pm_2_5_calibrated / 50 - 21/5))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state * (1 - (pm_2_5_calibrated / 50 - 21/5))) + (2.966 * (pm_2_5_calibrated / 50 - 21/5)) + (5.75 * (1 - (pm_2_5_calibrated / 50 - 21/5))) + (8.84 * pow(10,-4) * pow(pm_2_5_calibrated,2) * (pm_2_5_calibrated / 50 - 21/5));
+        result = (0.69 * (pm_2_5_calibrated / 50 - 21.0/5.0) + 0.786 * (1 - (pm_2_5_calibrated / 50 - 21.0/5.0))) * pm_2_5_calibrated - (0.0862 * id(humidity_raw).state * (1 - (pm_2_5_calibrated / 50 - 21.0/5.0))) + (2.966 * (pm_2_5_calibrated / 50 - 21.0/5.0)) + (5.75 * (1 - (pm_2_5_calibrated / 50 - 21.0/5.0))) + (8.84 * pow(10,-4) * pow(pm_2_5_calibrated,2) * (pm_2_5_calibrated / 50 - 21.0/5.0));
       } else {
         result = 2.966 + (0.69 * pm_2_5_calibrated) + (8.84 * pow(10,-4) * pow(pm_2_5_calibrated,2));
       }
