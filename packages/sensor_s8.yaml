@@ -1,5 +1,45 @@
-substitutions:
-  co2_offset: '0'
+select:
+  - platform: template
+    name: "SenseAir S88 CO2 ABC Interval"
+    id: co2_abc_interval_select
+    options: ["1", "8", "30", "90"]
+    initial_option: "8"
+    restore_value: true
+    optimistic: true
+    entity_category: config
+    icon: "mdi:calendar-clock"
+    set_action:
+      - lambda: |-
+          uint16_t hours = (uint16_t)(atoi(x.c_str()) * 24);
+          uint8_t frame[8] = {
+            0xFE, 0x06, 0x00, 0x1F,
+            (uint8_t)(hours >> 8), (uint8_t)(hours & 0xFF),
+            0x00, 0x00
+          };
+          uint16_t crc = 0xFFFF;
+          for (int i = 0; i < 6; i++) {
+            crc ^= frame[i];
+            for (int j = 0; j < 8; j++)
+              crc = (crc & 1) ? (crc >> 1) ^ 0xA001 : crc >> 1;
+          }
+          frame[6] = crc & 0xFF;
+          frame[7] = crc >> 8;
+          id(senseair_co2_uart).write_array(frame, 8);
+
+number:
+  - platform: template
+    name: "SenseAir S88 CO2 Offset"
+    id: co2_offset_number
+    min_value: -400
+    max_value: 400
+    step: 1
+    initial_value: '22'
+    restore_value: true
+    optimistic: true
+    mode: box
+    entity_category: config
+    unit_of_measurement: "ppm"
+    icon: "mdi:tune-vertical"
 
 sensor:
   - platform: senseair
@@ -8,18 +48,21 @@ sensor:
     # https://climate.nasa.gov/vital-signs/carbon-dioxide/?intent=121
     # https://senseair.com/the-senseair-abc-algorithm/
     co2:
-      name: "CO2"
+      name: "Carbon Dioxide"
       id: co2
+      device_class: carbon_dioxide
+      accuracy_decimals: 0
       filters:
         - skip_initial: 1  # Sometimes returns 0 at first boot instead of valid data
-        - offset: $co2_offset
+        - lambda: return x + id(co2_offset_number).state;
     id: senseair_co2
     uart_id: senseair_co2_uart
+    update_interval: 60s
 
 button:
   # https://github.com/esphome/issues/issues/2444
   - platform: template
-    name: SenseAir CO2 Calibration
+    name: "SenseAir S88 CO2 Calibration"
     id: senseair_co2_calibrate_button
     entity_category: config
     on_press:
@@ -30,7 +73,7 @@ button:
 
   - platform: template
     # Displays the current ABC interval in the ESPhome logs to verify status
-    name: SenseAir CO2 Write Calibration Interval To Log
+    name: "SenseAir S88 CO2 Write Calibration Interval To Log"
     id: senseair_co2_abc_get_period
     entity_category: config
     on_press:
@@ -39,7 +82,7 @@ button:
 
 switch:
   - platform: template
-    name: SenseAir CO2 Automatic Baseline Correction
+    name: "SenseAir S88 CO2 Automatic Baseline Correction"
     id: senseair_co2_abc_switch
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
