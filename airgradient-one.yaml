@@ -4,36 +4,53 @@
 substitutions:
   name: "ag-one"
   friendly_name: "AG One"
-  name_add_mac_suffix: "false"  # Must have quotes around value
+  name_add_mac_suffix: True
+
+# Enable logging
+logger:
 
 # Enable Home Assistant API
-api:  # Add encryption key as desired
+api:
+  # encryption:
+  #   key: !secret api_password
 
-ota:  # Add password as desired
-  platform: esphome
-  # password:
+# OTA is required for Over-the-Air updating
+ota:
+  - platform: esphome
+    # password: !secret ota_password
 
 wifi:
+  fast_connect: false
+  min_auth_mode: WPA2
 
-dashboard_import:
-  package_import_url: github://MallocArray/airgradient_esphome/airgradient-one.yaml
-  import_full_config: false
+  # Enable fallback hotspot in case wifi connection fails
+  ap:
+    ap_timeout: 90s
+    # Memorable fallback-AP password. Used only when the device can't reach
+    # its normal WiFi and spins up its own hotspot for re-provisioning.
+    password: "airgradient_password"
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device
+captive_portal:
+
 
 packages:
-  board: github://MallocArray/airgradient_esphome/packages/airgradient_esp32-c3_board.yaml
-  captive_portal: github://MallocArray/airgradient_esphome/packages/captive_portal.yaml
-  pm_2.5: github://MallocArray/airgradient_esphome/packages/sensor_pms5003.yaml
-  co2: github://MallocArray/airgradient_esphome/packages/sensor_s8.yaml
-  temp_humidity: github://MallocArray/airgradient_esphome/packages/sensor_sht40.yaml
-  tvoc: github://MallocArray/airgradient_esphome/packages/sensor_sgp41.yaml
-  display: github://MallocArray/airgradient_esphome/packages/display_sh1106_multi_page.yaml
-  led: github://MallocArray/airgradient_esphome/packages/led.yaml
-  led_co2: github://MallocArray/airgradient_esphome/packages/led_co2.yaml
-  airgradient_api: github://MallocArray/airgradient_esphome/packages/airgradient_api_esp32-c3.yaml
-  hardware_watchdog: github://MallocArray/airgradient_esphome/packages/watchdog.yaml
-  config_button: github://MallocArray/airgradient_esphome/packages/config_button.yaml
-  wifi: github://MallocArray/airgradient_esphome/packages/sensor_wifi.yaml
-  uptime: github://MallocArray/airgradient_esphome/packages/sensor_uptime.yaml
+  board: !include packages/airgradient_esp32-c3_board.yaml
+  captive_portal: !include packages/captive_portal.yaml
+  pm_2.5: !include packages/sensor_pms5003_extended_life.yaml
+  co2: !include packages/sensor_s8.yaml
+  temp_humidity: !include packages/sensor_sht40.yaml
+  tvoc: !include packages/sensor_sgp41.yaml
+  display: !include packages/display_sh1106_multi_page.yaml
+  led: !include packages/led.yaml
+  # led_co2: !include packages/led_co2.yaml
+  led_combo: !include packages/led_combo.yaml  
+  airgradient_api: !include packages/airgradient_api_esp32-c3.yaml
+  hardware_watchdog: !include packages/watchdog.yaml
+  config_button: !include packages/config_button.yaml
+  wifi: !include packages/sensor_wifi.yaml
+  uptime: !include packages/sensor_uptime.yaml
 
 binary_sensor:
   - id: !extend config_button
