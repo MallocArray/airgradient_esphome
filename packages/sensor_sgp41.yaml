@@ -1,21 +1,67 @@
-substitutions:
-  # 12, 60, 120, 360, 720 are suggested values from AirGradient (range 1..1000)
-  voc_learning_time_offset_hours: '12'
-  nox_learning_time_offset_hours: '12'
+globals:
+  - id: g_voc_learning_time
+    type: int
+    restore_value: true
+    initial_value: '12'
+  - id: g_nox_learning_time
+    type: int
+    restore_value: true
+    initial_value: '12'
+
+select:
+  - platform: template
+    name: "SGP41 VOC Learning Time Offset"
+    id: voc_learning_time_offset
+    options: ["12", "60", "120", "360", "720"]
+    initial_option: "12"
+    restore_value: true
+    optimistic: true
+    entity_category: config
+    icon: "mdi:clock-outline"
+    set_action:
+      - globals.set:
+          id: g_voc_learning_time
+          value: !lambda 'return atoi(x.c_str());'
+      - lambda: |-
+          id(sgp4x_sensor).set_voc_algorithm_tuning(100, (uint16_t)atoi(x.c_str()), 12, 180, 50, 230);
+
+  - platform: template
+    name: "SGP41 NOx Learning Time Offset"
+    id: nox_learning_time_offset
+    options: ["12", "60", "120", "360", "720"]
+    initial_option: "12"
+    restore_value: true
+    optimistic: true
+    entity_category: config
+    icon: "mdi:clock-outline"
+    set_action:
+      - globals.set:
+          id: g_nox_learning_time
+          value: !lambda 'return atoi(x.c_str());'
+      - lambda: |-
+          id(sgp4x_sensor).set_nox_algorithm_tuning(100, (uint16_t)atoi(x.c_str()), 12, 180, 230);
+
+esphome:
+  on_boot:
+    # Priority 250 fires before hardware sensor setup (~200), so the saved
+    # value from the global overrides the compiled-in default before the
+    # Sensirion algorithm initialises.
+    priority: 250
+    then:
+      - lambda: |-
+          id(sgp4x_sensor).set_voc_algorithm_tuning(100, (uint16_t)id(g_voc_learning_time), 12, 180, 50, 230);
+          id(sgp4x_sensor).set_nox_algorithm_tuning(100, (uint16_t)id(g_nox_learning_time), 12, 180, 230);
 
 sensor:
   - platform: sgp4x
+    id: sgp4x_sensor
     # SGP41 https://esphome.io/components/sensor/sgp4x.html
     voc:
-      name: "VOC Index"
+      name: "VOC index"
       id: voc
-      algorithm_tuning:
-        learning_time_offset_hours: $voc_learning_time_offset_hours
     nox:
-      name: "NOx Index"
+      name: "NOx index"
       id: nox
-      algorithm_tuning:
-        learning_time_offset_hours: $nox_learning_time_offset_hours
     compensation:  # Remove this block if no temp/humidity sensor present for compensation
       temperature_source: temp
       humidity_source: humidity
