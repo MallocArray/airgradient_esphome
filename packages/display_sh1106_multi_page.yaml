@@ -1,19 +1,31 @@
 font:
-  - file: "gfonts://Open Sans"
+  - file: "gfonts://Roboto Mono"
     id: open_sans_14
     size: 14
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  - file: "gfonts://Open Sans"
+  - file: "gfonts://Roboto Mono"
     id: open_sans_9
-    size: 9
+    size: 10
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  - file: "gfonts://Open Sans"
+  - file: "gfonts://Roboto Mono"
     id: open_sans_20
-    size: 20
+    size: 18
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
-  - file: "gfonts://Open Sans"
+  - file: "gfonts://Roboto Mono"
     id: open_sans_34
     # Biggest font size possible for a two line layout.
+    size: 34
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Roboto Mono@700"
+    id: roboto_mono_bold_14
+    size: 14
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Roboto Mono@700"
+    id: roboto_mono_bold_18
+    size: 18
+    glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
+  - file: "gfonts://Roboto Mono@700"
+    id: roboto_mono_bold_34
     size: 34
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
 
@@ -30,25 +42,27 @@ display:
       - id: airgradient_default
         # https://forum.airgradient.com/t/airgradient-one-customized-mallocarray-esphome-display/1328
         lambda: |-
-          if (id(display_in_f).state) {
+          if (isnan(id(temp).state)) {
+            it.printf(0, 0, id(open_sans_14), "-");
+          } else if (id(display_in_f).state) {
             it.printf(0, 0, id(open_sans_14), "%.1f°F", id(temp).state*9/5+32);
           } else {
             it.printf(0, 0, id(open_sans_14), "%.1f°C", id(temp).state);
           }
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(humidity).state) ? "-" : "%.1f%%", id(humidity).state);
           it.line(0,17,128,17);
           it.printf(0,19, id(open_sans_9), "CO2");
-          it.printf(0,27, id(open_sans_20), "%.0f", id(co2).state);
-          it.printf(0,52, id(open_sans_9), "ppm");
+          it.printf(0,27, id(roboto_mono_bold_18), isnan(id(co2).state) ? "-" : "%.0f", id(co2).state);
+          it.printf(0,50, id(open_sans_9), "ppm");
           it.line(50,19,50,64);
           it.printf(54, 19, id(open_sans_9), "PM2.5");
-          it.printf(54, 27, id(open_sans_20), "%.0f", id(pm_2_5).state);
-          it.printf(54, 52, id(open_sans_9), "µg/m³");
+          it.printf(54, 27, id(roboto_mono_bold_18), isnan(id(pm_2_5).state) ? "-" : "%.0f", id(pm_2_5).state);
+          it.printf(54, 50, id(open_sans_9), "µg/m³");
           it.line(100,19,100,64);
           it.printf(104,18, id(open_sans_9), "TVOC");
-          it.printf(104,29, id(open_sans_9), "%.0f", id(voc).state);
-          it.printf(104,41, id(open_sans_9), "NOx");
-          it.printf(104,52, id(open_sans_9), "%.0f", id(nox).state);
+          it.printf(104,29, id(open_sans_9), isnan(id(voc).state) ? "-" : "%.0f", id(voc).state);
+          it.printf(104,40, id(open_sans_9), "NOx");
+          it.printf(104,51, id(open_sans_9), isnan(id(nox).state) ? "-" : "%.0f", id(nox).state);
       - id: boot
         lambda: |-
           it.printf(0, 0, id(open_sans_14), "ID:");
@@ -58,33 +72,37 @@ display:
       - id: summary1
         lambda: |-
           it.printf(0, 0, id(open_sans_14), "CO2:");
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(128, 0, id(roboto_mono_bold_14), TextAlign::TOP_RIGHT, isnan(id(co2).state) ? "- ppm" : "%.0f ppm", id(co2).state);
           it.printf(0, 16, id(open_sans_14), "PM2.5:");
-          it.printf(128, 16, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(128, 16, id(roboto_mono_bold_14), TextAlign::TOP_RIGHT, isnan(id(pm_2_5).state) ? "- µg/m³" : "%.0f µg/m³", id(pm_2_5).state);
           it.printf(0, 32, id(open_sans_14), "Temp:");
-          if (id(display_in_f).state) {
+          if (isnan(id(temp).state)) {
+            it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "-");
+          } else if (id(display_in_f).state) {
             it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
           } else {
             it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
           }
           it.printf(0, 48, id(open_sans_14), "Humidity:");
-          it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(humidity).state) ? "-" : "%.1f%%", id(humidity).state);
       - id: summary2
         lambda: |-
           it.printf(0, 0, id(open_sans_14), "CO2:");
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(128, 0, id(roboto_mono_bold_14), TextAlign::TOP_RIGHT, isnan(id(co2).state) ? "- ppm" : "%.0f ppm", id(co2).state);
           it.printf(0, 16, id(open_sans_14), "PM2.5:");
-          it.printf(128, 16, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(128, 16, id(roboto_mono_bold_14), TextAlign::TOP_RIGHT, isnan(id(pm_2_5).state) ? "- µg/m³" : "%.0f µg/m³", id(pm_2_5).state);
           it.printf(0, 32, id(open_sans_14), "VOC:");
-          it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(voc).state) ? "-" : "%.0f", id(voc).state);
           it.printf(0, 48, id(open_sans_14), "NOx:");
-          it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+          it.printf(128, 48, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(nox).state) ? "-" : "%.0f", id(nox).state);
       - id: huge_no_units
         lambda: |-
-          it.printf(0, 0 - 8, id(open_sans_34), TextAlign::TOP_LEFT, "%.0f", id(co2).state);
-          it.printf(it.get_width(), 0 - 8, id(open_sans_34), TextAlign::TOP_RIGHT, "%.0f", id(humidity).state);
-          it.printf(0, 64 + 8, id(open_sans_34), TextAlign::BOTTOM_LEFT, "%.0f", id(pm_2_5).state);
-          if (id(display_in_f).state) {
+          it.printf(0, 0 - 8, id(roboto_mono_bold_34), TextAlign::TOP_LEFT, isnan(id(co2).state) ? "-" : "%.0f", id(co2).state);
+          it.printf(it.get_width(), 0 - 8, id(open_sans_34), TextAlign::TOP_RIGHT, isnan(id(humidity).state) ? "-" : "%.0f", id(humidity).state);
+          it.printf(0, 64 + 8, id(roboto_mono_bold_34), TextAlign::BOTTOM_LEFT, isnan(id(pm_2_5).state) ? "-" : "%.0f", id(pm_2_5).state);
+          if (isnan(id(temp).state)) {
+            it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "-");
+          } else if (id(display_in_f).state) {
             it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state*9/5+32);
           } else {
             it.printf(it.get_width(), 64 + 8, id(open_sans_34), TextAlign::BOTTOM_RIGHT, "%.1f", id(temp).state);
@@ -92,38 +110,42 @@ display:
       - id: air_quality
         lambda: |-
           it.printf(0, 13, id(open_sans_14), "CO2");
-          it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
+          it.printf(128, 6, id(roboto_mono_bold_18), TextAlign::TOP_RIGHT, isnan(id(co2).state) ? "- ppm" : "%.0f ppm", id(co2).state);
           it.printf(0, 41, id(open_sans_14), "PM2");
-          it.printf(128, 34, id(open_sans_20), TextAlign::TOP_RIGHT, "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(128, 34, id(roboto_mono_bold_18), TextAlign::TOP_RIGHT, isnan(id(pm_2_5).state) ? "- µg/m³" : "%.0f µg/m³", id(pm_2_5).state);
       - id: air_temp
         lambda: |-
           it.printf(0, 13, id(open_sans_14), "Temp");
-          if (id(display_in_f).state) {
+          if (isnan(id(temp).state)) {
+            it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, "-");
+          } else if (id(display_in_f).state) {
             it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, "%.1f°F", id(temp).state*9/5+32);
           } else {
             it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, "%.1f°C", id(temp).state);
           }
           it.printf(0, 41, id(open_sans_14), "Humid");
-          it.printf(128, 34, id(open_sans_20), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
+          it.printf(128, 34, id(open_sans_20), TextAlign::TOP_RIGHT, isnan(id(humidity).state) ? "-" : "%.1f%%", id(humidity).state);
       - id: air_voc
         lambda: |-
           it.printf(0, 6, id(open_sans_20), "VOC:");
-          it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, "%.0f", id(voc).state);
+          it.printf(128, 6, id(open_sans_20), TextAlign::TOP_RIGHT, isnan(id(voc).state) ? "-" : "%.0f", id(voc).state);
           it.printf(0, 34, id(open_sans_20), "NOx:");
-          it.printf(128, 34, id(open_sans_20), TextAlign::TOP_RIGHT, "%.0f", id(nox).state);
+          it.printf(128, 34, id(open_sans_20), TextAlign::TOP_RIGHT, isnan(id(nox).state) ? "-" : "%.0f", id(nox).state);
       - id: combo
         lambda: |-
-          if (id(display_in_f).state) {
+          if (isnan(id(temp).state)) {
+            it.printf(0, 0, id(open_sans_14), "-");
+          } else if (id(display_in_f).state) {
             it.printf(0, 0, id(open_sans_14), "%.1f °F", id(temp).state*9/5+32);
           } else {
             it.printf(0, 0, id(open_sans_14), "%.1f °C", id(temp).state);
           }
-          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%.1f%%", id(humidity).state);
-          it.printf(0, 16, id(open_sans_14), "%.0f µg/m³", id(pm_2_5).state);
-          it.printf(128, 16, id(open_sans_14), TextAlign::TOP_RIGHT, "%.0f ppm", id(co2).state);
-          it.printf(0, 32, id(open_sans_14), "VOC: %.0f", id(voc).state);
-          it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, "NOx: %.0f", id(nox).state);
-          it.printf(0, 48, id(open_sans_14), "AQI: %.0f", id(pm_2_5_aqi).state);
+          it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(humidity).state) ? "-" : "%.1f%%", id(humidity).state);
+          it.printf(0, 16, id(roboto_mono_bold_14), isnan(id(pm_2_5).state) ? "- µg/m³" : "%.0f µg/m³", id(pm_2_5).state);
+          it.printf(128, 16, id(roboto_mono_bold_14), TextAlign::TOP_RIGHT, isnan(id(co2).state) ? "- ppm" : "%.0f ppm", id(co2).state);
+          it.printf(0, 32, id(open_sans_14), isnan(id(voc).state) ? "VOC: -" : "VOC: %.0f", id(voc).state);
+          it.printf(128, 32, id(open_sans_14), TextAlign::TOP_RIGHT, isnan(id(nox).state) ? "NOx: -" : "NOx: %.0f", id(nox).state);
+          it.printf(0, 48, id(open_sans_14), isnan(id(pm_2_5_aqi).state) ? "AQI: -" : "AQI: %.0f", id(pm_2_5_aqi).state);
       - id: blank
         lambda: |-
           it.printf(0, 0, id(open_sans_14), " ");
