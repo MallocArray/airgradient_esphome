@@ -5,22 +5,106 @@ sensor:
       name: "Temperature Raw"
       id: temp_raw
       disabled_by_default: true
+      entity_category: diagnostic
     humidity:
       name: "Humidity Raw"
       id: humidity_raw
       disabled_by_default: true
+      entity_category: diagnostic
     address: 0x44
 
   - platform: copy
     source_id: temp_raw
     name: "Temperature"
     id: temp
+    entity_category: ""
+    device_class: temperature
+    state_class: measurement
     # https://www.airgradient.com/documentation/correction-algorithms/
-    # No current correction for indoor devices, but structure in place if developed
+    filters:
+      - lambda: return x * id(temp_scale).state + id(temp_offset).state;
 
   - platform: copy
     source_id: humidity_raw
     name: "Humidity"
     id: humidity
+    entity_category: ""
+    device_class: humidity
+    state_class: measurement
     # https://www.airgradient.com/documentation/correction-algorithms/
-    # No current correction for indoor devices, but structure in place if developed
+    filters:
+      - lambda: return x * id(humidity_scale).state + id(humidity_offset).state;
+
+number:
+  - platform: template
+    name: "SHT40 Temperature Scale"
+    id: temp_scale
+    min_value: 0.5
+    max_value: 2.0
+    step: 0.01
+    initial_value: 1.0
+    restore_value: true
+    optimistic: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    name: "SHT40 Temperature Offset"
+    id: temp_offset
+    min_value: -10.0
+    max_value: 10.0
+    step: 0.1
+    initial_value: 0.0
+    restore_value: true
+    optimistic: true
+    mode: box
+    entity_category: config
+    unit_of_measurement: "°C"
+
+  - platform: template
+    name: "SHT40 Humidity Scale"
+    id: humidity_scale
+    min_value: 0.5
+    max_value: 2.0
+    step: 0.01
+    initial_value: 1.0
+    restore_value: true
+    optimistic: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    name: "SHT40 Humidity Offset"
+    id: humidity_offset
+    min_value: -20.0
+    max_value: 20.0
+    step: 0.1
+    initial_value: 0.0
+    restore_value: true
+    optimistic: true
+    mode: box
+    entity_category: config
+    unit_of_measurement: "%"
+
+button:
+  - platform: template
+    name: "SHT40 Reset Temperature Calibration"
+    entity_category: config
+    on_press:
+      - number.set:
+          id: temp_scale
+          value: 1.0
+      - number.set:
+          id: temp_offset
+          value: 0.0
+
+  - platform: template
+    name: "SHT40 Reset Humidity Calibration"
+    entity_category: config
+    on_press:
+      - number.set:
+          id: humidity_scale
+          value: 1.0
+      - number.set:
+          id: humidity_offset
+          value: 0.0
