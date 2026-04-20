@@ -1,7 +1,30 @@
 substitutions:
   pm_update_interval: "2min"
-  pm_2_5_scaling_factor: '1'
-  pm_2_5_intercept: '0'
+
+number:
+  - platform: template
+    name: "PMS5003 PM2.5 Scaling Factor"
+    id: pm_2_5_scaling_factor
+    min_value: 0
+    max_value: 10
+    step: 0.01
+    initial_value: 1.0
+    restore_value: true
+    optimistic: true
+    entity_category: config
+    icon: mdi:scale
+
+  - platform: template
+    name: "PMS5003 PM2.5 Intercept"
+    id: pm_2_5_intercept
+    min_value: -100
+    max_value: 100
+    step: 0.1
+    initial_value: 0.0
+    restore_value: true
+    optimistic: true
+    entity_category: config
+    icon: mdi:plus-minus-variant
 
 sensor:
   - platform: pmsx003
@@ -10,20 +33,20 @@ sensor:
     type: PMSX003
     uart_id: pms5003_uart
     pm_2_5:
-      name: "PM 2.5 Raw"
+      name: "PM2.5 Raw"
       id: pm_2_5_raw
       device_class: pm25  # Added to report properly to HomeKit
       disabled_by_default: true
     pm_1_0:
-      name: "PM 1.0"
+      name: "PM1.0"
       id: pm_1_0
       device_class: pm1  # Added to report properly to HomeKit
     pm_10_0:
-      name: "PM 10.0"
+      name: "PM10.0"
       id: pm_10_0
       device_class: pm10  # Added to report properly to HomeKit
     pm_0_3um:
-      name: "PM 0.3"
+      name: "PM0.3"
       id: pm_0_3um
     update_interval: $pm_update_interval
 
@@ -31,7 +54,7 @@ sensor:
     # Implements PM2.5 correction algorithm supported by AirGradient from EPA and optionally batch specific corrections
     # https://www.airgradient.com/documentation/correction-algorithms/
     # https://document.airnow.gov/airnow-fire-and-smoke-map-questions-and-answers.pdf
-    name: "PM 2.5"
+    name: "PM2.5"
     id: pm_2_5
     update_interval: $pm_update_interval
     device_class: pm25  # Added to report properly to HomeKit
@@ -43,9 +66,9 @@ sensor:
       // https://www.airgradient.com/blog/low-readings-from-pms5003/
       // Correction for sensor batches after 20231030
       // Only use the batch/individual calibration if the default scaling and intercept are changed
-      float pm_2_5_calibrated_low = $pm_2_5_scaling_factor * id(pm_0_3um).state + $pm_2_5_intercept;
+      float pm_2_5_calibrated_low = id(pm_2_5_scaling_factor).state * id(pm_0_3um).state + id(pm_2_5_intercept).state;
       float pm_2_5_calibrated = 0;
-      if (pm_2_5_calibrated_low < 31 && ($pm_2_5_scaling_factor != 1 || $pm_2_5_intercept != 0)) {
+      if (pm_2_5_calibrated_low < 31 && (id(pm_2_5_scaling_factor).state != 1.0f || id(pm_2_5_intercept).state != 0.0f)) {
         pm_2_5_calibrated = pm_2_5_calibrated_low;
       } else {
         pm_2_5_calibrated = id(pm_2_5_raw).state;
@@ -76,7 +99,7 @@ sensor:
 
   - platform: template
     # Depends on another sensor providing an ID of pm_2_5 such as a pms5003
-    name: "PM 2.5 AQI"
+    name: "PM2.5 AQI"
     id: pm_2_5_aqi
     device_class: aqi
     update_interval: 5 min
