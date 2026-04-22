@@ -68,7 +68,7 @@ display:
           it.printf(0, 0, id(open_sans_14), "ID:");
           it.printf(128, 0, id(open_sans_14), TextAlign::TOP_RIGHT, "%s", get_mac_address().c_str());
           it.printf(0, 21, id(open_sans_14), "Config Ver: $config_version");
-          it.printf(0, 42, id(open_sans_14), "$friendly_name");
+          it.printf(0, 42, id(open_sans_14), "%s", App.get_friendly_name().c_str());
       - id: summary1
         lambda: |-
           it.printf(0, 0, id(open_sans_14), "CO2:");

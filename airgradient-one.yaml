@@ -11,6 +11,9 @@
 #   - CI validates, builds, publishes the manifest under /airgradient-one/
 #     on GitHub Pages, and attaches binaries to a GitHub Release.
 
+substitutions:
+  config_version: "1.0.0"  # keep in sync with esphome.project.version below
+
 esphome:
   name: "airgradient-one"
   friendly_name: "AirGradient ONE"
@@ -69,7 +72,6 @@ improv_serial:
   id: improv_serial_provisioner
 
 web_server:
-  id: web_server
   version: 3
   port: 80
   sorting_groups:
