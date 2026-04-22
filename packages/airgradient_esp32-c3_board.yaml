@@ -1,16 +1,3 @@
-substitutions:
-  config_version: 5.3.3
-
-esphome:
-  name: "${name}"
-  friendly_name: "${friendly_name}"
-  name_add_mac_suffix: ${name_add_mac_suffix}  # Set to false if you don't want part of the MAC address in the name
-
-  project:
-    name: mallocarray.airgradient
-    version: "$config_version"
-  min_version: 2025.5.0
-
 esp32:
   board: esp32-c3-devkitm-1
   framework:
