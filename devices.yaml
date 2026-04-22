@@ -37,10 +37,3 @@ devices:
   #   chip_family: "ESP32-C3"
   #   node_name: ag-open-air
   #   description: "Outdoor air-quality monitor (O-1PST)."
-  #
-  # - slug: airgradient-basic
-  #   name: "AirGradient Basic (DIY)"
-  #   yaml: airgradient-basic.yaml
-  #   chip_family: "ESP8266"
-  #   node_name: ag-basic
-  #   description: "DIY kit based on the Wemos D1 Mini (ESP8266)."
