@@ -2,3 +2,5 @@ sensor:
   - platform: uptime
     name: "Uptime"
     id: device_uptime
+    web_server:
+      sorting_group_id: grp_system

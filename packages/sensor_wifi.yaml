@@ -3,3 +3,5 @@ sensor:
     name: "WiFi Signal"
     id: wifi_dbm
     update_interval: 60s
+    web_server:
+      sorting_group_id: grp_system

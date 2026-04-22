@@ -11,6 +11,8 @@ light:
     # Classify this as primary entity so that it shows up on the Home Assistant
     # pre-populated default dashboard so `entity_category` is intentionally not
     # set.
+    web_server:
+      sorting_group_id: grp_led
 
 number:
   - platform: template
@@ -26,6 +28,8 @@ number:
     restore_value: true
     mode: slider
     entity_category: config
+    web_server:
+      sorting_group_id: grp_led
 
   - platform: template
     # https://esphome.io/components/number/template.html
@@ -40,3 +44,5 @@ number:
     restore_value: true
     mode: box
     entity_category: config
+    web_server:
+      sorting_group_id: grp_led

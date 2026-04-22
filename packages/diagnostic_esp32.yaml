@@ -2,6 +2,8 @@ sensor:
   - platform: internal_temperature
     name: "ESP Temperature"
     id: sys_esp_temperature
+    web_server:
+      sorting_group_id: grp_system
 
   - platform: template
     id: esp_memory
@@ -11,15 +13,23 @@ sensor:
     unit_of_measurement: "kB"
     state_class: measurement
     entity_category: "diagnostic"
+    web_server:
+      sorting_group_id: grp_system
 
   - platform: debug
     # https://esphome.io/components/debug.html
     free:
       name: "Heap Free"
+      web_server:
+        sorting_group_id: grp_system
     block:
       name: "Heap Max Block"
+      web_server:
+        sorting_group_id: grp_system
     loop_time:
       name: "Loop Time"
+      web_server:
+        sorting_group_id: grp_system
     # psram:
     #   name: "Free PSRAM"
 
@@ -30,5 +40,9 @@ text_sensor:
   - platform: debug
     device:
       name: "Device Info"
+      web_server:
+        sorting_group_id: grp_system
     reset_reason:
       name: "Reset Reason"
+      web_server:
+        sorting_group_id: grp_system

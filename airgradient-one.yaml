@@ -47,6 +47,8 @@ update:
     # workflow publishes to (site/<slug>/manifest.json).
     source: "https://luukvisser.github.io/airgradient-esphome/airgradient-one/manifest.json"
     update_interval: 6h
+    web_server:
+      sorting_group_id: grp_system
 
 wifi:
   id: wifi_client
@@ -68,8 +70,34 @@ improv_serial:
 
 web_server:
   id: web_server
+  version: 3
   port: 80
-  
+  sorting_groups:
+    - id: grp_sensors
+      name: "Sensors"
+      sorting_weight: 5
+    - id: grp_led
+      name: "LED"
+      sorting_weight: 10
+    - id: grp_display
+      name: "Display"
+      sorting_weight: 20
+    - id: grp_co2
+      name: "CO₂ (SenseAir S8)"
+      sorting_weight: 30
+    - id: grp_pm25
+      name: "PM2.5 (PMS5003)"
+      sorting_weight: 40
+    - id: grp_temp
+      name: "Temperature & Humidity (SHT40)"
+      sorting_weight: 50
+    - id: grp_voc
+      name: "VOC / NOx (SGP41)"
+      sorting_weight: 60
+    - id: grp_system
+      name: "System"
+      sorting_weight: 70
+
 dashboard_import:
   # Per-device import URL. The @main ref means users always adopt the
   # latest version of the config from the default branch; switch to a
@@ -82,6 +110,8 @@ button:
     id: safe_mode_button
     name: "Safe Mode Boot"
     entity_category: diagnostic
+    web_server:
+      sorting_group_id: grp_system
 
 packages:
   board: !include packages/airgradient_esp32-c3_board.yaml

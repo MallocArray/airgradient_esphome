@@ -8,6 +8,8 @@ select:
     optimistic: true
     entity_category: config
     icon: "mdi:calendar-clock"
+    web_server:
+      sorting_group_id: grp_co2
     set_action:
       - lambda: |-
           uint16_t hours = (uint16_t)(atoi(x.c_str()) * 24);
@@ -40,6 +42,8 @@ number:
     entity_category: config
     unit_of_measurement: "ppm"
     icon: "mdi:tune-vertical"
+    web_server:
+      sorting_group_id: grp_co2
 
 sensor:
   - platform: senseair
@@ -55,6 +59,8 @@ sensor:
       filters:
         - skip_initial: 1  # Sometimes returns 0 at first boot instead of valid data
         - lambda: return x + id(co2_offset_number).state;
+      web_server:
+        sorting_group_id: grp_sensors
     id: senseair_co2
     uart_id: senseair_co2_uart
     update_interval: 60s
@@ -65,6 +71,8 @@ button:
     name: "SenseAir S88 CO2 Calibration"
     id: senseair_co2_calibrate_button
     entity_category: config
+    web_server:
+      sorting_group_id: grp_co2
     on_press:
       then:
         - senseair.background_calibration: senseair_co2
@@ -76,6 +84,8 @@ button:
     name: "SenseAir S88 CO2 Write Calibration Interval To Log"
     id: senseair_co2_abc_get_period
     entity_category: config
+    web_server:
+      sorting_group_id: grp_co2
     on_press:
       then:
         - senseair.abc_get_period: senseair_co2
@@ -87,6 +97,8 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: True
     entity_category: config
+    web_server:
+      sorting_group_id: grp_co2
     turn_on_action:
       - senseair.abc_enable: senseair_co2
     turn_off_action:

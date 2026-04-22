@@ -13,6 +13,8 @@ number:
     optimistic: true
     entity_category: config
     icon: mdi:scale
+    web_server:
+      sorting_group_id: grp_pm25
 
   - platform: template
     name: "PMS5003 PM2.5 Intercept"
@@ -25,6 +27,8 @@ number:
     optimistic: true
     entity_category: config
     icon: mdi:plus-minus-variant
+    web_server:
+      sorting_group_id: grp_pm25
 
 sensor:
   - platform: pmsx003
@@ -37,17 +41,25 @@ sensor:
       id: pm_2_5_raw
       device_class: pm25  # Added to report properly to HomeKit
       disabled_by_default: true
+      web_server:
+        sorting_group_id: grp_pm25
     pm_1_0:
       name: "PM1.0"
       id: pm_1_0
       device_class: pm1  # Added to report properly to HomeKit
+      web_server:
+        sorting_group_id: grp_sensors
     pm_10_0:
       name: "PM10.0"
       id: pm_10_0
       device_class: pm10  # Added to report properly to HomeKit
+      web_server:
+        sorting_group_id: grp_sensors
     pm_0_3um:
       name: "PM0.3"
       id: pm_0_3um
+      web_server:
+        sorting_group_id: grp_pm25
     update_interval: $pm_update_interval
 
   - platform: template
@@ -62,6 +74,8 @@ sensor:
     icon: mdi:chemical-weapon
     accuracy_decimals: 0
     state_class: measurement
+    web_server:
+      sorting_group_id: grp_sensors
     lambda: |-
       // https://www.airgradient.com/blog/low-readings-from-pms5003/
       // Correction for sensor batches after 20231030
@@ -105,6 +119,8 @@ sensor:
     update_interval: 5 min
     icon: "mdi:air-filter"
     accuracy_decimals: 0
+    web_server:
+      sorting_group_id: grp_sensors
     filters:
       - skip_initial: 1  # Need valid data from PM 2.5 sensor before able to calculate
     lambda: |-

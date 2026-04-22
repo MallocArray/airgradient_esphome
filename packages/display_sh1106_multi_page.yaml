@@ -268,6 +268,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:thermometer"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display AirGradient Default Page"
@@ -276,6 +278,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Summary Pages"
@@ -284,6 +288,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Huge No Units Page"
@@ -292,6 +298,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:numeric"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Air Quality Page"
@@ -300,14 +308,18 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
-    name: "Display Temp/Hum Page"
+    name: "Display Temp & Hum Page"
     id: display_air_temp_page
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display VOC Page"
@@ -316,6 +328,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Combo Page"
@@ -324,6 +338,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Boot Page"
@@ -332,6 +348,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
 
   - platform: template
     name: "Display Blank Page"
@@ -340,6 +358,8 @@ switch:
     optimistic: True
     entity_category: config
     icon: "mdi:monitor"
+    web_server:
+      sorting_group_id: grp_display
     on_turn_on:
       - display.page.show: blank
       - component.update: oled_display
@@ -365,3 +385,5 @@ number:
         # https://www.reddit.com/r/Esphome/comments/sy1d1s/how_to_write_a_lamba_to_change_the_contrast_of/
         lambda: id(oled_display).set_contrast(id(display_contrast).state / 100.0);
     entity_category: config
+    web_server:
+      sorting_group_id: grp_display

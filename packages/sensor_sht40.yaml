@@ -6,11 +6,15 @@ sensor:
       id: temp_raw
       disabled_by_default: true
       entity_category: diagnostic
+      web_server:
+        sorting_group_id: grp_temp
     humidity:
       name: "Humidity Raw"
       id: humidity_raw
       disabled_by_default: true
       entity_category: diagnostic
+      web_server:
+        sorting_group_id: grp_temp
     address: 0x44
 
   - platform: copy
@@ -23,6 +27,8 @@ sensor:
     # https://www.airgradient.com/documentation/correction-algorithms/
     filters:
       - lambda: return x * id(temp_scale).state + id(temp_offset).state;
+    web_server:
+      sorting_group_id: grp_sensors
 
   - platform: copy
     source_id: humidity_raw
@@ -34,6 +40,8 @@ sensor:
     # https://www.airgradient.com/documentation/correction-algorithms/
     filters:
       - lambda: return x * id(humidity_scale).state + id(humidity_offset).state;
+    web_server:
+      sorting_group_id: grp_sensors
 
 number:
   - platform: template
@@ -47,6 +55,8 @@ number:
     optimistic: true
     mode: box
     entity_category: config
+    web_server:
+      sorting_group_id: grp_temp
 
   - platform: template
     name: "SHT40 Temperature Offset"
@@ -60,6 +70,8 @@ number:
     mode: box
     entity_category: config
     unit_of_measurement: "°C"
+    web_server:
+      sorting_group_id: grp_temp
 
   - platform: template
     name: "SHT40 Humidity Scale"
@@ -72,6 +84,8 @@ number:
     optimistic: true
     mode: box
     entity_category: config
+    web_server:
+      sorting_group_id: grp_temp
 
   - platform: template
     name: "SHT40 Humidity Offset"
@@ -85,11 +99,15 @@ number:
     mode: box
     entity_category: config
     unit_of_measurement: "%"
+    web_server:
+      sorting_group_id: grp_temp
 
 button:
   - platform: template
     name: "SHT40 Reset Temperature Calibration"
     entity_category: config
+    web_server:
+      sorting_group_id: grp_temp
     on_press:
       - number.set:
           id: temp_scale
@@ -101,6 +119,8 @@ button:
   - platform: template
     name: "SHT40 Reset Humidity Calibration"
     entity_category: config
+    web_server:
+      sorting_group_id: grp_temp
     on_press:
       - number.set:
           id: humidity_scale

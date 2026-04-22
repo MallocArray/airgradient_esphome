@@ -39,6 +39,8 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True
     entity_category: config
+    web_server:
+      sorting_group_id: grp_system
 
 esphome:
   on_boot:

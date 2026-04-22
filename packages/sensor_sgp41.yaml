@@ -18,6 +18,8 @@ select:
     optimistic: true
     entity_category: config
     icon: "mdi:clock-outline"
+    web_server:
+      sorting_group_id: grp_voc
     set_action:
       - globals.set:
           id: g_voc_learning_time
@@ -34,6 +36,8 @@ select:
     optimistic: true
     entity_category: config
     icon: "mdi:clock-outline"
+    web_server:
+      sorting_group_id: grp_voc
     set_action:
       - globals.set:
           id: g_nox_learning_time
@@ -59,9 +63,13 @@ sensor:
     voc:
       name: "VOC index"
       id: voc
+      web_server:
+        sorting_group_id: grp_sensors
     nox:
       name: "NOx index"
       id: nox
+      web_server:
+        sorting_group_id: grp_sensors
     compensation:  # Remove this block if no temp/humidity sensor present for compensation
       temperature_source: temp
       humidity_source: humidity
