@@ -1,77 +1,139 @@
-# AirGradient ESPHome Configurations
+# AirGradient ESPHome firmware
 
-ESPHome yaml files for AirGradient devices to maintain the research and accuracy of AirGradient sensors, while also gaining the benefits of ESPHome/HomeAssistant for easy to use switches, buttons, configurations, and dashboards, all controlled locally.  Maintains the ability to also send data to the AirGradient Dashboard, which can also be disabled/removed to keep all data local.
+Firmware builds for multiple AirGradient devices, each versioned and
+released independently. Designed to meet the
+[Made for ESPHome](https://esphome.io/guides/made_for_esphome/) program
+requirements.
 
-<img src="image/README/1715467068556.png" width=25% height=25%>
+## Supported devices
 
-## [Installation](/installation.md)
+Every device that ships from this repo is declared in [`devices.yaml`](devices.yaml).
+At the time of writing that's:
 
-## [Configuration](/configuration.md)
+- **AirGradient ONE** (`airgradient-one`) — ESP32-C3 indoor monitor
 
-## [Calibration](/calibration.md)
+Adding a new device is covered in its own section below.
 
-## [Packages](/packages.md)
+## How a release works
 
-List of available packages to customize your device and gain additional features
+Tags are scoped per device: **`<slug>/v<semver>`**. That means each
+device has its own version history, release notes, and manifest URL —
+bumping one board never triggers a rebuild of another.
 
-## Breaking Changes
+```bash
+# Cut a stable release for the ONE
+git tag airgradient-one/v1.2.3
+git push origin airgradient-one/v1.2.3
 
-* 5.0.0 is a major version upgrade as switching to esp-idf is not fully supported via OTA. Highly recommend doing one USB flash of 5.0.0 and later to the AirGradient ONE and OpenAir devices to reformat the storage to support esp-idf.  Future updates can be done Over-The-Air without issue.
-  * If not done, the device is likely to reboot at some point and switch to the standby partition, returning to a version prior to 5.0.0
-  * [Seeing an Old Firmware Version After Update? Here&#39;s Why &amp; How to Fix It · Issue #1821 · Blackymas/NSPanel_HA_Blueprint](https://github.com/Blackymas/NSPanel_HA_Blueprint/issues/1821)
-  * [Read/Write bootloader, partition table and any partition via OTA by angelnu · Pull Request #5535 · esphome/esphome](https://github.com/esphome/esphome/pull/5535)
+# Cut a pre-release (skipped from the Pages manifest, listed as
+# pre-release on GitHub so fielded devices ignore it)
+git tag airgradient-one/v1.3.0-rc.1
+git push origin airgradient-one/v1.3.0-rc.1
+```
 
-## Changes
+On each tag push the `Build & Release Firmware` workflow:
 
-* Added optional substitutions to implement batch-specific PM2.5 corrections using values provided by AirGradient
-  [See details in the packages.md file under the PMS5003 section.](packages.md#sensor_pms5003yaml)
-* Restored logging to default values as it no longer repeats messages about components taking too long to complete
-* New package for upgrading DIY and Pro models to Lolin C3 Mini
+1. Parses the slug and version out of the tag, looks the slug up in
+   `devices.yaml`, and confirms the YAML's `project.version` matches.
+2. Compiles the firmware with ESPHome.
+3. Publishes to the `gh-pages` branch under `/<slug>/`:
+   - `manifest.json` — what the device's `update.http_request` polls.
+   - `firmware/latest/` — overwritten each release; referenced by the manifest.
+   - `firmware/<version>/` — immutable copy for anyone pinning.
+4. Rebuilds the top-level `index.html` listing every device that has
+   a manifest on the site, with ESP Web Tools install buttons.
+5. Attaches the binaries and MD5 to a GitHub Release at `<slug>/v<version>`.
 
-## Features
+Manual builds are also available via the **Run workflow** button on
+Actions — pick a device from the dropdown to smoke-test a branch
+without cutting a release.
 
-Replacing the line that starts with `led_co2` with `  led_combo: !include packages/led_combo.yaml` enables combo LED bar.  For more information, look at the Packages file.
+## Published URLs
 
-Many added features can be found in HomeAssistant by going to Settings>Devices and selecting the AirGradient device.  Alternatively, add `web_server:` to the config file to enable a built-in web server on the AirGradient device (Not recommended for devices based on the D1 Mini ESP8266)
+After the first release, every device has:
 
-- Compact single page display by default with all relevant sensor readings
-- Display Contrast slider to dim the display
-- Enable different pages of information to be shown on the OLED display, or leave the default of a single page with all relevant information
+```
+https://<owner>.github.io/<repo>/                         # landing page
+https://<owner>.github.io/<repo>/<slug>/manifest.json     # update manifest
+https://<owner>.github.io/<repo>/<slug>/firmware/latest/  # latest binaries
+https://<owner>.github.io/<repo>/<slug>/firmware/<ver>/   # pinned version
+```
 
-  ![1703765819874](image/README/1703765819874.png)
-- Button to initiate a SenseAir S8 CO2 Calibration on demand
+Each device's YAML points its `update.http_request.source` at its own
+manifest URL, so firmware is only offered to compatible hardware.
 
-  ![1703765340274](image/README/1703765340274.png)
-- Switch to enable or disable SenseAir S8 CO2 sensor Automatic Baseline Calibration (ABC)
+## Adding a new device
 
-  ![1704131891282](image/README/1704131891282.png)
-- Button to view the current S8 ABC interval (confirm if ABC is disabled or enable, which defaults to every 7 days) View ESPHome logs to see the output of this button
+1. Add a block to `devices.yaml` with the slug, name, YAML path, chip
+   family, and node name.
+2. Create `<slug>.yaml` alongside `airgradient-one.yaml`. The easiest
+   route is copying the ONE config and editing:
+   - `substitutions.name` (must match `node_name` in `devices.yaml`)
+   - `substitutions.friendly_name`
+   - `esphome.project.name` (unique per device)
+   - `update.http_request.source` (point at `/<slug>/manifest.json`)
+   - `dashboard_import.package_import_url` (point at the new YAML)
+   - The `packages:` block for the new hardware.
+3. Open a PR. The `Validate configs` workflow compiles every device in
+   `devices.yaml` on every PR, so a broken new device fails fast.
+4. After merge, tag the first release: `<slug>/v1.0.0`.
 
-  ![1703765530959](image/README/1703765530959.png)
-- Switch to disable LED output on AirGradient ONE model
-- Brightness slider to adjust intensity of AirGradient ONE LED
+## Local development
 
-  ![1703765585475](image/README/1703765585475.png)
-- Switch to toggle display between Fahrenheit and Celsius and persist between reboots
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install .
+esphome config airgradient-one.yaml       # validate
+esphome compile airgradient-one.yaml      # build
+esphome run airgradient-one.yaml          # build + upload (wired or OTA)
+```
 
-  ![1703765618154](image/README/1703765618154.png)
-- Switch to enable or disable uploading to AirGradient Dashboard via API (Choose to keep data local or also send to AirGradient)
+## Made for ESPHome compliance (per device)
 
-  ![1703765631637](image/README/1703765631637.png)
-- Utilize hardware configuration buttons on AirGradient Pro v3.7 and higher
+| Requirement | Where it's satisfied |
+| --- | --- |
+| ESP32 / supported variant | Set per device in its `packages/` board file |
+| `project` identification | `esphome.project` in each device's YAML |
+| Open-source configuration | this repository |
+| User-applied updates | `update.http_request` → per-device `manifest.json` |
+| Wi-Fi provisioning (BLE) | `esp32_improv` |
+| Wi-Fi provisioning (USB) | `improv_serial` |
+| Fallback Wi-Fi AP | `wifi.ap` + `captive_portal` |
+| Dashboard adoption | `dashboard_import.package_import_url` |
+| No secrets / static IPs | credential fields are commented out |
+| IDs on components | every top-level component has an explicit `id:` |
 
-  - Short press (Less than 1 second) - Toggle between F and C on display
-  - Long press (More than 1 second, less than 5) - Trigger manual CO2 calibration
-- Leverage automation in HomeAssistant to turn on the "Blank" page to effectively disable the display output.  Could also turn off the LED strip or set Brightness to 0 to eliminate output while still collecting sensor data
+Once a device is releasing green and flashable, open a PR on
+<https://github.com/esphome/esphome-devices> to add it to the devices
+database, and email `esphome@openhomefoundation.org` linking that PR
+to request permission to use the logo.
 
-## Support me
+## Repository layout
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31C8PHG)
+```
+.
+├── devices.yaml                    # registry: one entry per releasable device
+├── airgradient-one.yaml            # ESPHome config for the ONE
+├── <slug>.yaml                     # (future) ESPHome config for each device
+├── packages/                       # shared YAML packages (pull from AirGradient upstream)
+├── scripts/
+│   ├── build_manifest.py           # writes per-device manifest.json
+│   └── build_landing_page.py       # rebuilds the Pages index listing every device
+├── pyproject.toml                  # pins esphome + pyyaml
+├── .github/workflows/
+│   ├── build-firmware.yml          # tag-driven build + release + Pages
+│   └── validate.yml                # PR-time config validation, matrixed
+└── README.md
+```
 
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/mallocarray)
+## Before you push: checklist
 
-## Todo list
-
-More features are planned to be added to this repo
-
-- [ ] Deprecate Extended Life packages and use a substitution to allow for adjusting update_interval
+- [ ] Replace `yourorg` in every device YAML (three spots each:
+      `project.name`, `update.source`, `dashboard_import.package_import_url`).
+- [ ] In GitHub repo settings: **Pages → Source: Deploy from a branch**
+      → select `gh-pages` / `/ (root)`. (The `gh-pages` branch is
+      created by the first successful release run.)
+- [ ] Confirm the default branch is `main` (or update the
+      `dashboard_import` URLs accordingly).
+- [ ] Copy AirGradient's `packages/` into this repo (or adjust
+      `!include` paths) so every device YAML compiles standalone.

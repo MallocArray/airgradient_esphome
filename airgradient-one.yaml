@@ -1,39 +1,89 @@
 # AirGradient ONE - Board v9
 # https://www.airgradient.com/open-airgradient/instructions/overview/
+#
+# This configuration targets the "Made for ESPHome" program:
+# https://esphome.io/guides/made_for_esphome/
+#
+# Release workflow:
+#   - Update `esphome.project.version` below.
+#   - Tag the commit as `airgradient-one/v<version>` (the slug before /v
+#     must match the filename / devices.yaml slug).
+#   - CI validates, builds, publishes the manifest under /airgradient-one/
+#     on GitHub Pages, and attaches binaries to a GitHub Release.
 
 substitutions:
   name: "ag-one"
   friendly_name: "AG One"
-  name_add_mac_suffix: True
 
-# Enable logging
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  # `project.name` must be globally unique and stable: devices keyed on it
+  # for update checks and Home Assistant adoption. Use reverse-domain +
+  # the device slug so multiple products from the same org don't collide.
+  project:
+    name: "yourorg.airgradient-one"
+    version: "1.0.0"
+
 logger:
 
-# Enable Home Assistant API
 api:
   # encryption:
   #   key: !secret api_password
 
-# OTA is required for Over-the-Air updating
 ota:
   - platform: esphome
+    id: ota_esphome
     # password: !secret ota_password
+  - platform: http_request
+    id: ota_http_request
+
+http_request:
+  id: http_request_client
+  verify_ssl: true
+  timeout: 10s
+  buffer_size_rx: 2048
+
+update:
+  - platform: http_request
+    id: firmware_update
+    name: "Firmware Update"
+    # Per-device manifest URL. Must match the Pages path the release
+    # workflow publishes to (site/<slug>/manifest.json).
+    source: "https://yourorg.github.io/airgradient-esphome/airgradient-one/manifest.json"
+    update_interval: 6h
 
 wifi:
+  id: wifi_client
   fast_connect: false
   min_auth_mode: WPA2
-
-  # Enable fallback hotspot in case wifi connection fails
   ap:
     ap_timeout: 90s
-    # Memorable fallback-AP password. Used only when the device can't reach
-    # its normal WiFi and spins up its own hotspot for re-provisioning.
     password: "airgradient_password"
 
-# In combination with the `ap` this allows the user
-# to provision wifi credentials to the device
 captive_portal:
+  id: captive_portal_web
 
+esp32_improv:
+  id: improv_ble
+  authorizer: none
+
+improv_serial:
+  id: improv_serial_provisioner
+
+dashboard_import:
+  # Per-device import URL. The @main ref means users always adopt the
+  # latest version of the config from the default branch; switch to a
+  # tag (e.g. @airgradient-one/v1.0.0) if you want adoption pinned.
+  package_import_url: "github://yourorg/airgradient-esphome/airgradient-one.yaml@main"
+  import_full_config: false
+
+button:
+  - platform: safe_mode
+    id: safe_mode_button
+    name: "Safe Mode Boot"
+    entity_category: diagnostic
 
 packages:
   board: !include packages/airgradient_esp32-c3_board.yaml
@@ -45,7 +95,7 @@ packages:
   display: !include packages/display_sh1106_multi_page.yaml
   led: !include packages/led.yaml
   # led_co2: !include packages/led_co2.yaml
-  led_combo: !include packages/led_combo.yaml  
+  led_combo: !include packages/led_combo.yaml
   airgradient_api: !include packages/airgradient_api_esp32-c3.yaml
   hardware_watchdog: !include packages/watchdog.yaml
   config_button: !include packages/config_button.yaml
