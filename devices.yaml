@@ -25,7 +25,7 @@ devices:
     name: "AirGradient ONE"
     yaml: airgradient-one.yaml
     chip_family: "ESP32-C3"
-    node_name: ag-one
+    node_name: airgradient-one
     description: "Indoor air-quality monitor (I-9PSL) — PM2.5, CO₂, VOC/NOx, temp/humidity."
 
   # Uncomment and populate as you add more devices. Each new entry enables

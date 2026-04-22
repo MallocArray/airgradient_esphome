@@ -11,13 +11,9 @@
 #   - CI validates, builds, publishes the manifest under /airgradient-one/
 #     on GitHub Pages, and attaches binaries to a GitHub Release.
 
-substitutions:
-  name: "ag-one"
-  friendly_name: "AG One"
-
 esphome:
-  name: "${name}"
-  friendly_name: "${friendly_name}"
+  name: "airgradient-one"
+  friendly_name: "AirGradient ONE"
   name_add_mac_suffix: true
   # `project.name` must be globally unique and stable: devices keyed on it
   # for update checks and Home Assistant adoption. Use reverse-domain +
