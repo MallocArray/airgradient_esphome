@@ -1,0 +1,372 @@
+name: Build & Release Firmware
+
+# Tags are device-scoped: `<slug>/v<semver>`, e.g.
+#   airgradient-one/v1.2.3
+#   airgradient-open-air/v0.4.0-rc.1
+# The part before /v must match a `slug` in devices.yaml.
+on:
+  push:
+    tags:
+      - "*/v*.*.*"
+      - "*/v*.*.*-*"
+  workflow_dispatch:
+    inputs:
+      device_slug:
+        description: "Device slug to build (must exist in devices.yaml)"
+        required: true
+        type: string
+
+# Never let two releases for the same device deploy Pages concurrently —
+# the shared gh-pages branch can't tolerate interleaved pushes. Different
+# devices are fine to deploy in parallel.
+concurrency:
+  group: firmware-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # create Releases + push to gh-pages branch
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Parse the tag (or dispatch input) into device + version, confirm the
+  # device exists, and assert the YAML's project.version matches the tag.
+  # ---------------------------------------------------------------------
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      slug: ${{ steps.parse.outputs.slug }}
+      version: ${{ steps.parse.outputs.version }}
+      is_prerelease: ${{ steps.parse.outputs.is_prerelease }}
+      yaml: ${{ steps.lookup.outputs.yaml }}
+      name: ${{ steps.lookup.outputs.name }}
+      chip_family: ${{ steps.lookup.outputs.chip_family }}
+      node_name: ${{ steps.lookup.outputs.node_name }}
+      is_tag_release: ${{ steps.parse.outputs.is_tag_release }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Parse tag / dispatch input
+        id: parse
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            # Tag format: <slug>/v<semver>
+            ref="${GITHUB_REF_NAME}"
+            if [[ "${ref}" != */v* ]]; then
+              echo "::error::Tag '${ref}' does not match <slug>/v<semver>"
+              exit 1
+            fi
+            slug="${ref%/v*}"
+            version="${ref##*/v}"
+            is_tag_release=true
+          else
+            slug="${{ inputs.device_slug }}"
+            version="0.0.0-dispatch-${GITHUB_RUN_ID}"
+            is_tag_release=false
+          fi
+
+          # Strict semver on tag pushes only — dispatch builds get a
+          # synthetic version that doesn't need to parse.
+          if [[ "${is_tag_release}" == "true" ]]; then
+            if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::Version '${version}' is not valid semver."
+              exit 1
+            fi
+            if [[ "${version}" == *-* ]]; then
+              is_prerelease=true
+            else
+              is_prerelease=false
+            fi
+          else
+            is_prerelease=true
+          fi
+
+          echo "slug=${slug}"                 >> "$GITHUB_OUTPUT"
+          echo "version=${version}"           >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${is_prerelease}" >> "$GITHUB_OUTPUT"
+          echo "is_tag_release=${is_tag_release}" >> "$GITHUB_OUTPUT"
+          echo "Resolved: slug=${slug} version=${version} prerelease=${is_prerelease}"
+
+      - name: Look up device in devices.yaml
+        id: lookup
+        env:
+          SLUG: ${{ steps.parse.outputs.slug }}
+        run: |
+          # Python is always available on ubuntu-latest; PyYAML isn't
+          # until we install deps, so parse with a tiny bespoke reader.
+          # devices.yaml is small and simple — no need for the full lib here.
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import os, sys, re
+          slug = os.environ["SLUG"]
+          text = open("devices.yaml").read()
+          # Split into per-device blocks. Each starts with "  - slug:".
+          blocks = re.split(r"(?m)^  - (?=slug:)", text)
+          for block in blocks[1:]:
+              fields = dict(
+                  re.findall(r'^\s*(\w+):\s*"?([^"\n]+?)"?\s*$', block, re.M)
+              )
+              if fields.get("slug") == slug:
+                  print(f"yaml={fields['yaml']}")
+                  print(f"name={fields['name']}")
+                  print(f"chip_family={fields['chip_family']}")
+                  print(f"node_name={fields['node_name']}")
+                  sys.exit(0)
+          print(f"::error::Device slug '{slug}' not found in devices.yaml", file=sys.stderr)
+          sys.exit(1)
+          PY
+
+      - name: Verify YAML project.version matches tag
+        if: steps.parse.outputs.is_tag_release == 'true'
+        env:
+          YAML_PATH: ${{ steps.lookup.outputs.yaml }}
+          EXPECTED: ${{ steps.parse.outputs.version }}
+        run: |
+          yaml_version=$(python - <<'PY'
+          import os, re
+          text = open(os.environ["YAML_PATH"]).read()
+          # Only match the version inside the `project:` block so we
+          # don't pick up, say, a framework version from a package.
+          block = re.search(r'project:\s*\n((?:[ \t]+.*\n?)+)', text).group(1)
+          m = re.search(r'version:\s*["\']?([^"\'\n]+)', block)
+          print(m.group(1).strip())
+          PY
+          )
+          if [[ "${yaml_version}" != "${EXPECTED}" ]]; then
+            echo "::error::${YAML_PATH} has project.version='${yaml_version}' but tag is '${EXPECTED}'. Bump the YAML and retag."
+            exit 1
+          fi
+          echo "Version OK: ${yaml_version}"
+
+  # ---------------------------------------------------------------------
+  # Compile firmware with ESPHome for exactly the resolved device.
+  # ---------------------------------------------------------------------
+  build:
+    needs: [resolve]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install ESPHome
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          esphome version
+
+      - name: Compile firmware
+        run: esphome compile "${{ needs.resolve.outputs.yaml }}"
+
+      - name: Stage release artifacts
+        id: stage
+        env:
+          NODE_NAME: ${{ needs.resolve.outputs.node_name }}
+          SLUG: ${{ needs.resolve.outputs.slug }}
+        run: |
+          set -euo pipefail
+          build_dir=".esphome/build/${NODE_NAME}/.pioenvs/${NODE_NAME}"
+          if [[ ! -d "${build_dir}" ]]; then
+            # Fall back for platforms that lay out build dirs differently.
+            candidate=$(find .esphome/build -type d -name ".pioenvs" | head -n1 || true)
+            if [[ -n "${candidate}" ]]; then
+              build_dir=$(find "${candidate}" -mindepth 1 -maxdepth 1 -type d | head -n1)
+            fi
+          fi
+          if [[ ! -f "${build_dir}/firmware.factory.bin" ]]; then
+            echo "::error::Could not locate firmware.factory.bin under ${build_dir}"
+            exit 1
+          fi
+          echo "Using build dir: ${build_dir}"
+
+          out="dist/${SLUG}"
+          mkdir -p "${out}"
+          cp "${build_dir}/firmware.factory.bin" "${out}/${SLUG}.factory.bin"
+          cp "${build_dir}/firmware.ota.bin"     "${out}/${SLUG}.ota.bin"
+          (
+            cd "${out}"
+            md5sum "${SLUG}.ota.bin" | awk '{print $1}' > "${SLUG}.ota.md5"
+          )
+          echo "md5=$(cat ${out}/${SLUG}.ota.md5)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ needs.resolve.outputs.slug }}
+          path: dist/${{ needs.resolve.outputs.slug }}/
+          retention-days: 30
+
+      - name: Persist MD5 for downstream jobs
+        run: echo "${{ steps.stage.outputs.md5 }}" > firmware.md5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: md5-${{ needs.resolve.outputs.slug }}
+          path: firmware.md5
+          retention-days: 1
+
+  # ---------------------------------------------------------------------
+  # Publish the per-device manifest + binaries to GitHub Pages.
+  #
+  # Strategy: clone the existing gh-pages branch, overlay this release's
+  # files into it, rebuild the landing page, then force-push the result
+  # back. `keep_files: false` on the deploy action means each release
+  # leaves a clean commit (no stale files from renamed slugs), while
+  # the overlay-on-snapshot approach preserves every other device.
+  #
+  # Skipped for pre-releases so fielded devices don't auto-install betas.
+  # ---------------------------------------------------------------------
+  publish-pages:
+    needs: [resolve, build]
+    if: needs.resolve.outputs.is_tag_release == 'true' && needs.resolve.outputs.is_prerelease == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install deps
+        run: pip install .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware-${{ needs.resolve.outputs.slug }}
+          path: dist/${{ needs.resolve.outputs.slug }}/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: md5-${{ needs.resolve.outputs.slug }}
+          path: .
+
+      # Fetch the current gh-pages so the landing page can list every
+      # previously-published device, not just this release's. If the
+      # branch doesn't exist yet, start from an empty site.
+      - name: Check out existing Pages content
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: existing-pages
+          fetch-depth: 1
+        continue-on-error: true
+
+      - name: Assemble site
+        env:
+          SLUG: ${{ needs.resolve.outputs.slug }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          NAME: ${{ needs.resolve.outputs.name }}
+          CHIP_FAMILY: ${{ needs.resolve.outputs.chip_family }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          md5=$(cat firmware.md5)
+
+          # Start from existing Pages content so other devices' files survive.
+          site=site
+          if [[ -d existing-pages ]]; then
+            mkdir -p "${site}"
+            # Copy everything except git metadata.
+            rsync -a --exclude='.git' existing-pages/ "${site}/"
+          fi
+          mkdir -p "${site}/${SLUG}/firmware/${VERSION}" "${site}/${SLUG}/firmware/latest"
+
+          # Versioned binaries (immutable URLs for anyone pinning a release).
+          cp "dist/${SLUG}/${SLUG}.factory.bin" "${site}/${SLUG}/firmware/${VERSION}/"
+          cp "dist/${SLUG}/${SLUG}.ota.bin"     "${site}/${SLUG}/firmware/${VERSION}/"
+
+          # "latest" copies drive the manifest. Overwritten on each release.
+          cp "dist/${SLUG}/${SLUG}.factory.bin" "${site}/${SLUG}/firmware/latest/"
+          cp "dist/${SLUG}/${SLUG}.ota.bin"     "${site}/${SLUG}/firmware/latest/"
+
+          # Paths in the manifest are relative to manifest.json's location,
+          # which lives at /<slug>/manifest.json — so drop the /<slug>/ prefix.
+          python scripts/build_manifest.py \
+            --name "${NAME}" \
+            --version "${VERSION}" \
+            --chip-family "${CHIP_FAMILY}" \
+            --ota-path "firmware/latest/${SLUG}.ota.bin" \
+            --factory-path "firmware/latest/${SLUG}.factory.bin" \
+            --md5 "${md5}" \
+            --release-url "https://github.com/${REPO}/releases/tag/${SLUG}%2Fv${VERSION}" \
+            --output "${site}/${SLUG}/manifest.json"
+
+          # Rebuild the landing page so the newly-released device shows up
+          # (or updates its version) and any previously-published devices
+          # remain listed.
+          python scripts/build_landing_page.py \
+            --devices-file devices.yaml \
+            --site-dir "${site}" \
+            --repo "${REPO}" \
+            --title "ESPHome firmware" \
+            --output "${site}/index.html"
+
+          # GitHub Pages treats leading-underscore paths as Jekyll
+          # specials; this sentinel file disables that.
+          touch "${site}/.nojekyll"
+
+          ls -la "${site}"
+          ls -la "${site}/${SLUG}"
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          # `keep_files: false` plus a full site snapshot means we get a
+          # clean slate each release — safer than keep_files: true which
+          # can leave stale files lying around when slugs are renamed.
+          keep_files: false
+          commit_message: "Deploy ${{ needs.resolve.outputs.slug }} v${{ needs.resolve.outputs.version }}"
+
+  # ---------------------------------------------------------------------
+  # Cut the GitHub Release. Happens for every tag, including pre-releases.
+  # ---------------------------------------------------------------------
+  release:
+    needs: [resolve, build]
+    if: needs.resolve.outputs.is_tag_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # needed to look up previous tags for changelog
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware-${{ needs.resolve.outputs.slug }}
+          path: dist/
+
+      - name: Generate release notes from commits since previous release of THIS device
+        env:
+          SLUG: ${{ needs.resolve.outputs.slug }}
+        run: |
+          # Only compare against the previous tag for the same device so
+          # the changelog is scoped to changes that actually affect it.
+          prev=$(git tag --sort=-creatordate --list "${SLUG}/v*" \
+                 | grep -v "^${GITHUB_REF_NAME}$" | head -n1 || true)
+          {
+            echo "## ${{ needs.resolve.outputs.name }} v${{ needs.resolve.outputs.version }}"
+            echo
+            echo "### Changes"
+            if [[ -n "${prev}" ]]; then
+              git log --pretty=format:"- %s (%h)" "${prev}..${GITHUB_REF_NAME}"
+            else
+              echo "- Initial release for this device."
+            fi
+          } > RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "${{ needs.resolve.outputs.name }} v${{ needs.resolve.outputs.version }}"
+          body_path: RELEASE_NOTES.md
+          prerelease: ${{ needs.resolve.outputs.is_prerelease == 'true' }}
+          files: |
+            dist/${{ needs.resolve.outputs.slug }}.factory.bin
+            dist/${{ needs.resolve.outputs.slug }}.ota.bin
+            dist/${{ needs.resolve.outputs.slug }}.ota.md5

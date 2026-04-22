@@ -1,0 +1,57 @@
+name: Validate configs
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Read devices.yaml once and emit a matrix — so adding a device is a
+  # one-line change in devices.yaml, not a workflow edit.
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build matrix from devices.yaml
+        id: build
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, re
+          text = open("devices.yaml").read()
+          blocks = re.split(r"(?m)^  - (?=slug:)", text)
+          devices = []
+          for block in blocks[1:]:
+              fields = dict(
+                  re.findall(r'^\s*(\w+):\s*"?([^"\n]+?)"?\s*$', block, re.M)
+              )
+              devices.append({"slug": fields["slug"], "yaml": fields["yaml"]})
+          print("matrix=" + json.dumps({"device": devices}))
+          PY
+
+  validate:
+    needs: [discover]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install ESPHome
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Validate ${{ matrix.device.yaml }}
+        run: esphome config "${{ matrix.device.yaml }}"

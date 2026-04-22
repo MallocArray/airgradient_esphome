@@ -1,0 +1,24 @@
+[project]
+name = "airgradient-esphome-firmware"
+version = "0.0.0"
+description = "ESPHome firmware build pipeline for AirGradient devices (Made for ESPHome)."
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+
+# ESPHome is the one required runtime dep for building firmware. The `~=`
+# (compatible release) specifier pins to the 2026.4.x line but still lets
+# CI pick up patch-level bug/security fixes. Bump deliberately after
+# verifying a new minor release compiles every device in devices.yaml.
+dependencies = [
+    "esphome ~= 2026.4",
+    # Used by scripts/ to parse devices.yaml and build the landing page.
+    "pyyaml ~= 6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Ships YAML + workflows + scripts, not an importable package.
+py-modules = []

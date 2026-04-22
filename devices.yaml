@@ -1,0 +1,46 @@
+# Registry of devices built and released from this repository.
+#
+# Each entry describes one flashable firmware. The CI pipeline reads this
+# file to discover which YAMLs to validate on PRs and which one to build
+# when a tag is pushed. Releases are tagged as <slug>/v<semver>, e.g.
+# `airgradient-one/v1.2.3`, so each device versions independently.
+#
+# Fields:
+#   slug          Short kebab-case identifier. Used in tag names, the
+#                 manifest URL path on GitHub Pages, and artifact filenames.
+#                 Must match the YAML filename (without .yaml).
+#   name          Human-readable product name shown in manifests and UIs.
+#   yaml          Path to the ESPHome config, relative to the repo root.
+#   chip_family   ESP Web Tools chip family string. Must match the chip
+#                 actually targeted by the YAML. Valid values include
+#                 "ESP32", "ESP32-S2", "ESP32-S3", "ESP32-C3", "ESP8266".
+#   node_name     The `name:` substitution the YAML resolves to. Used to
+#                 locate the PlatformIO build output directory. Must match
+#                 `substitutions.name` (or the value `esphome.name` resolves
+#                 to) in the device's YAML.
+#   description   Short one-line description for the Pages landing page.
+
+devices:
+  - slug: airgradient-one
+    name: "AirGradient ONE"
+    yaml: airgradient-one.yaml
+    chip_family: "ESP32-C3"
+    node_name: ag-one
+    description: "Indoor air-quality monitor (I-9PSL) — PM2.5, CO₂, VOC/NOx, temp/humidity."
+
+  # Uncomment and populate as you add more devices. Each new entry enables
+  # an independent release tagged as <slug>/vX.Y.Z.
+  #
+  # - slug: airgradient-open-air
+  #   name: "AirGradient Open Air"
+  #   yaml: airgradient-open-air.yaml
+  #   chip_family: "ESP32-C3"
+  #   node_name: ag-open-air
+  #   description: "Outdoor air-quality monitor (O-1PST)."
+  #
+  # - slug: airgradient-basic
+  #   name: "AirGradient Basic (DIY)"
+  #   yaml: airgradient-basic.yaml
+  #   chip_family: "ESP8266"
+  #   node_name: ag-basic
+  #   description: "DIY kit based on the Wemos D1 Mini (ESP8266)."
