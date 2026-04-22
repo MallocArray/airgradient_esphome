@@ -1,2 +1,11 @@
+.esphome/
 secrets.yaml
-desktop.ini
+dist/
+site/
+existing-pages/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+**/desktop.ini
