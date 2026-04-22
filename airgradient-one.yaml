@@ -23,7 +23,7 @@ esphome:
   # for update checks and Home Assistant adoption. Use reverse-domain +
   # the device slug so multiple products from the same org don't collide.
   project:
-    name: "yourorg.airgradient-one"
+    name: "luukvisser.airgradient-one"
     version: "1.0.0"
 
 logger:
@@ -51,7 +51,7 @@ update:
     name: "Firmware Update"
     # Per-device manifest URL. Must match the Pages path the release
     # workflow publishes to (site/<slug>/manifest.json).
-    source: "https://yourorg.github.io/airgradient-esphome/airgradient-one/manifest.json"
+    source: "https://luukvisser.github.io/airgradient-esphome/airgradient-one/manifest.json"
     update_interval: 6h
 
 wifi:
@@ -76,7 +76,7 @@ dashboard_import:
   # Per-device import URL. The @main ref means users always adopt the
   # latest version of the config from the default branch; switch to a
   # tag (e.g. @airgradient-one/v1.0.0) if you want adoption pinned.
-  package_import_url: "github://yourorg/airgradient-esphome/airgradient-one.yaml@main"
+  package_import_url: "github://luukvisser/airgradient-esphome/airgradient-one.yaml@main"
   import_full_config: false
 
 button:

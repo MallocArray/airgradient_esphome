@@ -125,15 +125,3 @@ to request permission to use the logo.
 │   └── validate.yml                # PR-time config validation, matrixed
 └── README.md
 ```
-
-## Before you push: checklist
-
-- [ ] Replace `yourorg` in every device YAML (three spots each:
-      `project.name`, `update.source`, `dashboard_import.package_import_url`).
-- [ ] In GitHub repo settings: **Pages → Source: Deploy from a branch**
-      → select `gh-pages` / `/ (root)`. (The `gh-pages` branch is
-      created by the first successful release run.)
-- [ ] Confirm the default branch is `main` (or update the
-      `dashboard_import` URLs accordingly).
-- [ ] Copy AirGradient's `packages/` into this repo (or adjust
-      `!include` paths) so every device YAML compiles standalone.
