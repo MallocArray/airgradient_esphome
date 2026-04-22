@@ -1,9 +1,76 @@
 # AirGradient ESPHome firmware
 
-Firmware builds for multiple AirGradient devices, each versioned and
-released independently. Designed to meet the
-[Made for ESPHome](https://esphome.io/guides/made_for_esphome/) program
-requirements.
+ESPHome firmware for the **AirGradient ONE** (v9, ESP32-C3 indoor monitor), built on top of
+[MallocArray/airgradient_esphome](https://github.com/MallocArray/airgradient_esphome).
+Designed to meet the [Made for ESPHome](https://esphome.io/guides/made_for_esphome/) program requirements.
+
+## Changes from upstream
+
+### LED: combined multi-sensor indicator
+
+The upstream `led_co2` package drives all LEDs from CO2 alone.
+This fork replaces it with `led_combo`, which splits the 11-LED strip by sensor:
+
+| LEDs | Sensor | Color scale |
+|------|--------|-------------|
+| 0–4 (left 5) | CO2 | green → yellow → orange → red → purple |
+| 5–9 (middle 5) | PM2.5 | green → yellow → orange → red → purple |
+| 10 (far right) | TVOC index | green → yellow → orange → red → purple |
+
+**Updated thresholds** — grounded in published health guidelines rather than the AirGradient dashboard defaults:
+
+| Color | CO2 (ppm) | PM2.5 (µg/m³) | VOC index |
+|-------|-----------|---------------|-----------|
+| Green | < 600 | < 5 | < 100 |
+| Yellow | 600 – 700 | 5 – 15 | 100 – 200 |
+| Orange | 700 – 850 | 15 – 25 | 200 – 300 |
+| Red | 850 – 1000 | 25 – 35 | 300 – 400 |
+| Purple | > 1000 | > 35 | > 400 |
+
+CO2 thresholds follow ASHRAE/UBA indoor ventilation guidance.
+PM2.5 thresholds follow the 2021 WHO global air quality guidelines.
+VOC thresholds follow Sensirion SGP41 index interpretation (100 = learned baseline).
+
+**Perceptual brightness correction** — a gamma ~2.0 curve is applied to the brightness slider so the low end of the range produces visibly distinct levels instead of spending most of the range near-off.
+
+**LED fade** — outer LEDs in each group are dimmed relative to the centre LED, giving the bar a soft edge.
+
+### Display: multi-page OLED with per-page switches
+
+The active display package is `display_sh1106_multi_page`. Ten pages are available, each independently toggled by a switch in Home Assistant:
+
+| Page | Contents |
+|------|----------|
+| Default | Compact all-in-one: temp, humidity, CO2, PM2.5, TVOC, NOx |
+| Summary 1 | CO2 · PM2.5 · Temperature · Humidity |
+| Summary 2 | CO2 · PM2.5 · VOC · NOx |
+| Air Quality | CO2 and PM2.5 in large type |
+| Temp & Hum | Temperature and humidity in large type |
+| VOC | VOC index and NOx in large type |
+| Combo | Mixed full-screen layout |
+| Huge (no units) | Four key readings in the largest font |
+| Boot | Device MAC address and config version |
+| Blank | Turns the display off |
+
+A **Display Contrast %** slider (0–100) controls screen brightness.
+
+### CI/CD release pipeline
+
+The upstream repo provides YAML packages for manual inclusion. This fork adds a full automated release pipeline:
+
+- **`devices.yaml`** — device registry; adding a device here is the only change needed to enable its CI path.
+- **`validate.yml`** — compiles every registered device on every PR.
+- **`build-firmware.yml`** — tag-driven: validates version, compiles firmware, publishes to GitHub Pages, and cuts a GitHub Release with binaries attached.
+- **Python scripts** (`scripts/`) — generate per-device `manifest.json` and a GitHub Pages landing page with ESP Web Tools install buttons.
+- **OTA via `update.http_request`** — the device polls `/<slug>/manifest.json` on GitHub Pages every 6 hours and installs updates automatically.
+
+### Other changes
+
+- **Scope**: D1 Mini / ESP8266 support removed; this repo targets ESP32-C3 only.
+- **`name_add_mac_suffix: true`**: device names are suffixed with the last bytes of the MAC address so multiple units are distinguishable in Home Assistant out of the box.
+- **Project name**: `luukvisser.airgradient-one` (used by HA for adoption and update tracking).
+
+---
 
 ## Supported devices
 
@@ -11,8 +78,6 @@ Every device that ships from this repo is declared in [`devices.yaml`](devices.y
 At the time of writing that's:
 
 - **AirGradient ONE** (`airgradient-one`) — ESP32-C3 indoor monitor
-
-Adding a new device is covered in its own section below.
 
 ## How a release works
 
@@ -59,8 +124,15 @@ https://<owner>.github.io/<repo>/<slug>/firmware/latest/  # latest binaries
 https://<owner>.github.io/<repo>/<slug>/firmware/<ver>/   # pinned version
 ```
 
-Each device's YAML points its `update.http_request.source` at its own
-manifest URL, so firmware is only offered to compatible hardware.
+## Local development
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install .
+esphome config airgradient-one.yaml       # validate
+esphome compile airgradient-one.yaml      # build
+esphome run airgradient-one.yaml          # build + upload (wired or OTA)
+```
 
 ## Adding a new device
 
@@ -78,16 +150,6 @@ manifest URL, so firmware is only offered to compatible hardware.
    `devices.yaml` on every PR, so a broken new device fails fast.
 4. After merge, tag the first release: `<slug>/v1.0.0`.
 
-## Local development
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install .
-esphome config airgradient-one.yaml       # validate
-esphome compile airgradient-one.yaml      # build
-esphome run airgradient-one.yaml          # build + upload (wired or OTA)
-```
-
 ## Made for ESPHome compliance (per device)
 
 | Requirement | Where it's satisfied |
@@ -103,19 +165,16 @@ esphome run airgradient-one.yaml          # build + upload (wired or OTA)
 | No secrets / static IPs | credential fields are commented out |
 | IDs on components | every top-level component has an explicit `id:` |
 
-Once a device is releasing green and flashable, open a PR on
-<https://github.com/esphome/esphome-devices> to add it to the devices
-database, and email `esphome@openhomefoundation.org` linking that PR
-to request permission to use the logo.
-
 ## Repository layout
 
 ```
 .
 ├── devices.yaml                    # registry: one entry per releasable device
 ├── airgradient-one.yaml            # ESPHome config for the ONE
-├── <slug>.yaml                     # (future) ESPHome config for each device
-├── packages/                       # shared YAML packages (pull from AirGradient upstream)
+├── packages/
+│   ├── led_combo.yaml              # 11-LED strip: CO2 (left 5) + PM2.5 (mid 5) + VOC (right 1)
+│   ├── display_sh1106_multi_page.yaml  # multi-page OLED with per-page HA switches
+│   └── ...                         # sensor, board, API, and utility packages
 ├── scripts/
 │   ├── build_manifest.py           # writes per-device manifest.json
 │   └── build_landing_page.py       # rebuilds the Pages index listing every device
