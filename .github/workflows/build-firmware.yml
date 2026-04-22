@@ -193,7 +193,7 @@ jobs:
           )
           echo "md5=$(cat ${out}/${SLUG}.ota.md5)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: firmware-${{ needs.resolve.outputs.slug }}
           path: dist/${{ needs.resolve.outputs.slug }}/
@@ -201,7 +201,7 @@ jobs:
 
       - name: Persist MD5 for downstream jobs
         run: echo "${{ steps.stage.outputs.md5 }}" > firmware.md5
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: md5-${{ needs.resolve.outputs.slug }}
           path: firmware.md5
@@ -234,12 +234,12 @@ jobs:
       - name: Install deps
         run: pip install .
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: firmware-${{ needs.resolve.outputs.slug }}
           path: dist/${{ needs.resolve.outputs.slug }}/
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: md5-${{ needs.resolve.outputs.slug }}
           path: .
@@ -335,7 +335,7 @@ jobs:
         with:
           fetch-depth: 0   # needed to look up previous tags for changelog
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: firmware-${{ needs.resolve.outputs.slug }}
           path: dist/
