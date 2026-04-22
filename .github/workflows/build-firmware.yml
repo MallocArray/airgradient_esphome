@@ -43,7 +43,7 @@ jobs:
       node_name: ${{ steps.lookup.outputs.node_name }}
       is_tag_release: ${{ steps.parse.outputs.is_tag_release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Parse tag / dispatch input
         id: parse
@@ -145,7 +145,7 @@ jobs:
     needs: [resolve]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
@@ -223,7 +223,7 @@ jobs:
     if: needs.resolve.outputs.is_tag_release == 'true' && needs.resolve.outputs.is_prerelease == 'false'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
@@ -248,7 +248,7 @@ jobs:
       # previously-published device, not just this release's. If the
       # branch doesn't exist yet, start from an empty site.
       - name: Check out existing Pages content
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: gh-pages
           path: existing-pages
@@ -331,7 +331,7 @@ jobs:
     if: needs.resolve.outputs.is_tag_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0   # needed to look up previous tags for changelog
 
