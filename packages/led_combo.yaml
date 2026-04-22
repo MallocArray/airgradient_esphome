@@ -4,24 +4,48 @@
 # Far right LED indicates TVOC
 # LED Fade setting fades out the bars on the sides at the set percentage each step
 
-# Colors based on Monitor LED Information https://app.airgradient.com/dashboard/about
+# Color thresholds: CO2 follows common indoor ventilation guidance (ASHRAE/UBA);
+# PM2.5 follows 2021 WHO air quality guidelines; VOC follows Sensirion SGP41
+# index interpretation. See inline rationale comments in substitutions below.
+# Original reference: https://app.airgradient.com/dashboard/about
 substitutions:
-  co2_green: '400'
-  co2_yellow: '1000'
-  co2_red: '2000'
-  co2_purple: '4000'
-  pm_2_5_green: '0'
-  pm_2_5_yellow: '11'
-  pm_2_5_red: '56'
-  pm_2_5_purple: '201'
-  voc_green: '100'
-  voc_yellow: '150'
-  voc_red: '250'
-  voc_purple: '400'
-  voc_blue: '50'
+  # CO2 bands (ppm). Indoor air quality scale inspired by common ventilation
+  # guidance (ASHRAE, UBA). Outdoor CO2 is ~420 ppm; anything above ~1000 ppm
+  # indoors typically indicates inadequate ventilation and starts affecting
+  # cognitive performance. 1500 ppm is widely considered unacceptable indoors.
+  co2_green: '600'     # Well-ventilated indoor air
+  co2_yellow: '700'    # Slightly elevated, still comfortable
+  co2_orange: '850'    # Ventilation recommended
+  co2_red: '1000'      # ASHRAE/UBA threshold for poor air; open a window
+  co2_purple: '1500'   # Unacceptable; noticeable drowsiness/headaches possible
+  # PM2.5 bands (µg/m³). Aligned to the 2021 WHO global air quality guidelines,
+  # which are the tightest widely-cited health targets. There is no separate
+  # WHO indoor guideline; since indoor PM2.5 is dominated by outdoor
+  # infiltration plus cooking/candles, the same thresholds are applied.
+  pm_2_5_green: '5'    # WHO annual guideline (long-term healthy target)
+  pm_2_5_yellow: '15'  # WHO 24-hour guideline (short-term exposure limit)
+  pm_2_5_orange: '25'  # Old WHO annual guideline (pre-2021), still seen widely
+  pm_2_5_red: '35'     # US EPA 24h PM2.5 NAAQS standard
+  pm_2_5_purple: '55'  # US EPA AQI boundary between "unhealthy for sensitive
+                       # groups" and "unhealthy for all"
+  # VOC Index bands (Sensirion SGP41 relative scale, 0-500). Unlike CO2/PM2.5
+  # this is not an absolute concentration: 100 is the algorithm's learned
+  # baseline for this environment, so "green at <=100" means "baseline or
+  # better". Thresholds reflect Sensirion guidance: 100-200 is normal variation,
+  # 200-400 indicates a VOC event (cooking, cleaning, off-gassing), 400+ is
+  # extreme. The fade-below-100-to-blue behaviour was intentionally dropped:
+  # "better than baseline" is not a state worth signaling.
+  voc_green: '100'     # Baseline for this environment (or better)
+  voc_yellow: '200'    # Normal day-to-day variation
+  voc_orange: '300'    # Notable event in progress
+  voc_red: '400'       # Sustained VOC event; ventilate
+  voc_purple: '500'    # Extreme (top of SGP41 scale)
 
-interval:
-  - interval: 5s
+script:
+  - id: update_leds
+    # Repaint all LED ranges based on current sensor values and slider settings.
+    # Called every 5s by the interval below, and immediately when the brightness
+    # or fade sliders change.
     then:
       - if:
           condition:
@@ -33,14 +57,17 @@ interval:
                 then:
                   - light.addressable_set:
                       id: led_strip
-                      # Red prompt: If x is 400 or less assign 0, if between 400 and 1000 then gradually increase from 0 to 100, 1000 or higher assign 100 in a single line of C++
-                      # Green prompt: If x is 1000 or less assign 1, if between 1000 and 2000 then gradually decrease from 1 to 0, 2000 or higher assign 0 in a single line of C++
-                      # Blue prompt: If x is 2000 or less assign 0, if between 2000 and 4000 then gradually increase from 0 to 100, 4000 or higher assign 100 in a single line of C++
+                      # 5-band CO2 fade: green(600) -> yellow(700) -> orange(850) -> red(1000) -> purple(1500)
                       color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);'
                       range_from: 0
                       range_to: 4
                       red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
-                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(co2).state;
+                          if (x < $co2_yellow) return 1.0f;
+                          if (x <= $co2_orange) return 1.0f - 0.5f * (x - $co2_yellow) / ($co2_orange - $co2_yellow);
+                          if (x <= $co2_red)    return 0.5f - 0.5f * (x - $co2_orange) / ($co2_red - $co2_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
                   - light.addressable_set:
                       id: led_strip
@@ -48,7 +75,12 @@ interval:
                       range_from: 1
                       range_to: 3
                       red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
-                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(co2).state;
+                          if (x < $co2_yellow) return 1.0f;
+                          if (x <= $co2_orange) return 1.0f - 0.5f * (x - $co2_yellow) / ($co2_orange - $co2_yellow);
+                          if (x <= $co2_red)    return 0.5f - 0.5f * (x - $co2_orange) / ($co2_red - $co2_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
                   - light.addressable_set:
                       id: led_strip
@@ -56,7 +88,12 @@ interval:
                       range_from: 2
                       range_to: 2
                       red: !lambda 'return (id(co2).state < $co2_green) ? 0 : (id(co2).state <= $co2_yellow) ? (id(co2).state - $co2_green) / ($co2_yellow - $co2_green) : 1;'
-                      green: !lambda 'return (id(co2).state < $co2_yellow) ? 1 : (id(co2).state <= $co2_red) ? 1 - (id(co2).state - $co2_yellow) / ($co2_red - $co2_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(co2).state;
+                          if (x < $co2_yellow) return 1.0f;
+                          if (x <= $co2_orange) return 1.0f - 0.5f * (x - $co2_yellow) / ($co2_orange - $co2_yellow);
+                          if (x <= $co2_red)    return 0.5f - 0.5f * (x - $co2_orange) / ($co2_red - $co2_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(co2).state < $co2_red) ? 0 : (id(co2).state <= $co2_purple) ? (id(co2).state - $co2_red) / ($co2_purple - $co2_red) : 1;'
             - if:
                 condition:
@@ -78,11 +115,17 @@ interval:
                 then:
                   - light.addressable_set:
                       id: led_strip
+                      # 5-band PM2.5 fade: green(5) -> yellow(15) -> orange(25) -> red(35) -> purple(55) µg/m³
                       color_brightness: !lambda 'return ((id(led_brightness).state - (id(led_fade).state * 2)) / 100.0);'
                       range_from: 5
                       range_to: 9
                       red: !lambda 'return (id(pm_2_5).state < $pm_2_5_green) ? 0 : (id(pm_2_5).state <= $pm_2_5_yellow) ? (id(pm_2_5).state - $pm_2_5_green) / ($pm_2_5_yellow - $pm_2_5_green) : 1;'
-                      green: !lambda 'return (id(pm_2_5).state < $pm_2_5_yellow) ? 1 : (id(pm_2_5).state <= $pm_2_5_red) ? 1 - (id(pm_2_5).state - $pm_2_5_yellow) / ($pm_2_5_red - $pm_2_5_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(pm_2_5).state;
+                          if (x < $pm_2_5_yellow) return 1.0f;
+                          if (x <= $pm_2_5_orange) return 1.0f - 0.5f * (x - $pm_2_5_yellow) / ($pm_2_5_orange - $pm_2_5_yellow);
+                          if (x <= $pm_2_5_red)    return 0.5f - 0.5f * (x - $pm_2_5_orange) / ($pm_2_5_red - $pm_2_5_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(pm_2_5).state < $pm_2_5_red) ? 0 : (id(pm_2_5).state <= $pm_2_5_purple) ? (id(pm_2_5).state - $pm_2_5_red) / ($pm_2_5_purple - $pm_2_5_red) : 1;'
                   - light.addressable_set:
                       id: led_strip
@@ -90,7 +133,12 @@ interval:
                       range_from: 6
                       range_to: 8
                       red: !lambda 'return (id(pm_2_5).state < $pm_2_5_green) ? 0 : (id(pm_2_5).state <= $pm_2_5_yellow) ? (id(pm_2_5).state - $pm_2_5_green) / ($pm_2_5_yellow - $pm_2_5_green) : 1;'
-                      green: !lambda 'return (id(pm_2_5).state < $pm_2_5_yellow) ? 1 : (id(pm_2_5).state <= $pm_2_5_red) ? 1 - (id(pm_2_5).state - $pm_2_5_yellow) / ($pm_2_5_red - $pm_2_5_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(pm_2_5).state;
+                          if (x < $pm_2_5_yellow) return 1.0f;
+                          if (x <= $pm_2_5_orange) return 1.0f - 0.5f * (x - $pm_2_5_yellow) / ($pm_2_5_orange - $pm_2_5_yellow);
+                          if (x <= $pm_2_5_red)    return 0.5f - 0.5f * (x - $pm_2_5_orange) / ($pm_2_5_red - $pm_2_5_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(pm_2_5).state < $pm_2_5_red) ? 0 : (id(pm_2_5).state <= $pm_2_5_purple) ? (id(pm_2_5).state - $pm_2_5_red) / ($pm_2_5_purple - $pm_2_5_red) : 1;'
                   - light.addressable_set:
                       id: led_strip
@@ -98,7 +146,12 @@ interval:
                       range_from: 7
                       range_to: 7
                       red: !lambda 'return (id(pm_2_5).state < $pm_2_5_green) ? 0 : (id(pm_2_5).state <= $pm_2_5_yellow) ? (id(pm_2_5).state - $pm_2_5_green) / ($pm_2_5_yellow - $pm_2_5_green) : 1;'
-                      green: !lambda 'return (id(pm_2_5).state < $pm_2_5_yellow) ? 1 : (id(pm_2_5).state <= $pm_2_5_red) ? 1 - (id(pm_2_5).state - $pm_2_5_yellow) / ($pm_2_5_red - $pm_2_5_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(pm_2_5).state;
+                          if (x < $pm_2_5_yellow) return 1.0f;
+                          if (x <= $pm_2_5_orange) return 1.0f - 0.5f * (x - $pm_2_5_yellow) / ($pm_2_5_orange - $pm_2_5_yellow);
+                          if (x <= $pm_2_5_red)    return 0.5f - 0.5f * (x - $pm_2_5_orange) / ($pm_2_5_red - $pm_2_5_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(pm_2_5).state < $pm_2_5_red) ? 0 : (id(pm_2_5).state <= $pm_2_5_purple) ? (id(pm_2_5).state - $pm_2_5_red) / ($pm_2_5_purple - $pm_2_5_red) : 1;'
             - if:
                 condition:
@@ -116,32 +169,22 @@ interval:
             # TVOC LED
             - if:
                 condition:
-                  # Fade to purple as Index goes above 100
-                  lambda: 'return id(voc).state >= 100;'
+                  lambda: 'return !isnan(id(voc).state);'
                 then:
                   - light.addressable_set:
                       id: led_strip
+                      # 5-band VOC fade: green(100) -> yellow(200) -> orange(300) -> red(400) -> purple(500)
                       color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
                       range_from: 10
                       range_to: 10
                       red: !lambda 'return (id(voc).state < $voc_green) ? 0 : (id(voc).state <= $voc_yellow) ? (id(voc).state - $voc_green) / ($voc_yellow - $voc_green) : 1;'
-                      green: !lambda 'return (id(voc).state < $voc_yellow) ? 1 : (id(voc).state <= $voc_red) ? 1 - (id(voc).state - $voc_yellow) / ($voc_red - $voc_yellow) : 0;'
+                      green: !lambda |-
+                          float x = id(voc).state;
+                          if (x < $voc_yellow) return 1.0f;
+                          if (x <= $voc_orange) return 1.0f - 0.5f * (x - $voc_yellow) / ($voc_orange - $voc_yellow);
+                          if (x <= $voc_red)    return 0.5f - 0.5f * (x - $voc_orange) / ($voc_red - $voc_orange);
+                          return 0.0f;
                       blue: !lambda 'return (id(voc).state < $voc_red) ? 0 : (id(voc).state <= $voc_purple) ? (id(voc).state - $voc_red) / ($voc_purple - $voc_red) : 1;'
-            - if:
-                condition:
-                  # Fade to blue as Index goes below 100
-                  lambda: 'return id(voc).state < 100;'
-                then:
-                  - light.addressable_set:
-                      id: led_strip
-                      # Green prompt: If x is between 50 and 100 then gradually increase from 1 to 0 in a single line of C++
-                      # Blue prompt: If x is 50 or less assign 1, if between 50 and 100 then gradually decrease from 1 to 0, 100 or higher assign 0 in a single line of C++
-                      color_brightness: !lambda 'return id(led_brightness).state / 100.0;'
-                      range_from: 10
-                      range_to: 10
-                      red: 0%
-                      green: !lambda 'return (id(voc).state < $voc_blue) ? 0 : (id(voc).state <= $voc_green) ? (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 1;'
-                      blue: !lambda 'return (id(voc).state < $voc_blue) ? 1 : (id(voc).state >= $voc_blue) ? 1 - (id(voc).state - $voc_blue) / ($voc_green - $voc_blue) : 0;'
             - if:
                 condition:
                   lambda: 'return (isnan(id(voc).state));'  # No data from sensor yet
@@ -154,3 +197,8 @@ interval:
                       red: 0%
                       green: 0%
                       blue: 0%
+
+interval:
+  - interval: 5s
+    then:
+      - script.execute: update_leds
