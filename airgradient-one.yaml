@@ -25,13 +25,11 @@ esphome:
 logger:
 
 api:
-  # encryption:
-  #   key: !secret api_password
 
 ota:
   - platform: esphome
     id: ota_esphome
-    # password: !secret ota_password
+
   - platform: http_request
     id: ota_http_request
 
@@ -53,10 +51,10 @@ update:
 wifi:
   id: wifi_client
   fast_connect: false
-  min_auth_mode: WPA2
+
   ap:
     ap_timeout: 90s
-    password: "airgradient_password"
+    password: "cleanair"
 
 captive_portal:
   id: captive_portal_web
@@ -68,6 +66,10 @@ esp32_improv:
 improv_serial:
   id: improv_serial_provisioner
 
+web_server:
+  id: web_server
+  port: 80
+  
 dashboard_import:
   # Per-device import URL. The @main ref means users always adopt the
   # latest version of the config from the default branch; switch to a

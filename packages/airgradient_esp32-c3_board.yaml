@@ -3,10 +3,6 @@ esp32:
   framework:
     type: esp-idf
 
-# Enable logging
-# https://esphome.io/components/logger.html
-logger:
-
 uart:
   # https://esphome.io/components/uart.html#uart
   - rx_pin: GPIO0  # Pin 12
