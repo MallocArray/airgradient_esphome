@@ -280,7 +280,7 @@ switch:
     icon: "mdi:monitor"
 
   - platform: template
-    name: "Display Temp/Hum Page"
+    name: "Display Temp-Hum Page"
     id: display_air_temp_page
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True

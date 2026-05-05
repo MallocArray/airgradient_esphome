@@ -499,7 +499,7 @@ switch:
     disabled_by_default: false
     assumed_state: false
   - platform: template
-    name: Display Temp/Hum Page
+    name: Display Temp-Hum Page
     id: display_air_temp_page
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
