@@ -1,5 +1,6 @@
 substitutions:
   config_version: 5.3.3
+  flip_pms5003_uart_pins: False
 
 esphome:
   name: "${name}"
@@ -26,8 +27,8 @@ uart:
     baud_rate: 9600
     id: senseair_co2_uart
 
-  - rx_pin: D5
-    tx_pin: D6
+  - rx_pin: ${"D6" if flip_pms5003_uart_pins else "D5"}
+    tx_pin: ${"D5" if flip_pms5003_uart_pins else "D6"}
     baud_rate: 9600
     id: pms5003_uart
 
