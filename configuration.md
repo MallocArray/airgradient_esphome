@@ -81,7 +81,7 @@ Pairing ESPHome with Home Assistant opens a multitude of opportunities to create
 
 ## Disable Display and LED based on time
 
-Enabling the "Blank Page" switch will disable output on the display.  It is not necessary to turn off any existing pages, and disabling all pages will result in the device rebooting
+Enabling the "Blank Page" switch will disable output on the display.  It is not necessary to turn off any existing pages.
 
 1. In Home Assistant, navigate to Settings>Automations and scenes
 2. Click "Create Automation" button, then "Create new automation"
@@ -90,9 +90,8 @@ Enabling the "Blank Page" switch will disable output on the display.  It is not 
       2. Set to your desired time to turn off the display and/or LED
    2. Then do
       1. Add Action>Device>Select your AirGradient from the ESPHome Integration
-      2. In the Action field, select "Turn on `<Your AirGradient Name> Display Blank Page`"
-         1. For the base config with only the single page display package, this will set the display to show an empty page
-         2. If using the multi_page package, may need to add additional actions to turn off the other enabled pages
+      2. In the Action field, select "Turn on `<Your AirGradient Name> Display Blank Page`" (if your display package provides this switch)
+         1. This will set the display to show an empty page
       3. Repeat action for "Turn Off `<Your AirGradient Name> LED Strip`" (If applicable)
    3. Click the Save button and give it a name, such as "AirGradient Night Mode"
 3. Repeat with a new Automation, with the actions reversed (Turn off Display Blank Page and turn on LED Strip), at the desired time with a name such as "AirGradient Night Mode Off"

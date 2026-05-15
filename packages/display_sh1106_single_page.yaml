@@ -14,6 +14,17 @@ font:
     bpp: 2
 
 
+binary_sensor:
+  # True if and only if at least one non-blank page switch is on.
+  # Any new page switches should be added here
+  - platform: template
+    id: any_non_blank_page_enabled
+    internal: True
+    lambda: |-
+      return id(display_ag_default_page).state
+          || id(display_boot_page).state;
+
+
 display:
   - platform: ssd1306_i2c
     # https://esphome.io/components/display/ssd1306.html
@@ -73,11 +84,12 @@ display:
                 - display.page.show_next: oled_display
                 - component.update: oled_display
       - to: blank
-        # Skip blank page unless it is turned on and the interval: will only display it
         then:
           - if:
+              # Only change pages if a page switch for a non-blank page is actually enabled;
+              # acts as a base case to prevent recursive page change loop
               condition:
-                switch.is_off: display_blank_page
+                binary_sensor.is_on: any_non_blank_page_enabled
               then:
                 - display.page.show_next: oled_display
                 - component.update: oled_display
@@ -98,14 +110,14 @@ interval:
     then:
       - if:
           condition:
-            # If the blank page switch is on, only display the blank page, otherwise, rotate to next page
-            switch.is_on: display_blank_page
+            and:
+              - switch.is_off: display_blank_page
+              - binary_sensor.is_on: any_non_blank_page_enabled
           then:
-            - display.page.show: blank
+            - display.page.show_next: oled_display
             - component.update: oled_display
           else:
-            # Change page on display
-            - display.page.show_next: oled_display
+            - display.page.show: blank
             - component.update: oled_display
 
 
@@ -145,8 +157,15 @@ switch:
       - display.page.show: blank
       - component.update: oled_display
     on_turn_off:
-      - display.page.show_next: oled_display
-      - component.update: oled_display
+      - if:
+          condition:
+            binary_sensor.is_on: any_non_blank_page_enabled
+          then:
+            - display.page.show_next: oled_display
+            - component.update: oled_display
+          else:
+            - display.page.show: blank
+            - component.update: oled_display
 
 number:
   - platform: template
